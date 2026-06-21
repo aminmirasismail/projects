@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dexter-handheld-mobile-agent"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.111.0",
+    "faster-whisper>=1.2.1",
+    "numpy>=2.5.0",
+    "pynput>=1.8.2",
+    "pyttsx3>=2.99",
+    "sounddevice>=0.5.5",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dexter"]
