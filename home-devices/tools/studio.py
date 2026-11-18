@@ -13,7 +13,7 @@ from mathutils import Vector
 # ---------------------------------------------------------------- design language
 # One palette for every device: white body, black base, a single red accent.
 PLA = {
-    "white": (0.86, 0.86, 0.84, 1),
+    "white": (0.70, 0.70, 0.68, 1),
     "black": (0.007, 0.007, 0.008, 1),
     "red": (0.62, 0.025, 0.02, 1),
 }
@@ -218,7 +218,7 @@ def _area(name, loc, size, power, color=(1, 1, 1), target=(0, 0, 0.02)):
     return ob
 
 
-def studio(backdrop=(0.55, 0.55, 0.54, 1), samples=96, res=(1600, 1200)):
+def studio(backdrop=(0.013, 0.0135, 0.015, 1), samples=96, res=(1600, 1200)):
     s = bpy.context.scene
     s.render.engine = "CYCLES"
     s.cycles.device = "CPU"
@@ -228,8 +228,8 @@ def studio(backdrop=(0.55, 0.55, 0.54, 1), samples=96, res=(1600, 1200)):
     s.render.resolution_x, s.render.resolution_y = res
     s.render.film_transparent = False
     s.view_settings.view_transform = "AgX"
-    s.view_settings.look = "AgX - Base Contrast"
-    s.view_settings.exposure = 0.0
+    s.view_settings.look = "AgX - Medium High Contrast"
+    s.view_settings.exposure = -0.45
 
     # cyclorama: floor sweeping up into a back wall
     bm = bmesh.new()
@@ -246,7 +246,9 @@ def studio(backdrop=(0.55, 0.55, 0.54, 1), samples=96, res=(1600, 1200)):
     cyc = _link("Backdrop", bm)
     for p in cyc.data.polygons:
         p.use_smooth = True
-    assign(cyc, material("Backdrop", backdrop, rough=0.9))
+    bd = material("Backdrop", backdrop, rough=1.0)
+    bd.node_tree.nodes["Principled BSDF"].inputs["Specular IOR Level"].default_value = 0.0
+    assign(cyc, bd)
 
     w = bpy.data.worlds.new("World")
     s.world = w
@@ -256,8 +258,8 @@ def studio(backdrop=(0.55, 0.55, 0.54, 1), samples=96, res=(1600, 1200)):
 
     _area("Key", (-0.45, -0.35, 0.55), (0.6, 0.6), 22, (1.0, 0.97, 0.93))
     _area("Fill", (0.55, -0.45, 0.25), (0.8, 0.5), 6, (0.92, 0.95, 1.0))
-    _area("Rim", (0.15, 0.55, 0.45), (0.5, 0.2), 14)
-    _area("Top", (0, 0, 0.7), (0.4, 0.4), 6)
+    _area("Rim", (0.15, 0.55, 0.45), (0.5, 0.2), 30)
+    _area("Top", (0, 0, 0.7), (0.4, 0.4), 3)
 
 
 def camera(loc, target=(0, 0, 0.015), lens=85, name="Camera"):

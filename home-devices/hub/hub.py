@@ -193,16 +193,16 @@ def main():
         S.render(os.path.join(out, "hub_top.png"))
         # exploded
         pi.hide_render = False
-        shell.location.z += 42
-        pipe.location.z += 42
+        shell.location.z += 72
+        pipe.location.z += 72
         pipe.location.x += 14
-        pi.location.z += 16
-        S.camera((0.42, -0.58, 0.36), target=(0, 0, 0.04), lens=70)
+        pi.location.z += 30
+        S.camera((0.40, -0.55, 0.30), target=(0, 0, 0.05), lens=60)
         S.render(os.path.join(out, "hub_exploded.png"))
-        shell.location.z -= 42
-        pipe.location.z -= 42
+        shell.location.z -= 72
+        pipe.location.z -= 72
         pipe.location.x -= 14
-        pi.location.z -= 16
+        pi.location.z -= 30
         pi.hide_render = True
     if "--turntable" in args:
         pi.hide_render = True
