@@ -4,11 +4,9 @@ Run:  python light_study.py [--preview]
 Writes renders/light_*.png. Uses Cycles subsurface scattering so light really
 travels through (and gets absorbed by) the plastic, rather than faking a glow.
 
-Variants
-  a_pi_led       : as designed in rev A, only the Pi's own status LED, ~14 mm from the pipe
-  b_led_opaque   : a dedicated 5 mm red LED right behind the pipe, regular (opaque) red PLA
-  c_led_translucent : same LED, translucent red filament
-Each is rendered in a dim room, plus b in normal room light.
+Rev A's study (Pi's own LED vs a dedicated LED vs translucent filament) produced
+renders/light_a_*, light_b_*, light_c_*; that geometry is in git history. The current
+script renders rev B: the dedicated LED in its socket, in a dim room and in room light.
 
 Optical values are estimates: regular pigmented PLA scatters and absorbs light
 within roughly 1 mm; translucent filament lets most of it through. A 10-minute
@@ -87,9 +85,9 @@ def room(dim):
 
 
 def main():
+    """Rev B: a 5 mm LED in the printed socket, tip against the pipe's collar."""
     shell, base, pipe = hub.build()
-    pi = hub.pi_mock()
-    S.to_studio([shell, base, pipe, pi])
+    S.to_studio([shell, base, pipe])
     S.studio(samples=24 if PREVIEW else 128, res=(800, 600) if PREVIEW else (1400, 1050))
     sc = bpy.context.scene
     sc.cycles.max_bounces = 16
@@ -98,37 +96,20 @@ def main():
         if ob.type == "LIGHT":
             ob["base"] = ob.data.energy
     set_white_translucent(shell)
+    S.assign(pipe, red_opaque())
 
-    # Close-up on the light-pipe end of the hub.
-    S.camera((0.150, -0.095, 0.055), target=(0.048, 0.0, 0.014), lens=55)
-
-    z = hub.BOARD_Z + 4
-    # The Pi's own status LED: top-emitting SMD on the board edge at the SD-card end.
-    pi_led = led("Pi status LED", (35.0, hub.LED_Y, hub.BOARD_Z + hub.PCB_T + 0.4), 0.01)
-    # Same LED at a more realistic output: about 1 mW of light from a ~2 mA indicator.
-    pi_led_real = led("Pi status LED (realistic)", (35.0, hub.LED_Y, hub.BOARD_Z + hub.PCB_T + 0.4),
-                      0.001)
-    # A dedicated 5 mm LED sitting 2 mm behind the inner end of the pipe, aimed out.
-    own_led = led("5 mm LED", (47.0, hub.LED_Y, z), 0.03, kind="SPOT", aim=(1, 0, 0),
-                  radius_mm=2.5)
-
-    variants = [
-        ("a_pi_led", red_opaque(), [pi_led], True),
-        ("a_pi_led_realistic", red_opaque(), [pi_led_real], True),
-        ("b_led_opaque", red_opaque(), [own_led], True),
-        ("c_led_translucent", red_translucent(), [own_led], True),
-        ("b_led_opaque_daylight", red_opaque(), [own_led], False),
-    ]
+    m = 0.001
+    S.camera((hub.PIPE_X * m + 0.045, -0.15, 0.055),
+             target=(hub.PIPE_X * m, -hub.D / 2 * m, hub.PIPE_Z * m), lens=70)
+    # light leaves the LED's dome about 1.5 mm behind its tip, aimed out through the pipe
+    own_led = led("5 mm LED", (hub.PIPE_X, hub.Y_IN + hub.COLLAR_T + 1.5, hub.PIPE_Z), 0.03,
+                  kind="SPOT", aim=(0, -1, 0), radius_mm=2.0)
+    variants = [("revb_lit", [own_led], True), ("revb_room", [own_led], False)]
     if PREVIEW:
-        variants = variants[2:3]
-    only = [a.split("=", 1)[1] for a in sys.argv if a.startswith("--only=")]
-    if only:
-        variants = [v for v in variants if v[0] in only]
+        variants = variants[:1]
     os.makedirs(OUT, exist_ok=True)
-    for name, mat, lights, dim in variants:
-        S.assign(pipe, mat)
-        for li in (pi_led, pi_led_real, own_led):
-            li.hide_render = li not in lights
+    for name, lights, dim in variants:
+        own_led.hide_render = own_led not in lights
         room(dim)
         suffix = "_preview" if PREVIEW else ""
         S.render(os.path.join(OUT, f"light_{name}{suffix}.png"))

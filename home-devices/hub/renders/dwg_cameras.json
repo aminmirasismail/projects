@@ -1,0 +1,80 @@
+{
+ "front": {
+  "view": "front",
+  "center_mm": [
+   0,
+   0,
+   17.0
+  ],
+  "scale_mm": 150.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "left": {
+  "view": "left",
+  "center_mm": [
+   0,
+   0,
+   17.0
+  ],
+  "scale_mm": 150.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "back": {
+  "view": "back",
+  "center_mm": [
+   0,
+   0,
+   17.0
+  ],
+  "scale_mm": 150.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "top": {
+  "view": "top",
+  "center_mm": [
+   0,
+   0,
+   17.0
+  ],
+  "scale_mm": 180.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "bottom": {
+  "view": "bottom",
+  "center_mm": [
+   0,
+   0,
+   17.0
+  ],
+  "scale_mm": 180.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "section_led": {
+  "view": "right",
+  "center_mm": [
+   24.0,
+   -31.0,
+   18.5
+  ],
+  "scale_mm": 32.0,
+  "res": [
+   1800,
+   1200
+  ]
+ }
+}

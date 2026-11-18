@@ -5,3 +5,4 @@ __pycache__/
 _frames/
 *.log
 *.blend1
+_preview/

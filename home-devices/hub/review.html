@@ -13,6 +13,8 @@
   --ink-2: #9a9a96;
   --rule: #2a2a2c;
   --red: #ff4136;
+  --amber: #e8b43a;
+  --green: #5fc48a;
   --white-pla: #e6e6e2;
   --black-pla: #111112;
   --red-pla: #c21f17;
@@ -28,6 +30,7 @@ h1 { font-size: clamp(2.8rem, 9vw, 5.6rem); font-weight: 700; line-height: 0.92;
 h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 600; }
 h3 { font-size: 1.1rem; font-weight: 600; }
 p { margin: 0; max-width: 66ch; }
+code { font-family: var(--f-mono); font-size: 0.9em; }
 .tag { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
 .muted { color: var(--ink-2); }
 .dot { display: inline-block; width: 0.38em; height: 0.38em; border-radius: 50%; background: var(--red); vertical-align: 0.55em; margin-left: 0.06em; }
@@ -40,13 +43,28 @@ header { display: grid; gap: 18px; }
 
 figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
 figure img { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); }
+figure.paper img { background: #fff; }
 figcaption { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--ink-2); }
 figcaption .n { font-family: var(--f-mono); flex: none; }
+figcaption b { color: var(--ink); font-weight: 600; }
 .grid2 { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+.grid3 { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
 
 section { display: grid; gap: 26px; }
 .sec-head { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 18px; }
 .sec-head .tag { color: var(--red); }
+
+/* review answers */
+.answers { display: grid; gap: 12px; }
+.answer { display: grid; grid-template-columns: 120px 1fr; gap: 18px; padding: 18px 20px; background: var(--surface); border-radius: 8px; }
+.answer .q { display: grid; gap: 8px; align-content: start; }
+.answer .a { display: grid; gap: 8px; min-width: 0; }
+.answer .a b { font-weight: 600; }
+.pill { font: 500 11px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; text-align: center; border: 1px solid; justify-self: start; white-space: nowrap; }
+.pill.done { color: var(--green); border-color: rgba(95, 196, 138, 0.45); }
+.pill.verify { color: var(--amber); border-color: rgba(232, 180, 58, 0.45); }
+.pill.fix { color: var(--red); border-color: rgba(255, 65, 54, 0.45); }
+.pill.next { color: var(--ink-2); border-color: var(--rule); }
 
 /* key numbers */
 .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
@@ -64,34 +82,23 @@ section { display: grid; gap: 26px; }
 .kv dd { margin: 0; font-variant-numeric: tabular-nums; min-width: 0; }
 .note { font-size: 13px; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 12px; }
 
-/* callouts on exploded */
 .legend { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); margin: 0; padding: 0; list-style: none; }
 .legend li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: 14px; }
 .legend .k { font: 500 12px var(--f-mono); color: var(--red); padding-top: 2px; }
 
-/* assembly */
-.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
-.steps li { counter-increment: s; display: grid; grid-template-columns: 52px 1fr; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
-.steps li::before { content: counter(s, decimal-leading-zero); font: 500 13px/1.9 var(--f-mono); color: var(--ink-2); }
-.steps b { display: block; font-weight: 600; margin-bottom: 2px; }
-.steps .warn { color: var(--red); }
+/* wiring */
+.wiring { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+.panel { background: var(--surface); border-radius: 8px; padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.panel svg { width: 100%; height: auto; display: block; }
+.panel svg text { font-family: var(--f-mono); }
+.steps-mini { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; }
 
-/* decisions */
 .decisions { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
 .decision { background: var(--surface); border-radius: 8px; padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
 .decision .why { font-size: 14px; color: var(--ink-2); }
 .decision .alt { font-size: 13px; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 8px; margin-top: 4px; }
 .decision .alt span { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
 
-/* checks */
-.checks { display: grid; gap: 10px; }
-.check { display: grid; grid-template-columns: 92px 1fr; gap: 14px; padding: 14px 16px; background: var(--surface); border-radius: 8px; align-items: start; }
-.pill { font: 500 11px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; text-align: center; border: 1px solid; }
-.pill.fix { color: var(--red); border-color: color-mix(in srgb, var(--red) 50%, transparent); }
-.pill.verify { color: #e8b43a; border-color: rgba(232, 180, 58, 0.45); }
-.check b { display: block; font-weight: 600; }
-
-/* table */
 .tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; }
 table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: 14px; }
 th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
@@ -99,197 +106,221 @@ th { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: upper
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface); }
 
-.swatches { display: flex; flex-wrap: wrap; gap: 20px; }
-.sw { display: grid; gap: 6px; font-size: 13px; }
-.sw i { width: 96px; height: 60px; border-radius: 8px; border: 1px solid var(--rule); display: block; }
-.rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
-.rules li { padding: 14px 16px; background: var(--surface); border-radius: 8px; display: grid; gap: 4px; }
-.rules b { font-weight: 600; }
+.asks { display: grid; gap: 12px; counter-reset: a; list-style: none; margin: 0; padding: 0; }
+.asks li { counter-increment: a; display: grid; grid-template-columns: 36px 1fr; gap: 12px; padding: 16px 18px; background: var(--surface); border-radius: 8px; }
+.asks li::before { content: counter(a); font: 500 13px/1.6 var(--f-mono); color: var(--red); }
+.asks b { display: block; font-weight: 600; }
 
-@media (max-width: 520px) {
-  .kv { grid-template-columns: 1fr; gap: 0 0; }
+@media (max-width: 560px) {
+  .kv { grid-template-columns: 1fr; gap: 0; }
   .kv dd { margin-bottom: 8px; }
-  .check { grid-template-columns: 1fr; gap: 8px; }
-  .check .pill { justify-self: start; }
+  .answer { grid-template-columns: 1fr; gap: 10px; }
 }
 </style>
 
 <div class="wrap">
   <header>
-    <span class="tag">Home devices · 01 of 07 · Build report · Rev A</span>
+    <span class="tag">Home devices · 01 of 07 · Design review · Rev B</span>
     <h1>Hub<span class="dot"></span></h1>
-    <p class="lede">The always-on box that runs Home Assistant. Every other device in the apartment reports to it, and it puts all of it on your iPhone. A Raspberry Pi 5 inside a three-part printed enclosure: white shell, black base, one red light.</p>
+    <p class="lede">The always-on box that runs Home Assistant. A Raspberry Pi 5 inside a three-part printed enclosure: white shell, black base, and one red light, now with its own LED behind it.</p>
     <div class="meta tag">
-      <span><b>106 × 78 × 30</b> mm</span>
+      <span><b>106 × 80 × 34</b> mm</span>
       <span><b>3</b> printed parts</span>
       <span><b>White · black · red</b> PLA</span>
-      <span><b>No AMS</b> needed</span>
+      <span>Status: <b>awaiting your approval</b></span>
     </div>
   </header>
 
   <figure>
-    <img src="renders/hub_hero.jpg" alt="White rounded enclosure on a thin black base against a dark background, with a red light on its right end and a grid of vent holes on top" width="1600" height="1200">
-    <figcaption><span>Front three-quarter. The black base is set 0.6 mm inside the shell, so it reads as a thin shadow line.</span><span class="n">01</span></figcaption>
+    <img src="renders/hub_hero.jpg" alt="Rev B hub: white rounded enclosure on a thin black base, red light on the front face, hexagonal vent field on top" width="1600" height="1200">
+    <figcaption><span>Rev B. The red light has moved to the front face, where you'll see it.</span><span class="n">01</span></figcaption>
   </figure>
 
-  <div class="grid2">
+  <section>
+    <div class="sec-head"><span class="tag">Your engineering review</span><h2>Answers and what changed</h2></div>
+    <div class="answers">
+      <div class="answer"><div class="q"><span class="pill done">Changed</span><span class="tag">Inserts</span></div><div class="a">
+        <b>Yes, they're brass heat-set inserts, but rev A's holes weren't sized to a real insert.</b>
+        <span class="muted">Rev B is sized for the common standard insert, M3 × 5.7 mm with a 4.6 mm outside diameter (CNC Kitchen / Ruthex). Their guidance: a 4.0 mm hole at least 6.7 mm deep, in a post with about 2 mm of plastic around it. Rev B uses a <b>Ø4.0 × 8 mm</b> hole in a <b>Ø9 mm</b> post, giving 2.5 mm of wall. The thicker posts no longer fit in the corners without hitting the Pi, so they moved to the long walls and fuse into them. M3 × 8 countersunk screws engage about 5 mm of the insert. If your kit's inserts are a different size, tell me and I'll match them.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill verify">In progress</span><span class="tag">Pi dimensions</span></div><div class="a">
+        <b>Not confident yet. Rev A's port positions came from my memory of the drawing.</b>
+        <span class="muted">Raspberry Pi publishes an official mechanical drawing (RP-008347) and a 3D model of the Pi 5. I set up this session's network to fetch both, and you approved it, but the change hadn't reached the network proxy at the time of writing. Rev B is built so the official numbers drop straight in. The port window and USB-C slot then update themselves, and I'll re-render those views. Nothing gets printed until that's done. A 20-minute test print of just the ports end is also a cheap final check.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill done">Changed</span><span class="tag">Label</span></div><div class="a">
+        <b>A raking light now skims across the roof, so the engraved letters cast shadows.</b>
+        <span class="muted">The label is also a bit larger, 4.2 mm tall, and 0.8 mm deep. See the label close-up below. On the real print, the letters sit on the first layers (the roof prints face-down), and shadows inside them will read much like the render.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill done">Added</span><span class="tag">Detail shots</span></div><div class="a">
+        <b>Six close-ups:</b><span class="muted">label, red light, vents, shadow line, ports end and USB-C. Plus a cutaway with the lid removed, and the underside.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill done">Added</span><span class="tag">Dimensions</span></div><div class="a">
+        <b>Six dimensioned drawings,</b><span class="muted">generated from the model's own numbers so they can't drift from the STL files: front, ports end, back, top, underside, and a cross-section through the light.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill done">Designed in</span><span class="tag">LED + resistor</span></div><div class="a">
+        <b>A printed socket on the inside of the front wall holds a 5 mm LED right against the red pipe.</b>
+        <span class="muted">The 330 Ω resistor goes on the LED's long leg. Two wires run to pins 9 (ground) and 11 (GPIO17) on the Pi. The case grew 4 mm taller so the wire connector on those pins clears the lid. Wiring diagram below.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill next">After approval</span><span class="tag">Assembly</span></div><div class="a">
+        <b>A step-by-step assembly guide with a picture for each step</b><span class="muted">follows once you approve this design.</span>
+      </div></div>
+      <div class="answer"><div class="q"><span class="pill next">After approval</span><span class="tag">Printing</span></div><div class="a">
+        <b>Ready-to-print plates for the A1 Mini.</b><span class="muted">I need a few answers first; see the last section.</span>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Renders</span><h2>The whole device</h2></div>
+    <div class="grid2">
+      <figure>
+        <img src="renders/hub_ports.jpg" alt="Ports end with the Pi's Ethernet and two USB ports visible through one rounded window" width="1600" height="1200">
+        <figcaption><span>Ports end, Pi in place.</span><span class="n">02</span></figcaption>
+      </figure>
+      <figure>
+        <img src="renders/hub_top.jpg" alt="Top view: hexagonal vent field and engraved HOME / 01 label" width="1600" height="1200">
+        <figcaption><span>Top. The vents are now a hexagonal pattern, so the field reads as a circle.</span><span class="n">03</span></figcaption>
+      </figure>
+      <figure>
+        <img src="renders/hub_cutaway.jpg" alt="Cutaway with the roof removed, showing the Pi, the LED socket on the front wall, the resistor and red and black wires to the pin header" width="1600" height="1200">
+        <figcaption><span><b>Cutaway, roof removed.</b> The LED sits in its socket on the front wall; red and black wires run to the pin header.</span><span class="n">04</span></figcaption>
+      </figure>
+      <figure>
+        <img src="renders/hub_underside.jpg" alt="Underside: black base with four countersunk screw holes and four round recesses for rubber feet" width="1600" height="1200">
+        <figcaption><span>Underside. Four countersunk screws, four recesses for the feet.</span><span class="n">05</span></figcaption>
+      </figure>
+    </div>
     <figure>
-      <img src="renders/hub_ports.jpg" alt="Rear three-quarter view: a wide opening exposing the Pi's Ethernet and USB ports, and a small USB-C slot on the back" width="1600" height="1200">
-      <figcaption><span>Ports end. One window for Ethernet and USB, one slot for power.</span><span class="n">02</span></figcaption>
+      <img src="renders/hub_exploded.jpg" alt="Exploded view: base, Raspberry Pi, LED with resistor and connector, shell, and the red light pipe pulled out in front" width="1600" height="1200">
+      <figcaption><span>Exploded, bottom to top: base, Pi 5 with cooler, LED kit, shell. The red pipe is pulled out in front.</span><span class="n">06</span></figcaption>
     </figure>
-    <figure>
-      <img src="renders/hub_top.jpg" alt="Top-down view showing the vent hole grid and a small engraved label reading HOME / 01" width="1600" height="1200">
-      <figcaption><span>Top. Vent grid over the fan; engraved label in the corner.</span><span class="n">03</span></figcaption>
-    </figure>
-  </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Close-ups</span><h2>Details at real-life viewing distance</h2></div>
+    <div class="grid3">
+      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved HOME / 01 label with shadows in the letters" width="1400" height="1050"><figcaption><span>Label, 4.2 mm tall, 0.8 mm deep.</span><span class="n">D1</span></figcaption></figure>
+      <figure><img src="renders/d_light.jpg" alt="Close-up of the red light pipe set flush in the front face" width="1400" height="1050"><figcaption><span>Red light pipe, Ø4, flush with the face.</span><span class="n">D2</span></figcaption></figure>
+      <figure><img src="renders/d_vents.jpg" alt="Close-up of the hexagonal vent holes" width="1400" height="1050"><figcaption><span>Vents, Ø2.2 holes.</span><span class="n">D3</span></figcaption></figure>
+      <figure><img src="renders/d_shadowline.jpg" alt="Close-up of the corner where the white shell meets the slightly inset black base" width="1400" height="1050"><figcaption><span>Shadow line: base inset 0.6 mm.</span><span class="n">D4</span></figcaption></figure>
+      <figure><img src="renders/d_ports_end.jpg" alt="Close-up of the ports window with Ethernet and USB visible" width="1400" height="1050"><figcaption><span>Ports window, 1 mm clearance around the ports.</span><span class="n">D5</span></figcaption></figure>
+      <figure><img src="renders/d_usbc.jpg" alt="Close-up of the rounded USB-C slot on the back" width="1400" height="1050"><figcaption><span>USB-C slot, sized for the plug's grip.</span><span class="n">D6</span></figcaption></figure>
+    </div>
+    <div class="grid2">
+      <figure><img src="renders/light_revb_lit.jpg" alt="Front face in a dark room with the red light glowing" width="1400" height="1050"><figcaption><span><b>Lit, dark room.</b> Ray-traced: the LED in its socket, light passing through the red pipe.</span><span class="n">D7</span></figcaption></figure>
+      <figure><img src="renders/light_revb_room.jpg" alt="Front face in room light with the red dot reading as a solid accent" width="1400" height="1050"><figcaption><span><b>Lit, room light.</b> Reads as a solid red accent.</span><span class="n">D8</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Dimensions</span><h2>Drawings</h2></div>
+    <p class="muted">All dimensions in millimetres, taken from the model. Red marks the features you asked about: openings, the light and the fixings. The ports-end numbers will update once the official Pi 5 drawing is in.</p>
+    <div class="grid2">
+      <figure class="paper"><img src="renders/dwg_front.svg" alt="Front elevation: 106 wide, 34 tall, 3 mm base; light pipe Ø4 at 29 from the right edge and 18.5 from the bottom" width="1800" height="1200"><figcaption><span>Front</span><span class="n">A1</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_left.svg" alt="Ports end: 80 deep; port window about 53 by 17.6, 7.6 above the bottom" width="1800" height="1200"><figcaption><span>Ports end (provisional)</span><span class="n">A2</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_back.svg" alt="Back: USB-C slot 13 by 7.5, centre 29.2 from the edge and 10.2 above the bottom" width="1800" height="1200"><figcaption><span>Back, USB-C</span><span class="n">A3</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_top.svg" alt="Top: 106 by 80, R12 corners, Ø34 vent field of Ø2.2 holes, label position" width="1800" height="1200"><figcaption><span>Top</span><span class="n">A4</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_bottom.svg" alt="Underside: four M3 countersunk holes 72 by 67.6 apart, four Ø8.6 recesses for feet" width="1800" height="1200"><figcaption><span>Underside</span><span class="n">A5</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_section_led.svg" alt="Cross-section through the light: 2 mm wall, Ø4 pipe with Ø5 × 0.8 collar, socket bore Ø5.15, OD Ø7.6, 8.3 deep, LED tip resting on the collar" width="1800" height="1200"><figcaption><span>Section through the light, enlarged</span><span class="n">A6</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">LED and resistor</span><h2>Exactly where they go</h2></div>
+    <div class="wiring">
+      <div class="panel">
+        <span class="tag">Circuit</span>
+        <svg viewBox="0 0 520 210" role="img" aria-label="Circuit: GPIO17 on pin 11 to a 330 ohm resistor, to the LED's long leg; LED's short leg to ground on pin 9">
+          <g fill="none" stroke="#ededeb" stroke-width="2">
+            <path d="M60 60 H150"/><path d="M230 60 H300"/>
+            <path d="M362 60 H440 V150 H60"/>
+          </g>
+          <rect x="150" y="46" width="80" height="28" rx="4" fill="#d9c6a4"/>
+          <rect x="166" y="46" width="7" height="28" fill="#e68a0c"/><rect x="180" y="46" width="7" height="28" fill="#e68a0c"/><rect x="194" y="46" width="7" height="28" fill="#5a2e14"/><rect x="214" y="46" width="5" height="28" fill="#c7a23a"/>
+          <polygon points="300,40 300,80 340,60" fill="#ff4136"/><path d="M340 40 V80" stroke="#ff4136" stroke-width="3"/><path d="M340 60 H362" stroke="#ededeb" stroke-width="2"/>
+          <path d="M318 32 l10 -12 M330 36 l10 -12" stroke="#ff4136" stroke-width="2"/>
+          <circle cx="60" cy="60" r="7" fill="#ff4136"/><circle cx="60" cy="150" r="7" fill="#ededeb"/>
+          <text x="20" y="30" fill="#ededeb" font-size="14">Pin 11 · GPIO17</text>
+          <text x="20" y="182" fill="#ededeb" font-size="14">Pin 9 · GND</text>
+          <text x="190" y="100" fill="#9a9a96" font-size="13" text-anchor="middle">330 Ω</text>
+          <text x="190" y="116" fill="#9a9a96" font-size="11" text-anchor="middle">orange orange brown gold</text>
+          <text x="320" y="104" fill="#9a9a96" font-size="13" text-anchor="middle">LED</text>
+          <text x="282" y="40" fill="#9a9a96" font-size="11" text-anchor="end">long leg</text>
+          <text x="396" y="40" fill="#9a9a96" font-size="11">short leg</text>
+          <text x="300" y="196" fill="#9a9a96" font-size="12">(3.3 V − 2.0 V) ÷ 330 Ω ≈ 4 mA</text>
+        </svg>
+        <p class="muted" style="font-size:14px">About 4 mA: bright enough behind the pipe, and well within the Pi pin's 16 mA limit. The LED's long leg is the + side; the short leg sits by the flat edge on its rim.</p>
+      </div>
+      <div class="panel">
+        <span class="tag">Pi header, looking down, ports to the right</span>
+        <svg viewBox="0 0 520 210" role="img" aria-label="40-pin header with pin 9 (ground) and pin 11 (GPIO17) highlighted, fifth and sixth pins from the left on the row nearer the board centre">
+          <rect x="10" y="40" width="500" height="64" rx="6" fill="#0a0a0b" stroke="#2a2a2c"/>
+          <g id="pins"></g>
+          <text x="20" y="28" fill="#9a9a96" font-size="12">board edge</text>
+          <text x="508" y="128" fill="#9a9a96" font-size="12" text-anchor="end">towards the board centre (odd pins)</text>
+          <path d="M128 96 V150" stroke="#ededeb" stroke-width="1.5"/><path d="M152 96 V172" stroke="#ff4136" stroke-width="1.5"/>
+          <text x="128" y="166" fill="#ededeb" font-size="13" text-anchor="middle">9 · GND</text>
+          <text x="152" y="190" fill="#ff4136" font-size="13" text-anchor="middle">11 · GPIO17</text>
+          <text x="32" y="118" fill="#9a9a96" font-size="11" text-anchor="middle">pin 1</text>
+        </svg>
+        <ol class="steps-mini">
+          <li>Count from pin 1, the corner pin with the square pad, nearest the SD-card end.</li>
+          <li>The connector covers pins 9 and 11, side by side on the inner row: the 5th and 6th pins along.</li>
+          <li>Black wire on pin 9, red wire on pin 11.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="muted">Controlling the light from Home Assistant on a Pi 5 needs a small add-on, which I'll set up with the software. If that's awkward, moving the red wire to pin 1 (3.3 V) makes it a simple "on" light with no software at all.</p>
+  </section>
 
   <section>
     <div class="sec-head"><span class="tag">At a glance</span><h2>Key numbers</h2></div>
     <div class="figures">
-      <div class="figure"><span class="tag">Footprint</span><b>106 × 78</b><span class="muted">mm</span></div>
-      <div class="figure"><span class="tag">Height</span><b>30</b><span class="muted">mm, base included</span></div>
-      <div class="figure"><span class="tag">Filament</span><b>≈ 75 g</b><span class="muted">all three parts</span></div>
-      <div class="figure"><span class="tag">Print time</span><b>≈ 4–5 h</b><span class="muted">rough slicer estimate</span></div>
-      <div class="figure"><span class="tag">Power</span><b>≈ 4 W</b><span class="muted">idle, about $4 a year</span></div>
-      <div class="figure"><span class="tag">Parts cost</span><b>≈ $110–135</b><span class="muted">Pi included</span></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="tag">How it goes together</span><h2>Exploded view</h2></div>
-    <figure>
-      <img src="renders/hub_exploded.jpg" alt="Exploded view: white shell at top, Raspberry Pi 5 with cooler floating in the middle, black base at the bottom, red light pipe pulled out to the side" width="1600" height="1200">
-      <figcaption><span>Top to bottom: shell, light pipe, Pi 5 with cooler, base.</span><span class="n">04</span></figcaption>
-    </figure>
-    <ul class="legend">
-      <li><span class="k">A</span><span><b>Shell</b>, white PLA. Walls, roof, vent grid, port windows and four corner posts with brass inserts.</span></li>
-      <li><span class="k">B</span><span><b>Light pipe</b>, red PLA. Pushes in from inside; a collar stops it falling out.</span></li>
-      <li><span class="k">C</span><span><b>Raspberry Pi 5</b> with the official Active Cooler. Bought, not printed.</span></li>
-      <li><span class="k">D</span><span><b>Base</b>, black PLA. Standoffs for the Pi, a locating lip, and four countersunk screw holes.</span></li>
-    </ul>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="tag">Light study · ray-traced</span><h2>Will the red light actually glow?</h2></div>
-    <p class="muted">Simulated in Blender's Cycles renderer, which follows light as it scatters through and is absorbed by the plastic. All dark-room shots use the same evening-room lighting and camera. The plastic's optical values are estimates, so read these as comparisons rather than exact brightness.</p>
-    <div class="grid2">
-      <figure>
-        <img src="renders/light_a_pi_led_realistic.jpg" alt="Hub end face in a dark room; the red dot is dark and the wall has only a faint red tinge" width="1400" height="1050">
-        <figcaption><span><b>A · As designed.</b> Only the Pi's own status LED, about 14 mm away. The pipe stays dark; the wall picks up a faint red wash. Doesn't work.</span><span class="n">L1</span></figcaption>
-      </figure>
-      <figure>
-        <img src="renders/light_b_led_opaque.jpg" alt="Hub end face in a dark room with a bright, crisp red dot and a soft halo around it" width="1400" height="1050">
-        <figcaption><span><b>B · Dedicated LED, regular red PLA.</b> A 5 mm LED right behind the pipe. A crisp dot with a soft halo, visible from any angle. Recommended.</span><span class="n">L2</span></figcaption>
-      </figure>
-      <figure>
-        <img src="renders/light_c_led_translucent.jpg" alt="Hub end face in a dark room with a smaller, dimmer red dot" width="1400" height="1050">
-        <figcaption><span><b>C · Dedicated LED, translucent red.</b> Dimmer from the side. A clear pipe sends the light straight out, so it's only bright head-on.</span><span class="n">L3</span></figcaption>
-      </figure>
-      <figure>
-        <img src="renders/light_b_led_opaque_daylight.jpg" alt="Hub end face in normal room light; the red dot reads as a solid red accent" width="1400" height="1050">
-        <figcaption><span><b>B in room light.</b> The glow disappears and the dot reads as a solid red accent, as intended.</span><span class="n">L4</span></figcaption>
-      </figure>
-    </div>
-    <div class="grid2">
-      <figure>
-        <img src="renders/light_a_pi_led.jpg" alt="Hub in a dark room with the whole white shell glowing red from a light inside" width="1400" height="1050">
-        <figcaption><span><b>Side effect: the lantern.</b> The same as A, with the inside light ten times brighter. 2 mm of white PLA lets light through, so any light inside makes the whole shell glow.</span><span class="n">L5</span></figcaption>
-      </figure>
-      <div class="decisions" style="grid-template-columns:1fr">
-        <div class="decision"><h3>Change for rev B: give the pipe its own LED</h3><p class="why">A 5 mm diffused red LED and a 330 Ω resistor in a small printed holder, right behind the pipe. About $1 in parts.</p><p class="alt"><span>Wiring</span> Simplest: to the Pi's 3.3 V pin, so it shows "powered on". Better: to a GPIO pin, so Home Assistant can light it when something needs your attention.</p></div>
-        <div class="decision"><h3>Watch for the lantern effect</h3><p class="why">The Pi's green activity light and the Ethernet port lights blink inside the case. At night they may show through the white walls as a faint flicker.</p><p class="alt"><span>Options</span> Turn the Pi's onboard LEDs off in its settings, thicken the walls from 2 mm to 3 mm, or keep it as a subtle sign of life.</p></div>
-      </div>
+      <div class="figure"><span class="tag">Size</span><b>106 × 80 × 34</b><span class="muted">mm, base included</span></div>
+      <div class="figure"><span class="tag">Walls · roof</span><b>2.0</b><span class="muted">mm; base 3.0</span></div>
+      <div class="figure"><span class="tag">Filament</span><b>≈ 85 g</b><span class="muted">all three parts</span></div>
+      <div class="figure"><span class="tag">Print time</span><b>≈ 5 h</b><span class="muted">rough, before slicing</span></div>
+      <div class="figure"><span class="tag">Parts cost</span><b>≈ $115–140</b><span class="muted">Pi included</span></div>
     </div>
   </section>
 
   <section>
     <div class="sec-head"><span class="tag">Printed parts</span><h2>What to print, and how</h2></div>
-    <p class="muted">Every part prints in one colour, so you change filament between prints rather than mid-print. Settings assume the A1 Mini with a 0.4 mm nozzle and the textured PEI plate. Weights come from the model's volume; times are rough until you slice it.</p>
     <div class="parts">
       <article class="part">
-        <div class="part-top"><i class="chip" style="background:var(--white-pla)"></i><div><span class="tag">Part A</span><h3>Shell</h3></div></div>
+        <div class="part-top"><i class="chip" style="background:var(--white-pla)"></i><div><span class="tag">Shell</span><h3>White PLA</h3></div></div>
         <dl class="kv">
-          <dt>Filament</dt><dd>White PLA</dd>
-          <dt>File</dt><dd><code>hub_shell_white.stl</code></dd>
-          <dt>Orientation</dt><dd>Upside down: roof flat on the plate</dd>
-          <dt>Layer height</dt><dd>0.16 mm, for smoother curved corners</dd>
-          <dt>Walls</dt><dd>4 loops; the 2 mm walls print solid</dd>
-          <dt>Top / bottom</dt><dd>5 layers</dd>
-          <dt>Infill</dt><dd>15% gyroid, only in the corner posts</dd>
-          <dt>Supports</dt><dd>Paint-on supports for the port window only</dd>
-          <dt>Weight · time</dt><dd>≈ 42 g · ≈ 3 h</dd>
+          <dt>Orientation</dt><dd>Roof down on the plate</dd>
+          <dt>Layer height</dt><dd>0.16 mm</dd>
+          <dt>Walls</dt><dd>4 loops (2 mm walls print solid)</dd>
+          <dt>Infill</dt><dd>15% gyroid (posts and socket)</dd>
+          <dt>Supports</dt><dd>Only under the port window's long edge</dd>
+          <dt>Weight · time</dt><dd>≈ 51 g · ≈ 3.5 h</dd>
         </dl>
-        <p class="note">Printing roof-down makes the top face take the texture of the plate, which hides layer lines on the most visible surface. The 54 mm port window becomes a long bridge in this orientation, so support only that edge.</p>
+        <p class="note">The LED socket and insert posts print as vertical tubes in this orientation, which are easy, accurate features.</p>
       </article>
       <article class="part">
-        <div class="part-top"><i class="chip" style="background:var(--black-pla)"></i><div><span class="tag">Part D</span><h3>Base</h3></div></div>
+        <div class="part-top"><i class="chip" style="background:var(--black-pla)"></i><div><span class="tag">Base</span><h3>Black PLA</h3></div></div>
         <dl class="kv">
-          <dt>Filament</dt><dd>Black PLA</dd>
-          <dt>File</dt><dd><code>hub_base_black.stl</code></dd>
-          <dt>Orientation</dt><dd>Flat, underside on the plate</dd>
+          <dt>Orientation</dt><dd>Underside on the plate</dd>
           <dt>Layer height</dt><dd>0.2 mm</dd>
           <dt>Walls</dt><dd>3 loops</dd>
-          <dt>Infill</dt><dd>20% grid</dd>
+          <dt>Infill</dt><dd>20%</dd>
           <dt>Supports</dt><dd>None</dd>
-          <dt>Weight · time</dt><dd>≈ 30 g · ≈ 1.5 h</dd>
+          <dt>Weight · time</dt><dd>≈ 31 g · ≈ 1.5 h</dd>
         </dl>
-        <p class="note">The countersinks face the plate; their 45° slope prints cleanly without support. The Pi's screw holes are 2.3 mm, so M2.5 screws cut their own thread into the plastic.</p>
       </article>
       <article class="part">
-        <div class="part-top"><i class="chip" style="background:var(--red-pla)"></i><div><span class="tag">Part B</span><h3>Light pipe</h3></div></div>
+        <div class="part-top"><i class="chip" style="background:var(--red-pla)"></i><div><span class="tag">Light pipe</span><h3>Red PLA</h3></div></div>
         <dl class="kv">
-          <dt>Filament</dt><dd>Red PLA</dd>
-          <dt>File</dt><dd><code>hub_lightpipe_red.stl</code></dd>
           <dt>Orientation</dt><dd>Standing on its collar</dd>
           <dt>Layer height</dt><dd>0.12 mm</dd>
-          <dt>Infill</dt><dd>100%, so light passes evenly</dd>
-          <dt>Copies</dt><dd>Print 3; keep the best fit</dd>
+          <dt>Infill</dt><dd>100%</dd>
+          <dt>Copies</dt><dd>3; keep the best fit</dd>
           <dt>Weight · time</dt><dd>&lt; 1 g · ≈ 10 min</dd>
         </dl>
-        <p class="note">Regular red PLA is the right choice: the light study shows it spreads the light evenly, while translucent filament looks dimmer from the side. It needs a dedicated LED right behind it; the Pi's own LED is too weak and too far away.</p>
+        <p class="note">Regular red PLA, not translucent: the light study showed it spreads the glow evenly from any angle.</p>
       </article>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="tag">Assembly</span><h2>From parts to a running hub</h2></div>
-    <p class="muted">About 30 minutes once the parts are printed. Tools: soldering iron, a Phillips #0 and #1 screwdriver, a computer with an SD card reader.</p>
-    <ol class="steps">
-      <li><div><b>Flash the card first</b>Use Raspberry Pi Imager on your computer: Other specific-purpose OS → Home assistants → Home Assistant OS for Pi 5. <span class="warn">The card slot is sealed inside the case, so do this before closing it.</span></div></li>
-      <li><div><b>Melt in the brass inserts</b>Set the iron to about 220 °C, rest an M3 insert on each corner post of the shell, and press it straight down until it sits flush. Let it cool for a minute without moving it.</div></li>
-      <li><div><b>Fit the light pipe</b>Push it through its hole from the inside of the shell until the collar stops it. A drop of superglue on the collar keeps it in place.</div></li>
-      <li><div><b>Mount the cooler on the Pi</b>Clip the Active Cooler on with its two push pins and plug its cable into the FAN header. Insert the flashed microSD card.</div></li>
-      <li><div><b>Screw the Pi to the base</b>Four M2.5 × 6 screws into the standoffs, Ethernet and USB facing the open end. Don't overtighten; the threads are plastic.</div></li>
-      <li><div><b>Lower the shell on</b>The lip on the base guides it into place, and the ports line up with their windows. The red pipe should sit right in front of the Pi's status lights.</div></li>
-      <li><div><b>Screw it shut</b>Turn it over and drive four M3 × 8 countersunk screws through the base into the inserts. Stick on the four bumper feet.</div></li>
-      <li><div><b>Plug in and set up</b>Ethernet to your router, then power. After about 5 minutes, open the Home Assistant app on your iPhone; it finds the hub and walks you through setup.</div></li>
-    </ol>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="tag">Design decisions</span><h2>Why it's built this way</h2></div>
-    <div class="decisions">
-      <div class="decision"><h3>A Raspberry Pi, not a ready-made hub</h3><p class="why">A Pi 5 costs about the same as the Home Assistant Green, but it can be housed in a case that matches every other device, and you learn how the system works by building it.</p><p class="alt"><span>Fallback</span> If the Pi is hard to find, the Green runs the same software with no case needed.</p></div>
-      <div class="decision"><h3>Not your desktop computer</h3><p class="why">The hub has to answer sensors every minute of every day. Your computer sleeps at night and sometimes shuts down, and every notification would stop with it.</p></div>
-      <div class="decision"><h3>One window instead of three port holes</h3><p class="why">Port positions on real boards drift by a millimetre or two. One wide window forgives that, prints more reliably, and looks calmer than three small holes.</p></div>
-      <div class="decision"><h3>Micro-HDMI covered up</h3><p class="why">You'll manage the hub from your phone and never plug in a screen, so those ports get no openings. Fewer holes, cleaner sides.</p></div>
-      <div class="decision"><h3>Vent grid right above the fan</h3><p class="why">The Active Cooler pulls air in from above. A closed lid would make the Pi slow itself down to stay cool; the grid sits directly over the fan intake.</p></div>
-      <div class="decision"><h3>Bigger than the board needs</h3><p class="why">The corner screw posts have to clear the Pi's corners, which sets the 106 × 78 mm footprint. It also leaves a little room for a Zigbee or Thread radio later.</p></div>
-      <div class="decision"><h3>Colour from separate parts</h3><p class="why">Each part is one colour, so the A1 Mini prints them without an AMS and with no purge waste. The colours meet at real edges, which looks deliberate.</p></div>
-      <div class="decision"><h3>Screws only underneath</h3><p class="why">Countersunk screws through the base and brass inserts in the shell. Nothing shows from the top or sides, and inserts survive opening the case many times; plastic threads don't.</p></div>
-      <div class="decision"><h3>Sealed card slot</h3><p class="why">An open slot would break the clean end face. Home Assistant backs itself up to your phone or the cloud, so you'd rarely need the card out.</p><p class="alt"><span>Trade-off</span> Swapping the card means removing four screws.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="sec-head"><span class="tag">Before you print</span><h2>Checks and known issues</h2></div>
-    <div class="checks">
-      <div class="check"><span class="pill verify">Verify</span><div><b>Port and status-light positions</b><span class="muted">Taken from the Raspberry Pi 5 drawings, not a real board. Measure yours with calipers, or print just the ports end as a quick test piece first.</span></div></div>
-      <div class="check"><span class="pill verify">Verify</span><div><b>Insert hole size</b><span class="muted">Holes are 4.2 mm for common short M3 inserts. Check the size printed on your insert kit.</span></div></div>
-      <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Vent pattern</b><span class="muted">It reads as a slightly rotated square. Rev B will use a clean circle or a grid aligned with the edges.</span></div></div>
-      <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Light pipe has no light source</b><span class="muted">The light study shows the Pi's own LED can't light it. Rev B adds a 5 mm LED in a holder right behind the pipe.</span></div></div>
-      <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Red light is easy to miss</b><span class="muted">It's small and sits on the end face. It could get a little bigger, or move to the front.</span></div></div>
-      <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Placeholder Pi in the renders</b><span class="muted">The Pi model is a rough stand-in, so its ports read as plain blocks. A more detailed model would make the reviews clearer.</span></div></div>
     </div>
   </section>
 
@@ -299,39 +330,69 @@ tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface); }
       <table>
         <thead><tr><th>Part</th><th>Notes</th><th class="num">Qty</th><th class="num">Approx.</th></tr></thead>
         <tbody>
-          <tr><td>Raspberry Pi 5, 4 GB</td><td class="muted">Plenty for Home Assistant.</td><td class="num">1</td><td class="num">$60–85</td></tr>
-          <tr><td>Official 27 W USB-C power supply</td><td class="muted">The Pi 5 is fussy about power; use the official one.</td><td class="num">1</td><td class="num">$12</td></tr>
-          <tr><td>Official Raspberry Pi 5 Active Cooler</td><td class="muted">Quiet; the case is designed around it.</td><td class="num">1</td><td class="num">$5</td></tr>
+          <tr><td>Raspberry Pi 5, 4 GB</td><td class="muted">Runs Home Assistant.</td><td class="num">1</td><td class="num">$60–85</td></tr>
+          <tr><td>Official 27 W USB-C power supply</td><td class="muted">Use the official one.</td><td class="num">1</td><td class="num">$12</td></tr>
+          <tr><td>Official Raspberry Pi 5 Active Cooler</td><td class="muted">The case is designed around it.</td><td class="num">1</td><td class="num">$5</td></tr>
           <tr><td>High-endurance microSD, 32–64 GB</td><td class="muted">SanDisk High Endurance or Samsung PRO Endurance.</td><td class="num">1</td><td class="num">$12</td></tr>
           <tr><td>Short Ethernet cable</td><td class="muted">Hub to router.</td><td class="num">1</td><td class="num">$5</td></tr>
-          <tr><td>M3 brass heat-set inserts, kit</td><td class="muted">Reused for every later device.</td><td class="num">4</td><td class="num">$8</td></tr>
+          <tr><td>M3 × 5.7 brass heat-set inserts (OD 4.6)</td><td class="muted">CNC Kitchen or Ruthex standard size; holes are sized for these.</td><td class="num">4</td><td class="num">$8 kit</td></tr>
           <tr><td>M3 × 8 countersunk screws</td><td class="muted">Base to shell.</td><td class="num">4</td><td class="num">in kit</td></tr>
-          <tr><td>M2.5 × 6 screws, kit</td><td class="muted">Pi to base.</td><td class="num">4</td><td class="num">$6</td></tr>
-          <tr><td>5 mm diffused red LED + 330 Ω resistor</td><td class="muted">Lights the red pipe (rev B). Buy an assortment; you'll use them again.</td><td class="num">1</td><td class="num">$1</td></tr>
-          <tr><td>Female-to-female jumper wires</td><td class="muted">LED to the Pi's pins.</td><td class="num">2</td><td class="num">$4 pack</td></tr>
-          <tr><td>Clear bumper feet, 8 mm</td><td class="muted">Grip and quiet.</td><td class="num">4</td><td class="num">$4</td></tr>
+          <tr><td>M2.5 × 6 screws</td><td class="muted">Pi to base.</td><td class="num">4</td><td class="num">$6 kit</td></tr>
+          <tr><td>5 mm diffused red LED</td><td class="muted">Sits in the socket behind the pipe.</td><td class="num">1</td><td class="num">$1</td></tr>
+          <tr><td>330 Ω resistor, ¼ W</td><td class="muted">Orange, orange, brown, gold.</td><td class="num">1</td><td class="num">in a kit</td></tr>
+          <tr><td>Female Dupont jumper wires + 2-pin housing</td><td class="muted">LED to pins 9 and 11.</td><td class="num">2</td><td class="num">$5 kit</td></tr>
+          <tr><td>Heat-shrink tubing, 2–3 mm</td><td class="muted">Covers the solder joints.</td><td class="num">—</td><td class="num">$4</td></tr>
+          <tr><td>Clear bumper feet, 8 mm</td><td class="muted">Sit in the recesses.</td><td class="num">4</td><td class="num">$4</td></tr>
         </tbody>
-        <tfoot><tr><td>Total</td><td></td><td></td><td class="num">≈ $115–140</td></tr></tfoot>
+        <tfoot><tr><td>Total</td><td></td><td></td><td class="num">≈ $120–145</td></tr></tfoot>
       </table>
     </div>
-    <p class="muted">Rough US prices. Raspberry Pi prices have moved around a lot, so check before ordering.</p>
   </section>
 
   <section>
-    <div class="sec-head"><span class="tag">Design language</span><h2>Rules the whole family follows</h2></div>
-    <p class="muted">The hub sets the look for the laundry pods, air station, timer and the rest, so they read as one set.</p>
-    <div class="swatches">
-      <div class="sw"><i style="background:var(--white-pla)"></i>White PLA<span class="tag">Body</span></div>
-      <div class="sw"><i style="background:var(--black-pla)"></i>Black PLA<span class="tag">Base · controls</span></div>
-      <div class="sw"><i style="background:var(--red-pla)"></i>Red PLA<span class="tag">One accent only</span></div>
+    <div class="sec-head"><span class="tag">Design decisions</span><h2>What changed in rev B, and why</h2></div>
+    <div class="decisions">
+      <div class="decision"><h3>Light on the front, with its own LED</h3><p class="why">The rev A ray-trace showed the Pi's own LED couldn't light the pipe. The front face is also where you'll actually see it.</p></div>
+      <div class="decision"><h3>4 mm taller</h3><p class="why">The connector on the Pi's pins stands about 17 mm above the board. At 30 mm the wires would have pressed on the lid; at 34 mm they have room to bend. It also gives the fan more air.</p></div>
+      <div class="decision"><h3>Posts on the walls, not in the corners</h3><p class="why">Properly sized insert posts are 9 mm across. In the corners they would hit the Pi's board, so they sit along the long walls and fuse into them, which also makes them stiffer.</p></div>
+      <div class="decision"><h3>Hexagonal vents</h3><p class="why">A square grid cropped to a circle looked like a rotated square. A hexagonal grid reads as a clean circle.</p></div>
+      <div class="decision"><h3>2 mm walls kept</h3><p class="why">White PLA glows when lit from inside. The Pi's own blinking LEDs can be turned off in software, which keeps the case smaller than going to 3 mm walls.</p><p class="alt"><span>Your call</span> Say if you'd rather have 3 mm walls.</p></div>
+      <div class="decision"><h3>Recesses for the feet</h3><p class="why">The bumper feet sit in shallow pockets, so they stay put and the base sits evenly.</p></div>
     </div>
-    <ul class="rules">
-      <li><b>One shape</b><span class="muted">Rounded rectangle in plan, 10–12 mm corners, flat top with a 1.2 mm edge.</span></li>
-      <li><b>One red thing</b><span class="muted">Each device gets a single red element, and it always does something: a light, a button, a dial.</span></li>
-      <li><b>Shadow line</b><span class="muted">The black base is inset 0.6 mm, so each device seems to float slightly.</span></li>
-      <li><b>Small mono labels</b><span class="muted">Engraved, uppercase: device name and number. No logos.</span></li>
-      <li><b>One colour per part</b><span class="muted">No AMS needed. Colour comes from how parts stack.</span></li>
-      <li><b>Hidden fasteners</b><span class="muted">Screws only on the underside, countersunk into the base.</span></li>
-    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">To print it for you</span><h2>What I need from you</h2></div>
+    <p class="muted">Once you approve the design, I'll lay out and slice the plates for the A1 Mini. The goal is that you only press Print. To get there:</p>
+    <ol class="asks">
+      <li><div><b>How is your printer connected?</b><span class="muted">Bambu cloud (through the Bambu Handy app) or LAN-only mode. This cloud session can't reach your printer directly, because it isn't on your home network.</span></div></li>
+      <li><div><b>Can your computer join this session?</b><span class="muted">If you turn on Remote Control in the Claude desktop app on the computer with Bambu Studio, I can open Bambu Studio there, load the sliced plates and send them to the printer. You then just confirm the print. Without that, I'll give you ready-sliced files to open and print in one click.</span></div></li>
+      <li><div><b>Which build plate do you use?</b><span class="muted">Textured PEI (the A1 Mini default) or smooth. It changes how the roof looks.</span></div></li>
+      <li><div><b>Which filament?</b><span class="muted">Brand and type for the white, black and red, e.g. Bambu PLA Basic. That lets me pick the matching profiles.</span></div></li>
+      <li><div><b>Do you have an AMS Lite?</b><span class="muted">Not needed. With one, the shell, base and pipe could print as a single job.</span></div></li>
+    </ol>
   </section>
 </div>
+
+<script>
+// Draw the 2 × 20 header pins; highlight 9 (GND) and 11 (GPIO17).
+(function () {
+  var g = document.getElementById("pins");
+  if (!g) return;
+  var NS = "http://www.w3.org/2000/svg";
+  for (var col = 0; col < 20; col++) {
+    for (var row = 0; row < 2; row++) {
+      var pin = col * 2 + (row === 0 ? 2 : 1);   // top row even (board edge), bottom row odd
+      var c = document.createElementNS(NS, "rect");
+      var x = 26 + col * 24, y = row === 0 ? 52 : 80;
+      c.setAttribute("x", x); c.setAttribute("y", y);
+      c.setAttribute("width", 12); c.setAttribute("height", 12); c.setAttribute("rx", 2);
+      var fill = "#c9a24a";
+      if (pin === 9) fill = "#ededeb";
+      if (pin === 11) fill = "#ff4136";
+      c.setAttribute("fill", fill);
+      g.appendChild(c);
+    }
+  }
+})();
+</script>

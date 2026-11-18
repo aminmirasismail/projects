@@ -204,8 +204,9 @@ def to_studio(objs):
     return root
 
 
-def _area(name, loc, size, power, color=(1, 1, 1), target=(0, 0, 0.02)):
+def _area(name, loc, size, power, color=(1, 1, 1), target=(0, 0, 0.02), spread=180):
     li = bpy.data.lights.new(name, "AREA")
+    li.spread = math.radians(spread)
     li.shape = "RECTANGLE"
     li.size, li.size_y = size
     li.energy = power
@@ -260,6 +261,73 @@ def studio(backdrop=(0.013, 0.0135, 0.015, 1), samples=96, res=(1600, 1200)):
     _area("Fill", (0.55, -0.45, 0.25), (0.8, 0.5), 6, (0.92, 0.95, 1.0))
     _area("Rim", (0.15, 0.55, 0.45), (0.5, 0.2), 30)
     _area("Top", (0, 0, 0.7), (0.4, 0.4), 3)
+    # Raking light: skims low across the roof so engraved text and vents cast shadows.
+    _area("Rake", (-0.55, 0.12, 0.075), (0.30, 0.03), 9, (1.0, 0.98, 0.95),
+          target=(0.0, 0.0, 0.036), spread=25)
+
+
+# ---------------------------------------------------------------- technical drawings
+def drawing_setup(res=(1800, 1200), samples=24):
+    """Flat grey shading with black outlines, for dimensioned orthographic views."""
+    s = bpy.context.scene
+    s.render.engine = "CYCLES"
+    s.cycles.device = "CPU"
+    s.cycles.samples = samples
+    s.cycles.use_denoising = True
+    s.render.resolution_x, s.render.resolution_y = res
+    s.render.film_transparent = True
+    s.view_settings.view_transform = "Standard"
+    s.view_settings.look = "None"
+    s.view_settings.exposure = 0.0
+    w = bpy.data.worlds.get("Drawing") or bpy.data.worlds.new("Drawing")
+    s.world = w
+    w.use_nodes = True
+    w.node_tree.nodes["Background"].inputs["Color"].default_value = (1, 1, 1, 1)
+    w.node_tree.nodes["Background"].inputs["Strength"].default_value = 1.0
+    s.render.use_freestyle = True
+    s.render.line_thickness_mode = "ABSOLUTE"
+    s.render.line_thickness = 1.6
+    vl = s.view_layers[0]
+    vl.use_freestyle = True
+    fs = vl.freestyle_settings
+    fs.crease_angle = math.radians(140)
+    ls = fs.linesets[0] if fs.linesets else fs.linesets.new("Lines")
+    ls.select_by_visibility = True
+    ls.visibility = "VISIBLE"
+    ls.select_silhouette = ls.select_border = ls.select_crease = True
+    if ls.linestyle is None:
+        ls.linestyle = bpy.data.linestyles.new("Ink")
+    ls.linestyle.color = (0.08, 0.08, 0.09)
+    ls.linestyle.thickness = 1.6
+    for ob in bpy.data.objects:
+        if ob.type == "LIGHT" or ob.name == "Backdrop":
+            ob.hide_render = True
+
+
+ORTHO_EULER = {  # camera rotation per view; screen axes noted for dimensioning
+    "front": (math.pi / 2, 0, 0),             # looks +Y; right=+X, up=+Z
+    "back": (math.pi / 2, 0, math.pi),        # looks -Y; right=-X, up=+Z
+    "left": (math.pi / 2, 0, -math.pi / 2),   # looks +X; right=-Y, up=+Z
+    "right": (math.pi / 2, 0, math.pi / 2),   # looks -X; right=+Y, up=+Z
+    "top": (0, 0, 0),                         # looks -Z; right=+X, up=+Y
+    "bottom": (math.pi, 0, 0),                # looks +Z; right=+X, up=-Y
+}
+ORTHO_DIRS = {"front": (0, -1, 0), "back": (0, 1, 0), "left": (-1, 0, 0), "right": (1, 0, 0),
+              "top": (0, 0, 1), "bottom": (0, 0, -1)}
+
+
+def ortho_camera(view, center_m, scale_m, name="Ortho"):
+    cam = bpy.data.cameras.new(name)
+    cam.type = "ORTHO"
+    cam.ortho_scale = scale_m
+    cam.sensor_fit = "HORIZONTAL"
+    cam.clip_start, cam.clip_end = 0.001, 2.0
+    ob = bpy.data.objects.new(name, cam)
+    bpy.context.collection.objects.link(ob)
+    ob.location = Vector(center_m) + Vector(ORTHO_DIRS[view]) * 0.5
+    ob.rotation_euler = ORTHO_EULER[view]
+    bpy.context.scene.camera = ob
+    return ob
 
 
 def camera(loc, target=(0, 0, 0.015), lens=85, name="Camera"):
