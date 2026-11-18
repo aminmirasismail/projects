@@ -212,12 +212,114 @@ def concept_D():
     return [sh, base], lights, "Underglow", L
 
 
-CONCEPTS = {"A": concept_A, "B": concept_B, "C": concept_C, "D": concept_D}
+LIFT = 5.0          # D-style float: shell 5 mm off the table on a small hidden base
+SKIN_V = 0.8        # vertical thin skin (two extrusion lines); the coupon test will confirm
+
+
+def skin_band(name, skin, z0, z1, outer=0.0):
+    """Cutter that thins the side wall from the inside to `skin`, leaving the outside
+    surface (at inset `outer`) intact."""
+    return band(name, outer + skin, WALL - outer - skin + 0.6, z0, z1)
+
+
+def liner(z0, z1, window=None):
+    """Black lining against the inside of the white wall, so the strip's light only
+    leaves through the intended window (z range) and not through the whole wall."""
+    lin = band("liner", WALL + 0.05, 0.8, z0, z1)
+    if window:
+        S.cut(lin, [band("liner_win", WALL - 0.5, 2.0, window[0], window[1])])
+    return S.assign(lin, S.pla("black"))
+
+
+def baffle(inset, z0, z1, cap_top=None, cap_bot=None):
+    """Black inner wall plus horizontal caps, boxing the strip in against the side wall."""
+    black = S.pla("black")
+    parts = [band("baffle", inset, 1.2, z0, z1)]
+    if cap_top is not None:
+        parts.append(band("cap_t", WALL - 0.2, inset + 1.2 - WALL + 0.2, cap_top - 1.2, cap_top))
+    if cap_bot is not None:
+        parts.append(band("cap_b", WALL - 0.2, inset + 1.2 - WALL + 0.2, cap_bot, cap_bot + 1.2))
+    b = parts[0]
+    if len(parts) > 1:
+        S.union(b, parts[1:])
+    return S.assign(b, black)
+
+
+def under_channel():
+    """Black channel boxing in the underglow strip: open only downward, so the light
+    reaches the table but not the inside of the white shell."""
+    b = baffle(7.0, LIFT - 0.5, LIFT + 5.2, cap_top=LIFT + 5.2)
+    S.union(b, [liner(LIFT + 0.6, LIFT + 5.2)])      # open only at the very bottom edge
+    return b
+
+
+def concept_E():
+    """Glow hem: the lowest 8 mm of the wall thins to a skin; one strip behind it lights
+    the skin and spills out under the floating shell onto the table."""
+    sh = shell_body("Shell", LIFT, TOP)
+    S.cut(sh, [skin_band("hem", SKIN_V, LIFT + 1.5, LIFT + 9.5), label(TOP)])
+    S.assign(sh, scattering_white())
+    S.smooth(sh)
+    base = base_plate(inset=14.0, z0=0.0, t=LIFT + 1.0)
+    bf = baffle(8.0, LIFT - 1.0, LIFT + 11.0, cap_top=LIFT + 11.0)
+    pts, L = path(5.0, 52)
+    lights = leds(pts, LIFT + 4.5, power=0.0035)
+    return [sh, base, bf], lights, "Glow hem", L
+
+
+def concept_F():
+    """Reveal line + underglow: C's floating-lid line made as a shallow groove whose
+    floor is a thin skin (no translucent filament), plus D's underglow."""
+    z0, z1, groove = TOP - 9.0, TOP - 6.0, 0.8
+    sh = shell_body("Shell", LIFT, TOP)
+    S.cut(sh, [band("reveal", -1.0, 1.0 + groove, z0, z1),                 # outside groove
+               skin_band("reveal_skin", SKIN_V, z0 - 1.0, z1 + 1.0, outer=groove),
+               label(TOP)])
+    S.assign(sh, scattering_white())
+    S.smooth(sh)
+    base = base_plate(inset=14.0, z0=0.0, t=LIFT + 1.0)
+    bf = baffle(8.0, z0 - 4.0, TOP - ROOF, cap_top=TOP - ROOF, cap_bot=z0 - 4.0)
+    S.union(bf, [liner(z0 - 4.0, TOP - ROOF, window=(z0, z1))])
+    uc = under_channel()
+    top_pts, L = path(5.0, 52)
+    lights = leds(top_pts, (z0 + z1) / 2, power=0.005)
+    low_pts, _ = path(4.0, 52)
+    lights += leds(low_pts, LIFT + 0.8, power=0.02)
+    return [sh, base, bf, uc], lights, "Reveal line + underglow", L
+
+
+def concept_G():
+    """Floating lid (translucent ring, as C) + underglow (as D)."""
+    seam_z0, seam_z1 = TOP - 9.0, TOP - 6.0
+    body = shell_body("Body", LIFT, seam_z0, roof=False)
+    lid = shell_body("Lid", seam_z1, TOP)
+    S.cut(lid, [label(TOP)])
+    white = scattering_white()
+    for o in (body, lid):
+        S.assign(o, white)
+        S.smooth(o)
+    diff = band("Diffuser", 2.2, 1.6, seam_z0 - 1.0, seam_z1 + 1.0)
+    S.assign(diff, frosted())
+    base = base_plate(inset=14.0, z0=0.0, t=LIFT + 1.0)
+    bf = baffle(8.0, seam_z0 - 3.0, TOP - ROOF, cap_top=TOP - ROOF, cap_bot=seam_z0 - 3.0)
+    S.union(bf, [liner(seam_z0 - 3.0, TOP - ROOF, window=(seam_z0 - 0.5, seam_z1 + 0.5))])
+    uc = under_channel()
+    top_pts, L = path(6.0, 52)
+    lights = leds(top_pts, (seam_z0 + seam_z1) / 2, power=0.008)
+    low_pts, _ = path(4.0, 52)
+    lights += leds(low_pts, LIFT + 0.8, power=0.02)
+    return [body, lid, diff, base, bf, uc], lights, "Floating lid + underglow", L
+
+
+CONCEPTS = {"A": concept_A, "B": concept_B, "C": concept_C, "D": concept_D,
+            "E": concept_E, "F": concept_F, "G": concept_G}
+LOW = ((0.22, -0.31, 0.13), (0.0, 0.0, 0.020), 62)
 CAMS = {   # (location, target, lens)
     "A": ((0.19, -0.25, 0.25), (0.0, 0.0, 0.034), 62),
     "B": ((0.19, -0.25, 0.25), (0.0, 0.0, 0.034), 62),
     "C": ((0.22, -0.31, 0.13), (0.0, 0.0, 0.022), 62),
     "D": ((0.22, -0.31, 0.13), (0.0, 0.0, 0.018), 62),
+    "E": LOW, "F": LOW, "G": LOW,
 }
 
 

@@ -74,7 +74,7 @@ tbody th { font: 600 14px var(--f-display); letter-spacing: 0; text-transform: n
 <div class="wrap">
   <header>
     <span class="tag">Home devices · 01 Hub · Lighting concepts</span>
-    <h1>Four ways to <span class="grad">light the hub</span></h1>
+    <h1>Ways to <span class="grad">light the hub</span></h1>
     <div class="bar" aria-hidden="true"></div>
     <p class="lede">Each concept runs a line of addressable RGB light around the hub, following its rounded shape. All four are ray-traced with the same blue-to-orange gradient, in a dark room, in room light, and switched off. None has a vent grid on top: the air hides in a seam.</p>
     <p class="muted" style="font-size:14px">How brightness was set: in <b>room light</b>, every concept uses the same realistic LED output (about 40% of full), so those images compare fairly. In the <b>dark room</b>, each is dimmed to a comfortable night level, as the software would do. Plastic's optical properties are estimates; a small test print confirms the real look.</p>
@@ -82,6 +82,10 @@ tbody th { font: 600 14px var(--f-display); letter-spacing: 0; text-transform: n
 
   <nav aria-label="Concepts">
     <ul>
+      <li><a href="#test-plate"><span class="tag">Needs your OK</span><b>Thin-skin test plate</b><span class="muted">Two coupons, five thicknesses each</span></a></li>
+      <li><a href="#concept-e"><span class="tag">E · round 2</span><b>Glow hem</b><span class="muted">Thin skin + underglow, one strip</span></a></li>
+      <li><a href="#concept-f"><span class="tag">F · round 2</span><b>Reveal line + underglow</b><span class="muted">C's look in white PLA, plus D</span></a></li>
+      <li><a href="#concept-g"><span class="tag">G · round 2</span><b>Floating lid + underglow</b><span class="muted">C and D together</span></a></li>
       <li><a href="#concept-a"><span class="tag">A</span><b>Hidden halo</b><span class="muted">Glows through solid white</span></a></li>
       <li><a href="#concept-b"><span class="tag">B</span><b>Light seam</b><span class="muted">Frosted inlay, vents beside it</span></a></li>
       <li><a href="#concept-c"><span class="tag">C</span><b>Floating lid</b><span class="muted">Glowing seam round the sides</span></a></li>
@@ -89,6 +93,75 @@ tbody th { font: 600 14px var(--f-display); letter-spacing: 0; text-transform: n
     </ul>
   </nav>
 
+
+  <section class="concept" id="test-plate">
+    <div class="head"><span class="tag">Test plate · waiting for your OK to print</span><h2>Does a thin white skin really glow?</h2>
+      <p class="muted">One 25-minute print answers the question behind A, E and F. Each coupon is a step wedge: five windows thinned to 0.4, 0.6, 0.8, 1.0 and 1.2 mm, so you can see which thickness looks best rather than testing one guess.</p></div>
+    <figure><img src="tests/coupons_plate.jpg" alt="The two test coupons: a flat tile with five rectangular pockets, and an upright wall on a foot with five thin windows" width="1400" height="1050"><figcaption>Coupon H (front) and coupon V (back). The studio's back light already shows V's thin windows glowing.</figcaption></figure>
+    <div class="facts">
+      <div class="fact"><span class="tag">Coupon H · horizontal</span><p>71 × 24 × 4 mm tile. Skins face the bed, exactly as the hub's roof would print. Numbers engraved on the back (4 = 0.4 mm … 12 = 1.2 mm).</p></div>
+      <div class="fact"><span class="tag">Coupon V · vertical</span><p>71 × 22 mm wall on a 14 mm foot. Pocketed from the back, so the skins are part of a vertical wall, as side lighting would print. Numbers on the foot.</p></div>
+      <div class="fact"><span class="tag">Material</span><p>Your white PLA, about 12 g.</p></div>
+    </div>
+    <div class="common">
+      <div class="card"><h3>Settings in Bambu Studio</h3><p>Bambu A1 Mini, 0.4 nozzle, your white PLA profile, textured or smooth plate. <b>0.20 mm layers</b>, so every skin is a whole number of layers. <b>Bottom shell layers: 6</b> and <b>wall loops: 3</b>, so each skin prints solid rather than as infill. Infill 15%. No supports: V's window tops are 10 mm bridges, which the A1 Mini handles.</p></div>
+      <div class="card"><h3>How to test</h3><p>In a dark room, lay each coupon over your phone's flashlight and look from the light side: H's bottom face, V's front face. Note which number gives an even glow without showing a hot spot. Then check both in daylight with the light off, to see whether the thin areas show. The real LEDs sit 5–6 mm back, which spreads the light more than a phone held against it.</p></div>
+      <div class="card"><h3>Files</h3><p><code>home-devices/tests/skin_test_plate.3mf</code> has both coupons placed on the 180 × 180 mm plate. The individual STLs are alongside. When you approve, either open the 3MF in Bambu Studio and press Slice, then Print, or connect your computer to this session and I'll do that part for you.</p></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-e">
+    <div class="head"><span class="tag">Concept E · Round 2 · <b>52 LEDs · one strip</b></span><h2>Glow hem</h2>
+      <p class="muted">The shell floats 5 mm off the table, like D. Its lowest 8 mm of wall is thinned from the inside to a 0.8 mm skin. One strip behind it lights the band and spills out underneath onto the table.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_E_dark.jpg" alt="Concept E in a dark room: the bottom band of the white shell glows, with blue-to-orange light spilling onto the table" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_E_room.jpg" alt="Concept E in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_E_off.jpg" alt="Concept E in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts"><div class="fact"><span class="tag">Diffuser</span><p>The shell's own white PLA, thinned to 0.8 mm. No new filament.</p></div><div class="fact"><span class="tag">Air</span><p>Underneath, through the gap around the small base.</p></div><div class="fact"><span class="tag">LEDs</span><p>One strip does both the band and the underglow.</p></div></div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Simplest light path: one strip, no extra diffuser part.</li><li>A bold, wide band that reads from every side.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>The band is wide, so it's more lamp than line.</li><li>Colours pale where they pass through white plastic.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-f">
+    <div class="head"><span class="tag">Concept F · Round 2 · <b>104 LEDs · two strips</b></span><h2>Reveal line + underglow</h2>
+      <p class="muted">C's floating-lid line, made without translucent filament: a shallow 0.8 mm groove runs round the sides near the top, and the groove's floor is a thin white skin with a strip behind it. Below, D's underglow. A black channel boxes in each strip, so light only leaves through the line and the bottom edge.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_F_dark.jpg" alt="Concept F in a dark room: a thin glowing line runs round the sides near the top, with blue-to-orange underglow on the table" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_F_room.jpg" alt="Concept F in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_F_off.jpg" alt="Concept F in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts"><div class="fact"><span class="tag">Diffuser</span><p>White PLA skin at the bottom of a groove. No new filament.</p></div><div class="fact"><span class="tag">Air</span><p>Underneath, plus the gap at the base.</p></div><div class="fact"><span class="tag">LEDs</span><p>Two strips: one for the line (status), one for the underglow (ambient). Each can be controlled on its own.</p></div></div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>The floating-lid look in one material, as one shell.</li><li>When off, the groove reads as a crisp shadow line, like C.</li><li>Line for status, underglow for mood: two separate channels.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Depends on the vertical-skin result from coupon V.</li><li>Two strips on one data line: more wiring, and the brightness cap matters more.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-g">
+    <div class="head"><span class="tag">Concept G · Round 2 · <b>104 LEDs · two strips</b></span><h2>Floating lid + underglow</h2>
+      <p class="muted">Concept C as designed, with a separate lid on a frosted translucent ring, plus D's underglow.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_G_dark.jpg" alt="Concept G in a dark room: a glowing band under the floating lid and blue-to-orange underglow below" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_G_room.jpg" alt="Concept G in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_G_off.jpg" alt="Concept G in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts"><div class="fact"><span class="tag">Diffuser</span><p>Frosted ring in translucent white filament.</p></div><div class="fact"><span class="tag">Air</span><p>Through the lid seam and underneath.</p></div><div class="fact"><span class="tag">LEDs</span><p>Two strips, as F.</p></div></div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>The brightest and most vivid top line.</li><li>The lid really separates: a strong silhouette.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Needs translucent filament, plus fit tests for the ring.</li><li>More parts: lid, ring, body, base and channels.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept"><div class="head"><span class="tag">Round 1</span><h2>The first four concepts</h2></div></section>
   <section class="concept" id="concept-a">
     <div class="head"><span class="tag">Concept A · <b>48 LEDs · 289 mm path</b></span><h2>Hidden halo</h2>
       <p class="muted">The roof is thinned from the inside to a 0.6 mm skin along a band 7 mm in from the edge. Off, the top looks like plain white plastic. On, a soft line of light appears through it.</p></div>
