@@ -3,5 +3,5 @@ __pycache__/
 *.pyc
 *.egg-info/
 _frames/
-render.log
+*.log
 *.blend1
