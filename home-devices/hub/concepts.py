@@ -33,6 +33,7 @@ BASE_T, TOP, WALL, ROOF = 3.0, 40.0, 2.0, 2.0
 PREVIEW = "--preview" in sys.argv
 OUT = os.path.join(HERE, "renders")
 BLUE, ORANGE = (0.08, 0.32, 1.0), (1.0, 0.42, 0.03)
+DAY_W = 0.02        # watts of light per LED in room-light renders, same for every concept
 
 
 def gradient(t):
@@ -246,11 +247,17 @@ def run(key):
     S.camera(loc, target=tgt, lens=lens)
     os.makedirs(OUT, exist_ok=True)
     suffix = "_preview" if PREVIEW else ""
-    for name, dim, on in (("dark", True, True), ("room", False, True), ("off", False, False)):
-        if PREVIEW and name != "dark":
+    states = (("dark", True, True), ("room", False, True), ("off", False, False))
+    pick = [a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--states=")]
+    night = [li.data.energy for li in lights]
+    for name, dim, on in states:
+        if PREVIEW and name != "dark" or pick and name not in pick[0]:
             continue
-        for li in lights:
+        for li, e in zip(lights, night):
             li.hide_render = not on
+            # dark room: per-concept night level (software dims to suit each diffuser);
+            # room light: the same realistic daytime output (~40% drive) for every concept
+            li.data.energy = e if dim else DAY_W
         room(dim)
         S.render(os.path.join(OUT, f"concept_{key}_{name}{suffix}.png"))
     print(f"CONCEPT {key} {title}: light path {length:.0f} mm, {len(lights)} LEDs")
