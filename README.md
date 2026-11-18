@@ -13,6 +13,8 @@ uv manages the Python version and virtual environment for each project.
 - Windows (winget): `winget install --id astral-sh.uv -e`
 - Or follow the install instructions at https://docs.astral.sh/uv/getting-started/installation/
 
+See [IDEAS.md](IDEAS.md) for the running list of project ideas.
+
 ## Projects
 
 - [dexter_handheld_mobile_agent](dexter_handheld_mobile_agent/README.md) — local push-to-talk mobile agent built into a piece of hardware.
