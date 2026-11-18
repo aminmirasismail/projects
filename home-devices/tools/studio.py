@@ -5,6 +5,7 @@ then call `to_studio()` which parents everything to a 0.001-scaled empty so
 lights and camera work in real-world metres.
 """
 import math
+import os
 
 import bmesh
 import bpy
@@ -120,10 +121,25 @@ def slot(name, w, h, depth, loc, axis="Y", r=None):
     return ob
 
 
-def text(name, body, size, depth, loc, align="LEFT"):
+LABEL_FONTS = (r"C:\Windows\Fonts\consolab.ttf",               # Consolas Bold (Windows)
+               "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf")
+
+
+def label_font():
+    """Bold mono font for engraved labels: strokes wide enough to survive a 0.4 nozzle."""
+    for p in LABEL_FONTS:
+        if os.path.exists(p):
+            return bpy.data.fonts.load(p, check_existing=True)
+    print("WARNING: no bold mono label font found; engraved strokes may be too thin")
+    return None
+
+
+def text(name, body, size, depth, loc, align="LEFT", font=None):
     bpy.ops.object.text_add(location=loc)
     ob = bpy.context.active_object
     ob.name = name
+    if font is not None:
+        ob.data.font = font
     ob.data.body = body
     ob.data.size = size
     ob.data.extrude = depth / 2
@@ -148,20 +164,43 @@ def bake(ob):
     return ob
 
 
-def _boolean(target, cutters, op):
+def volume(ob):
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    v = bm.calc_volume(signed=True)
+    bm.free()
+    return v
+
+
+def dims(ob):
+    vs = [v.co for v in ob.data.vertices]
+    return tuple(max(c[i] for c in vs) - min(c[i] for c in vs) for i in range(3)) if vs else (0, 0, 0)
+
+
+def _boolean(target, cutters, op, self_intersect=False):
+    """EXACT boolean, one cutter at a time. Stops with an error if a step empties or wrecks the
+    target (EXACT can do that with awkward cutters): a cut may not halve any of its dimensions,
+    and its volume must stay positive."""
     cutters = cutters if isinstance(cutters, (list, tuple)) else [cutters]
     for c in cutters:
+        before = dims(target)
         md = target.modifiers.new("b", "BOOLEAN")
         md.operation = op
         md.solver = "EXACT"
+        md.use_self = self_intersect
         md.object = c
         bake(target)
+        after, vol = dims(target), volume(target)
+        if vol <= 0 or (op == "DIFFERENCE" and any(a < 0.5 * b for a, b in zip(after, before))):
+            raise RuntimeError(f"boolean {op} with {c.name!r} wrecked {target.name!r}: "
+                               f"size {before} -> {after}, volume {vol:.1f}")
         bpy.data.objects.remove(c, do_unlink=True)
     return target
 
 
-def cut(target, cutters):
-    return _boolean(target, cutters, "DIFFERENCE")
+def cut(target, cutters, self_intersect=False):
+    """self_intersect: cutters that overlap themselves (e.g. thickened text) need it."""
+    return _boolean(target, cutters, "DIFFERENCE", self_intersect)
 
 
 def union(target, others):
