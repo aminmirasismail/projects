@@ -6,3 +6,4 @@ _frames/
 *.log
 *.blend1
 _preview/
+home-devices/*/renders/dwg_*.png
