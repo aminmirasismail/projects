@@ -18,6 +18,9 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
   time and filament estimate, then wait for the owner to approve before sending to the printer.
 - Present designs visually: renders, close-ups, dimensioned drawings, and a review page,
   rather than describing them in text.
+- **Review every printed part before presenting it.** Run the `mech-design-review` agent
+  (`.claude/agents/mech-design-review.md`) on each new or changed part, fix what it finds,
+  then present. Check meshes and slices with `home-devices/tools/printcheck.py`.
 
 ## Repo layout
 
@@ -25,6 +28,7 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
 - `home-devices/`: a family of 3D-printed smart-home devices around a Home Assistant hub.
   - `tools/studio.py`: shared modelling helpers, design rules and the render studio.
   - `tools/dims.py`: turns orthographic renders into dimensioned SVG drawings.
+  - `tools/printcheck.py`: mesh health, A1 Mini slicing via Bambu Studio's CLI, toolpath dump.
   - `hub/`: the hub enclosure (`hub.py` model, `concepts.py` lighting concepts,
     `light_study.py`, `review.html` and `concepts.html` review pages, `stl/`, `renders/`).
   - `tests/`: print-test coupons (`skin_coupons.py`, `skin_test_plate.3mf`).
@@ -68,6 +72,13 @@ building new lighting.
 - Cloud sessions here allow `datasheets.raspberrypi.com` and `pip.raspberrypi.com` (for the
   official Pi 5 drawing, RP-008347), but GitHub release downloads are blocked, so slicers
   can't be installed in the cloud. Slice on the owner's PC.
+- Engraved text goes on flat faces only, >= 1 mm from where a fillet starts. Blender places
+  text by its baseline, so centre it on its real bounding box (see `label()` in
+  `tests/skin_coupons.py`).
+- No fillet that stops dead in a sharp corner where bodies meet: match radii or drop them.
+- Vertical walls are extrusion lines: >= 0.5 mm with a 0.4 nozzle (0.4 mm got dropped).
+  Check thin features on every layer of the slice.
+- Export meshes with Blender's `loop_triangles`; a hand-written fan folds concave faces.
 
 ## Open items
 
