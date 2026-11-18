@@ -1,0 +1,432 @@
+<title>Idea Bench</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a workbench sheet on faint graph paper. Shortlist as scored cards up top, backlog as grouped rows below. */
+:root {
+  --paper: #f5f7fa;
+  --sheet: #ffffff;
+  --ink: #17203a;
+  --ink-soft: #56607a;
+  --line: #dde2ec;
+  --grid: #e9edf4;
+  --accent: #2847d6;
+  --accent-soft: #e6ebff;
+  --s-idea: #8a93a8;
+  --s-explore: #b07a00;
+  --s-progress: #2847d6;
+  --s-done: #1d8a4e;
+  --s-shelved: #a3a9b6;
+  --danger: #c0352b;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1320; --sheet: #161b2b; --ink: #e6e9f2; --ink-soft: #9aa3ba;
+    --line: #283049; --grid: #151a29; --accent: #7f95ff; --accent-soft: #232c52;
+    --s-idea: #8f98ae; --s-explore: #e0a62a; --s-progress: #7f95ff; --s-done: #4cc285;
+    --s-shelved: #6c7387; --danger: #ff6b5e; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1320; --sheet: #161b2b; --ink: #e6e9f2; --ink-soft: #9aa3ba;
+  --line: #283049; --grid: #151a29; --accent: #7f95ff; --accent-soft: #232c52;
+  --s-idea: #8f98ae; --s-explore: #e0a62a; --s-progress: #7f95ff; --s-done: #4cc285;
+  --s-shelved: #6c7387; --danger: #ff6b5e; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font: 15px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 980px; margin: 0 auto; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; }
+h2 { font-size: 1.35rem; font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+.label { font: 500 11px/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.muted { color: var(--ink-soft); }
+button, select, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header { display: grid; gap: 10px; }
+header p { margin: 0; max-width: 60ch; color: var(--ink-soft); }
+.tally { display: flex; flex-wrap: wrap; gap: 8px 20px; font: 13px var(--f-mono); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.tally b { color: var(--ink); font-weight: 500; }
+
+.panel { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 16px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--sheet); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.search { flex: 1 1 180px; min-width: 0; border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 7px 10px; }
+.btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 8px; padding: 7px 14px; cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--ink-soft); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] .btn.primary { color: #0f1320; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #0f1320; } }
+.btn.danger { color: var(--danger); }
+.btn.small { padding: 3px 10px; font-size: 13px; }
+
+/* Form */
+form { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+form .full { grid-column: 1 / -1; }
+form label { display: grid; gap: 4px; font-size: 13px; color: var(--ink-soft); }
+form input, form select, form textarea { border: 1px solid var(--line); background: var(--paper); border-radius: 6px; padding: 7px 9px; color: var(--ink); min-width: 0; }
+form textarea { resize: vertical; min-height: 60px; }
+.form-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Shortlist cards */
+.cards { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 10px; align-content: start; background: var(--sheet); min-width: 0; }
+.card-top { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+.total { font: 700 1.6rem/1 var(--f-display); color: var(--accent); font-variant-numeric: tabular-nums; }
+.total small { font: 400 12px var(--f-mono); color: var(--ink-soft); }
+.scores { display: grid; gap: 6px; }
+.score { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-soft); }
+.pips { display: flex; gap: 4px; }
+.pip { width: 26px; height: 22px; border-radius: 4px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font: 11px var(--f-mono); color: var(--ink-soft); padding: 0; }
+.pip.on { background: var(--accent); border-color: var(--accent); color: var(--sheet); }
+.empty { border: 1px dashed var(--line); border-radius: 8px; padding: 18px; color: var(--ink-soft); text-align: left; }
+
+/* Backlog rows */
+.group { display: grid; gap: 4px; }
+.group + .group { margin-top: 10px; }
+.group h3 { padding-bottom: 6px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: baseline; }
+.row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row.dim { opacity: 0.6; }
+.row-main { display: grid; gap: 3px; min-width: 0; }
+.row-title { font-weight: 600; }
+.row-pitch { color: var(--ink-soft); font-size: 14px; }
+.row-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: flex-end; }
+.star { width: 30px; height: 30px; border: 0; background: none; cursor: pointer; font-size: 18px; line-height: 1; color: var(--line); padding: 0; }
+.star[aria-pressed="true"] { color: var(--s-explore); }
+.size { font: 500 12px var(--f-mono); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; color: var(--ink-soft); }
+.status { border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px 2px 22px; font-size: 13px; background: var(--sheet) no-repeat 9px 50% / 7px 7px; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: radial-gradient(circle, var(--dot) 60%, transparent 62%); }
+.status[data-s="idea"] { --dot: var(--s-idea); }
+.status[data-s="exploring"] { --dot: var(--s-explore); }
+.status[data-s="in-progress"] { --dot: var(--s-progress); }
+.status[data-s="done"] { --dot: var(--s-done); }
+.status[data-s="shelved"] { --dot: var(--s-shelved); }
+.row-actions { display: flex; gap: 4px; }
+.linkbtn { border: 0; background: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; padding: 2px 4px; text-decoration: underline; text-underline-offset: 2px; }
+.linkbtn.danger { color: var(--danger); }
+
+.criteria { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 0; padding: 0; list-style: none; }
+.criteria li { display: grid; gap: 2px; font-size: 14px; }
+.criteria b { font-family: var(--f-display); font-size: 1rem; }
+#notes { width: 100%; min-height: 120px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 10px; resize: vertical; color: var(--ink); }
+.status-line { font: 12px var(--f-mono); color: var(--ink-soft); min-height: 1em; }
+.banner { border: 1px solid var(--line); border-left: 3px solid var(--s-explore); background: var(--sheet); padding: 12px 14px; border-radius: 6px; }
+
+@media (max-width: 560px) {
+  .row { grid-template-columns: 30px minmax(0, 1fr); }
+  .row-meta { grid-column: 2; justify-content: flex-start; }
+  .score { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) { .card, .row { transition: opacity .2s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="label">Personal projects · idea list</span>
+    <h1>Idea Bench</h1>
+    <p>Every project idea in one place. Star an idea to move it to the shortlist, score it there, and change its status as work moves along.</p>
+    <div class="tally" id="tally"><span>Loading ideas…</span></div>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <section class="panel" aria-labelledby="add-h">
+    <div class="panel-head">
+      <h2 id="add-h">Add an idea</h2>
+      <span class="status-line" id="saveMsg" role="status"></span>
+    </div>
+    <form id="ideaForm" autocomplete="off">
+      <label class="full">Name
+        <input id="f-title" required maxlength="80" placeholder="e.g. Plant moisture sensors">
+      </label>
+      <label class="full">One-line pitch
+        <textarea id="f-pitch" maxlength="400" placeholder="What is it, and why would it be fun or useful?"></textarea>
+      </label>
+      <label>Category
+        <input id="f-category" list="categories" placeholder="AI & agents">
+        <datalist id="categories"></datalist>
+      </label>
+      <label>Size
+        <select id="f-size">
+          <option value="S">S · a weekend</option>
+          <option value="S–M">S–M</option>
+          <option value="M" selected>M · a few weeks</option>
+          <option value="L">L · a month or more</option>
+        </select>
+      </label>
+      <label>Status
+        <select id="f-status"></select>
+      </label>
+      <div class="form-actions full">
+        <button class="btn primary" type="submit" id="f-submit">Add idea</button>
+        <button class="btn" type="button" id="f-cancel" hidden>Cancel editing</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="short-h">
+    <div class="panel-head">
+      <h2 id="short-h">Shortlist</h2>
+      <span class="muted" style="font-size:13px">Ranked by total score, out of 20</span>
+    </div>
+    <div class="cards" id="shortlist"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="back-h">
+    <div class="panel-head">
+      <h2 id="back-h">All ideas</h2>
+    </div>
+    <div class="toolbar">
+      <div class="chips" id="filters" role="group" aria-label="Filter by status"></div>
+      <input class="search" id="search" type="search" placeholder="Search ideas" aria-label="Search ideas">
+    </div>
+    <div id="backlog"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="how-h">
+    <h2 id="how-h">How we pick</h2>
+    <ul class="criteria">
+      <li><b>Excitement</b><span class="muted">Will I still want to work on it in week 3?</span></li>
+      <li><b>Usefulness</b><span class="muted">Will I, or someone else, actually use it?</span></li>
+      <li><b>Learning</b><span class="muted">Does it teach me something new?</span></li>
+      <li><b>Feasibility</b><span class="muted">Can a first version work in about two weekends?</span></li>
+    </ul>
+  </section>
+
+  <section class="panel" aria-labelledby="notes-h">
+    <div class="panel-head">
+      <h2 id="notes-h">Notes &amp; raw thoughts</h2>
+      <span class="status-line" id="notesMsg" role="status"></span>
+    </div>
+    <textarea id="notes" placeholder="Half-formed ideas, links, things to look into. Saves when you click away."></textarea>
+  </section>
+</div>
+
+<script>
+const STATUSES = [
+  { id: "idea", name: "Idea" },
+  { id: "exploring", name: "Exploring" },
+  { id: "in-progress", name: "In progress" },
+  { id: "done", name: "Done" },
+  { id: "shelved", name: "Shelved" },
+];
+const CRITERIA = ["excitement", "usefulness", "learning", "feasibility"];
+const statusName = id => (STATUSES.find(s => s.id === id) || STATUSES[0]).name;
+
+let db = null, canWrite = true;
+let ideas = [];           // [{id, ...data}]
+let filter = "all", query = "", editingId = null, confirmId = null;
+const $ = id => document.getElementById(id);
+
+function el(tag, props = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== undefined && v !== null && v !== false) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k) n.append(k);
+  return n;
+}
+
+function flash(target, msg) {
+  const n = $(target); n.textContent = msg;
+  clearTimeout(n._t); n._t = setTimeout(() => (n.textContent = ""), 2500);
+}
+function showBanner(msg) { const b = $("banner"); b.textContent = msg; b.hidden = !msg; }
+
+async function write(fn, okMsg) {
+  if (!db) return;
+  try { await fn(); if (okMsg) flash("saveMsg", okMsg); }
+  catch (e) {
+    if (e && e.code === "invalid_argument") { canWrite = false; render(); showBanner("You can view this list but not change it. Ask the owner for Contributor access to edit."); }
+    else if (e && e.code === "quota_exceeded") showBanner("The list is full. Delete a few ideas to add more.");
+    else flash("saveMsg", "Couldn't save. Try again in a moment.");
+  }
+}
+
+const total = i => CRITERIA.reduce((a, c) => a + (Number(i.scores?.[c]) || 0), 0);
+
+function renderTally() {
+  const t = $("tally"); t.replaceChildren();
+  const count = s => ideas.filter(i => i.status === s).length;
+  t.append(
+    el("span", {}, el("b", { text: String(ideas.length) }), " ideas"),
+    el("span", {}, el("b", { text: String(ideas.filter(i => i.shortlisted).length) }), " shortlisted"),
+    el("span", {}, el("b", { text: String(count("in-progress")) }), " in progress"),
+    el("span", {}, el("b", { text: String(count("done")) }), " done"),
+  );
+}
+
+function statusSelect(i) {
+  const s = el("select", { class: "status", "data-s": i.status, "aria-label": "Status of " + i.title, disabled: !canWrite,
+    onchange: e => { e.target.dataset.s = e.target.value; write(() => db.collection("ideas").doc(i.id).update({ status: e.target.value }), "Status updated"); } });
+  for (const st of STATUSES) s.append(el("option", { value: st.id, selected: st.id === i.status, text: st.name }));
+  return s;
+}
+
+function starBtn(i) {
+  return el("button", { class: "star", "aria-pressed": i.shortlisted ? "true" : "false", disabled: !canWrite,
+    title: i.shortlisted ? "Remove from shortlist" : "Add to shortlist", "aria-label": (i.shortlisted ? "Remove " : "Shortlist ") + i.title,
+    onclick: () => write(() => db.collection("ideas").doc(i.id).update({ shortlisted: !i.shortlisted }), i.shortlisted ? "Removed from shortlist" : "Added to shortlist"),
+  }, "★");
+}
+
+function renderShortlist() {
+  const box = $("shortlist"); box.replaceChildren();
+  const list = ideas.filter(i => i.shortlisted).sort((a, b) => total(b) - total(a) || a.title.localeCompare(b.title));
+  if (!list.length) { box.append(el("div", { class: "empty" }, "Nothing shortlisted yet. Tap the ★ next to any idea below to bring it up here and score it.")); return; }
+  for (const i of list) {
+    const scores = el("div", { class: "scores" });
+    for (const c of CRITERIA) {
+      const cur = Number(i.scores?.[c]) || 0;
+      const pips = el("div", { class: "pips", role: "group", "aria-label": c });
+      for (let v = 1; v <= 5; v++) {
+        pips.append(el("button", { class: "pip" + (v <= cur ? " on" : ""), disabled: !canWrite, "aria-label": `${c} ${v} of 5`, "aria-pressed": v === cur ? "true" : "false",
+          onclick: () => write(() => db.collection("ideas").doc(i.id).update({ scores: { ...(i.scores || {}), [c]: v === cur ? 0 : v } })) }, String(v)));
+      }
+      scores.append(el("div", { class: "score" }, el("span", { text: c[0].toUpperCase() + c.slice(1) }), pips));
+    }
+    box.append(el("article", { class: "card" },
+      el("div", { class: "card-top" },
+        el("div", { class: "row-main" }, el("span", { class: "label", text: i.category || "Uncategorized" }), el("h3", { text: i.title })),
+        el("div", { class: "total" }, String(total(i)), el("small", { text: "/20" }))),
+      i.pitch ? el("div", { class: "row-pitch", text: i.pitch }) : null,
+      scores,
+      el("div", { class: "row-meta", style: "justify-content:flex-start" }, el("span", { class: "size", text: i.size || "?" }), statusSelect(i), starBtn(i)),
+    ));
+  }
+}
+
+function renderFilters() {
+  const f = $("filters"); f.replaceChildren();
+  for (const opt of [{ id: "all", name: "All" }, ...STATUSES]) {
+    const n = opt.id === "all" ? ideas.length : ideas.filter(i => i.status === opt.id).length;
+    f.append(el("button", { class: "chip", "aria-pressed": filter === opt.id ? "true" : "false", onclick: () => { filter = opt.id; render(); } }, `${opt.name} ${n}`));
+  }
+}
+
+function renderBacklog() {
+  const box = $("backlog"); box.replaceChildren();
+  const q = query.trim().toLowerCase();
+  const list = ideas.filter(i => (filter === "all" || i.status === filter) &&
+    (!q || [i.title, i.pitch, i.category].join(" ").toLowerCase().includes(q)));
+  if (!ideas.length) { box.append(el("div", { class: "empty" }, "No ideas yet. Add the first one with the form above.")); return; }
+  if (!list.length) { box.append(el("div", { class: "empty" }, "No ideas match this filter.")); return; }
+  const groups = new Map();
+  for (const i of list) { const k = i.category || "Uncategorized"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(i); }
+  for (const [cat, items] of [...groups].sort((a, b) => a[0].localeCompare(b[0]))) {
+    const g = el("div", { class: "group" }, el("h3", {}, cat, el("span", { class: "label", text: String(items.length) })));
+    items.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    for (const i of items) {
+      const actions = el("div", { class: "row-actions" });
+      if (canWrite) {
+        if (confirmId === i.id) {
+          actions.append(el("span", { class: "muted", style: "font-size:13px", text: "Delete?" }),
+            el("button", { class: "linkbtn danger", onclick: () => { confirmId = null; write(() => db.collection("ideas").doc(i.id).delete(), "Idea deleted"); } }, "Yes, delete"),
+            el("button", { class: "linkbtn", onclick: () => { confirmId = null; render(); } }, "Keep"));
+        } else {
+          actions.append(el("button", { class: "linkbtn", onclick: () => startEdit(i) }, "Edit"),
+            el("button", { class: "linkbtn", onclick: () => { confirmId = i.id; render(); } }, "Delete"));
+        }
+      }
+      g.append(el("div", { class: "row" + (i.status === "shelved" ? " dim" : "") },
+        starBtn(i),
+        el("div", { class: "row-main" }, el("span", { class: "row-title", text: i.title }), i.pitch ? el("span", { class: "row-pitch", text: i.pitch }) : null),
+        el("div", { class: "row-meta" }, el("span", { class: "size", text: i.size || "?" }), statusSelect(i), actions),
+      ));
+    }
+    box.append(g);
+  }
+}
+
+function renderCategories() {
+  const dl = $("categories"); dl.replaceChildren();
+  for (const c of [...new Set(ideas.map(i => i.category).filter(Boolean))].sort()) dl.append(el("option", { value: c }));
+}
+
+function render() {
+  renderTally(); renderShortlist(); renderFilters(); renderBacklog(); renderCategories();
+  for (const id of ["f-title", "f-pitch", "f-category", "f-size", "f-status", "f-submit", "notes"]) $(id).disabled = !canWrite || !db;
+}
+
+function startEdit(i) {
+  editingId = i.id;
+  $("f-title").value = i.title || ""; $("f-pitch").value = i.pitch || ""; $("f-category").value = i.category || "";
+  $("f-size").value = i.size || "M"; $("f-status").value = i.status || "idea";
+  $("add-h").textContent = "Edit idea"; $("f-submit").textContent = "Save changes"; $("f-cancel").hidden = false;
+  $("ideaForm").scrollIntoView({ behavior: "smooth", block: "center" }); $("f-title").focus({ preventScroll: true });
+}
+function resetForm() {
+  editingId = null; $("ideaForm").reset(); $("f-status").value = "idea";
+  $("add-h").textContent = "Add an idea"; $("f-submit").textContent = "Add idea"; $("f-cancel").hidden = true;
+}
+
+for (const s of STATUSES) $("f-status").append(el("option", { value: s.id, text: s.name }));
+$("f-cancel").addEventListener("click", resetForm);
+$("search").addEventListener("input", e => { query = e.target.value; renderBacklog(); });
+$("ideaForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const data = { title: $("f-title").value.trim(), pitch: $("f-pitch").value.trim(), category: $("f-category").value.trim() || "Uncategorized",
+    size: $("f-size").value, status: $("f-status").value };
+  if (!data.title) return;
+  if (editingId) { const id = editingId; write(() => db.collection("ideas").doc(id).update(data), "Changes saved"); }
+  else write(() => db.collection("ideas").add({ ...data, shortlisted: false, scores: {}, createdAt: Date.now() }), "Idea added");
+  resetForm();
+});
+
+let lastNotes = null;
+$("notes").addEventListener("blur", () => {
+  const v = $("notes").value;
+  if (!db || v === lastNotes) return;
+  lastNotes = v;
+  db.doc("meta/notes").set({ text: v }).then(() => flash("notesMsg", "Notes saved"), () => flash("notesMsg", "Couldn't save notes"));
+});
+
+render();
+$("tally").replaceChildren(el("span", { text: "Loading ideas…" }));
+
+(async () => {
+  const timer = setTimeout(() => { if (!db) showBanner("Open this page on claude.ai while signed in to see and edit the ideas."); }, 10000);
+  const claudeApi = window.claude;
+  db = claudeApi ? await claudeApi.use("db") : null;
+  if (!db) { clearTimeout(timer); showBanner("Open this page on claude.ai while signed in to see and edit the ideas."); render(); return; }
+  try {
+    const user = await claudeApi.use("user");
+    const can = user ? await user.can("data.write") : null;
+    if (can === false) { canWrite = false; showBanner("You can view this list but not change it."); }
+  } catch {}
+  db.collection("ideas").onSnapshot(snap => {
+    clearTimeout(timer);
+    ideas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (confirmId && !ideas.some(i => i.id === confirmId)) confirmId = null;
+    render();
+  }, err => { clearTimeout(timer); if (err.code === "revoked") { canWrite = false; render(); } else showBanner("Couldn't load the ideas. Reload the page to try again."); });
+  db.doc("meta/notes").onSnapshot(s => {
+    const t = s.exists ? String(s.data().text || "") : "";
+    lastNotes = t;
+    if (document.activeElement !== $("notes")) $("notes").value = t;
+  });
+})();
+</script>

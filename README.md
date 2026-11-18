@@ -13,7 +13,7 @@ uv manages the Python version and virtual environment for each project.
 - Windows (winget): `winget install --id astral-sh.uv -e`
 - Or follow the install instructions at https://docs.astral.sh/uv/getting-started/installation/
 
-See [IDEAS.md](IDEAS.md) for the running list of project ideas.
+Project ideas live on the [Idea Bench](https://claude.ai/artifact/XWGisxVk2jKYVNh5Fbz66B) page (source: `ideas.html`).
 
 ## Projects
 
