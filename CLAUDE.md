@@ -79,6 +79,9 @@ building new lighting.
 - Vertical walls are extrusion lines: >= 0.5 mm with a 0.4 nozzle (0.4 mm got dropped).
   Check thin features on every layer of the slice.
 - Export meshes with Blender's `loop_triangles`; a hand-written fan folds concave faces.
+- Engraved strokes must be wider than the nozzle (aim >= 0.6 mm): use `S.label_font()` (bold
+  mono) at ~6 mm. Don't thicken text with the curve `offset`: it self-intersects and wrecks
+  booleans (it emptied a whole part once; `S.cut` now raises if that happens).
 
 ## Open items
 
