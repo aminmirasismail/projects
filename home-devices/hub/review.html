@@ -170,6 +170,39 @@ tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface); }
   </section>
 
   <section>
+    <div class="sec-head"><span class="tag">Light study · ray-traced</span><h2>Will the red light actually glow?</h2></div>
+    <p class="muted">Simulated in Blender's Cycles renderer, which follows light as it scatters through and is absorbed by the plastic. All dark-room shots use the same evening-room lighting and camera. The plastic's optical values are estimates, so read these as comparisons rather than exact brightness.</p>
+    <div class="grid2">
+      <figure>
+        <img src="renders/light_a_pi_led_realistic.jpg" alt="Hub end face in a dark room; the red dot is dark and the wall has only a faint red tinge" width="1400" height="1050">
+        <figcaption><span><b>A · As designed.</b> Only the Pi's own status LED, about 14 mm away. The pipe stays dark; the wall picks up a faint red wash. Doesn't work.</span><span class="n">L1</span></figcaption>
+      </figure>
+      <figure>
+        <img src="renders/light_b_led_opaque.jpg" alt="Hub end face in a dark room with a bright, crisp red dot and a soft halo around it" width="1400" height="1050">
+        <figcaption><span><b>B · Dedicated LED, regular red PLA.</b> A 5 mm LED right behind the pipe. A crisp dot with a soft halo, visible from any angle. Recommended.</span><span class="n">L2</span></figcaption>
+      </figure>
+      <figure>
+        <img src="renders/light_c_led_translucent.jpg" alt="Hub end face in a dark room with a smaller, dimmer red dot" width="1400" height="1050">
+        <figcaption><span><b>C · Dedicated LED, translucent red.</b> Dimmer from the side. A clear pipe sends the light straight out, so it's only bright head-on.</span><span class="n">L3</span></figcaption>
+      </figure>
+      <figure>
+        <img src="renders/light_b_led_opaque_daylight.jpg" alt="Hub end face in normal room light; the red dot reads as a solid red accent" width="1400" height="1050">
+        <figcaption><span><b>B in room light.</b> The glow disappears and the dot reads as a solid red accent, as intended.</span><span class="n">L4</span></figcaption>
+      </figure>
+    </div>
+    <div class="grid2">
+      <figure>
+        <img src="renders/light_a_pi_led.jpg" alt="Hub in a dark room with the whole white shell glowing red from a light inside" width="1400" height="1050">
+        <figcaption><span><b>Side effect: the lantern.</b> The same as A, with the inside light ten times brighter. 2 mm of white PLA lets light through, so any light inside makes the whole shell glow.</span><span class="n">L5</span></figcaption>
+      </figure>
+      <div class="decisions" style="grid-template-columns:1fr">
+        <div class="decision"><h3>Change for rev B: give the pipe its own LED</h3><p class="why">A 5 mm diffused red LED and a 330 Ω resistor in a small printed holder, right behind the pipe. About $1 in parts.</p><p class="alt"><span>Wiring</span> Simplest: to the Pi's 3.3 V pin, so it shows "powered on". Better: to a GPIO pin, so Home Assistant can light it when something needs your attention.</p></div>
+        <div class="decision"><h3>Watch for the lantern effect</h3><p class="why">The Pi's green activity light and the Ethernet port lights blink inside the case. At night they may show through the white walls as a faint flicker.</p><p class="alt"><span>Options</span> Turn the Pi's onboard LEDs off in its settings, thicken the walls from 2 mm to 3 mm, or keep it as a subtle sign of life.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <div class="sec-head"><span class="tag">Printed parts</span><h2>What to print, and how</h2></div>
     <p class="muted">Every part prints in one colour, so you change filament between prints rather than mid-print. Settings assume the A1 Mini with a 0.4 mm nozzle and the textured PEI plate. Weights come from the model's volume; times are rough until you slice it.</p>
     <div class="parts">
@@ -213,7 +246,7 @@ tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface); }
           <dt>Copies</dt><dd>Print 3; keep the best fit</dd>
           <dt>Weight · time</dt><dd>&lt; 1 g · ≈ 10 min</dd>
         </dl>
-        <p class="note">Opaque red PLA lets only a faint glow through. If it's too dim, reprint it in translucent red PLA or PETG. It's a 10-minute print, so trying both costs nothing.</p>
+        <p class="note">Regular red PLA is the right choice: the light study shows it spreads the light evenly, while translucent filament looks dimmer from the side. It needs a dedicated LED right behind it; the Pi's own LED is too weak and too far away.</p>
       </article>
     </div>
   </section>
@@ -254,6 +287,7 @@ tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface); }
       <div class="check"><span class="pill verify">Verify</span><div><b>Port and status-light positions</b><span class="muted">Taken from the Raspberry Pi 5 drawings, not a real board. Measure yours with calipers, or print just the ports end as a quick test piece first.</span></div></div>
       <div class="check"><span class="pill verify">Verify</span><div><b>Insert hole size</b><span class="muted">Holes are 4.2 mm for common short M3 inserts. Check the size printed on your insert kit.</span></div></div>
       <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Vent pattern</b><span class="muted">It reads as a slightly rotated square. Rev B will use a clean circle or a grid aligned with the edges.</span></div></div>
+      <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Light pipe has no light source</b><span class="muted">The light study shows the Pi's own LED can't light it. Rev B adds a 5 mm LED in a holder right behind the pipe.</span></div></div>
       <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Red light is easy to miss</b><span class="muted">It's small and sits on the end face. It could get a little bigger, or move to the front.</span></div></div>
       <div class="check"><span class="pill fix">Fix in Rev B</span><div><b>Placeholder Pi in the renders</b><span class="muted">The Pi model is a rough stand-in, so its ports read as plain blocks. A more detailed model would make the reviews clearer.</span></div></div>
     </div>
@@ -273,9 +307,11 @@ tfoot td { font-weight: 600; border-bottom: 0; background: var(--surface); }
           <tr><td>M3 brass heat-set inserts, kit</td><td class="muted">Reused for every later device.</td><td class="num">4</td><td class="num">$8</td></tr>
           <tr><td>M3 × 8 countersunk screws</td><td class="muted">Base to shell.</td><td class="num">4</td><td class="num">in kit</td></tr>
           <tr><td>M2.5 × 6 screws, kit</td><td class="muted">Pi to base.</td><td class="num">4</td><td class="num">$6</td></tr>
+          <tr><td>5 mm diffused red LED + 330 Ω resistor</td><td class="muted">Lights the red pipe (rev B). Buy an assortment; you'll use them again.</td><td class="num">1</td><td class="num">$1</td></tr>
+          <tr><td>Female-to-female jumper wires</td><td class="muted">LED to the Pi's pins.</td><td class="num">2</td><td class="num">$4 pack</td></tr>
           <tr><td>Clear bumper feet, 8 mm</td><td class="muted">Grip and quiet.</td><td class="num">4</td><td class="num">$4</td></tr>
         </tbody>
-        <tfoot><tr><td>Total</td><td></td><td></td><td class="num">≈ $110–135</td></tr></tfoot>
+        <tfoot><tr><td>Total</td><td></td><td></td><td class="num">≈ $115–140</td></tr></tfoot>
       </table>
     </div>
     <p class="muted">Rough US prices. Raspberry Pi prices have moved around a lot, so check before ordering.</p>

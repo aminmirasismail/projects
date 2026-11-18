@@ -105,22 +105,29 @@ def main():
     z = hub.BOARD_Z + 4
     # The Pi's own status LED: top-emitting SMD on the board edge at the SD-card end.
     pi_led = led("Pi status LED", (35.0, hub.LED_Y, hub.BOARD_Z + hub.PCB_T + 0.4), 0.01)
+    # Same LED at a more realistic output: about 1 mW of light from a ~2 mA indicator.
+    pi_led_real = led("Pi status LED (realistic)", (35.0, hub.LED_Y, hub.BOARD_Z + hub.PCB_T + 0.4),
+                      0.001)
     # A dedicated 5 mm LED sitting 2 mm behind the inner end of the pipe, aimed out.
     own_led = led("5 mm LED", (47.0, hub.LED_Y, z), 0.03, kind="SPOT", aim=(1, 0, 0),
                   radius_mm=2.5)
 
     variants = [
         ("a_pi_led", red_opaque(), [pi_led], True),
+        ("a_pi_led_realistic", red_opaque(), [pi_led_real], True),
         ("b_led_opaque", red_opaque(), [own_led], True),
         ("c_led_translucent", red_translucent(), [own_led], True),
         ("b_led_opaque_daylight", red_opaque(), [own_led], False),
     ]
     if PREVIEW:
-        variants = variants[1:2]
+        variants = variants[2:3]
+    only = [a.split("=", 1)[1] for a in sys.argv if a.startswith("--only=")]
+    if only:
+        variants = [v for v in variants if v[0] in only]
     os.makedirs(OUT, exist_ok=True)
     for name, mat, lights, dim in variants:
         S.assign(pipe, mat)
-        for li in (pi_led, own_led):
+        for li in (pi_led, pi_led_real, own_led):
             li.hide_render = li not in lights
         room(dim)
         suffix = "_preview" if PREVIEW else ""
