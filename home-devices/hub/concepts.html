@@ -1,0 +1,206 @@
+<title>Hub Light Concepts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark sheet per concept, renders in a three-up strip (dark, room, off), facts underneath. */
+:root {
+  --bg: #0d0d0e;
+  --surface: #161617;
+  --ink: #ededeb;
+  --ink-2: #9a9a96;
+  --rule: #2a2a2c;
+  --blue: #4f7dff;
+  --orange: #ff7a1a;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-display); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 80px; }
+.wrap { max-width: 1160px; margin: 0 auto; display: grid; gap: 80px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.4rem, 7vw, 4.6rem); font-weight: 700; line-height: 0.95; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); font-weight: 600; }
+h3 { font-size: 1rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.tag { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
+.muted { color: var(--ink-2); }
+.grad { background: linear-gradient(90deg, var(--blue), var(--orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+header { display: grid; gap: 16px; }
+.lede { font-size: 1.12rem; color: var(--ink-2); }
+.bar { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--blue), var(--orange), var(--blue)); max-width: 320px; }
+
+nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+nav a { display: grid; gap: 4px; padding: 14px 16px; background: var(--surface); border-radius: 8px; color: var(--ink); text-decoration: none; border: 1px solid transparent; }
+nav a:hover { border-color: var(--rule); }
+nav b { font-weight: 600; }
+
+.concept { display: grid; gap: 22px; }
+.head { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 18px; }
+.head .tag b { color: var(--ink); font-weight: 500; }
+.strip { display: grid; gap: 12px; grid-template-columns: 2fr 1fr; }
+.strip .side { display: grid; gap: 12px; align-content: start; }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); }
+figcaption { font-size: 12px; color: var(--ink-2); font-family: var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+
+.facts { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+.fact { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.fact p { font-size: 14px; }
+.pc { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.pc ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.pc h3 { margin-bottom: 6px; }
+.plus h3 { color: #7fd6a2; }
+.minus h3 { color: #ff8a7a; }
+
+.common { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.card { background: var(--surface); border-radius: 8px; padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.card p { font-size: 14px; color: var(--ink-2); }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); background: var(--surface); }
+tbody th { font: 600 14px var(--f-display); letter-spacing: 0; text-transform: none; color: var(--ink); }
+.rec { background: var(--surface); border-radius: 8px; padding: 20px 22px; display: grid; gap: 8px; border-left: 3px solid var(--orange); }
+
+@media (max-width: 720px) { .strip { grid-template-columns: 1fr; } .strip .side { grid-template-columns: 1fr 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Home devices · 01 Hub · Lighting concepts</span>
+    <h1>Four ways to <span class="grad">light the hub</span></h1>
+    <div class="bar" aria-hidden="true"></div>
+    <p class="lede">Each concept runs a line of addressable RGB light around the hub, following its rounded shape. All four are ray-traced with the same blue-to-orange gradient, in a dark room, in room light, and switched off. None has a vent grid on top: the air hides in a seam.</p>
+  </header>
+
+  <nav aria-label="Concepts">
+    <ul>
+      <li><a href="#concept-a"><span class="tag">A</span><b>Hidden halo</b><span class="muted">Glows through solid white</span></a></li>
+      <li><a href="#concept-b"><span class="tag">B</span><b>Light seam</b><span class="muted">Frosted inlay, vents beside it</span></a></li>
+      <li><a href="#concept-c"><span class="tag">C</span><b>Floating lid</b><span class="muted">Glowing seam round the sides</span></a></li>
+      <li><a href="#concept-d"><span class="tag">D</span><b>Underglow</b><span class="muted">Wildcard: light on the table</span></a></li>
+    </ul>
+  </nav>
+
+  <section class="concept" id="concept-a">
+    <div class="head"><span class="tag">Concept A · <b>48 LEDs · 289 mm path</b></span><h2>Hidden halo</h2>
+      <p class="muted">The roof is thinned from the inside to a 0.6 mm skin along a band 7 mm in from the edge. Off, the top looks like plain white plastic. On, a soft line of light appears through it.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_A_dark.jpg" alt="Concept A in a dark room: a soft rounded-rectangle line of light glowing through the solid white top, blue on one side fading to orange on the other" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_A_room.jpg" alt="Concept A in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_A_off.jpg" alt="Concept A in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Diffuser</span><p>The shell itself: 0.6 mm of your white PLA. Nothing new to buy.</p></div>
+      <div class="fact"><span class="tag">Air</span><p>In through a 1 mm gap at the shadow line under the shell; out through the ports window.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Shell, base, a black light channel. Same count as now.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>The most seamless. When off, there's no visible light feature at all.</li><li>No translucent filament needed.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Softest and least vivid; colours pale slightly through white plastic.</li><li>Depends on printing a consistent 0.6 mm skin. A 15-minute test coupon settles it.</li><li>A faint line may show when off, where the roof is thin. Check the "off" render.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-b">
+    <div class="head"><span class="tag">Concept B · <b>48 LEDs · 293 mm path</b></span><h2>Light seam</h2>
+      <p class="muted">A 4.6 mm slot follows the top's shape. A 3 mm frosted insert sits in it, slightly below the surface, leaving hairline gaps on both sides. The gaps are the vents.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_B_dark.jpg" alt="Concept B in a dark room: a crisp line of light inset into the top following its rounded shape, blue to orange" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_B_room.jpg" alt="Concept B in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_B_off.jpg" alt="Concept B in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Diffuser</span><p>A separate insert in translucent white filament (e.g. Bambu PLA Translucent or translucent PETG). One small print.</p></div>
+      <div class="fact"><span class="tag">Air</span><p>Through the 0.8 mm gaps either side of the insert, across the whole perimeter.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Shell, base, light channel, frosted insert.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Crisp and vivid: the line reads clearly, and colours stay saturated.</li><li>Real airflow over the fan, hidden in the line.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Needs one spool of translucent filament.</li><li>A visible frosted line when off, and dust can settle in the gaps.</li><li>The insert needs a precise fit; one test print to tune it.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-c">
+    <div class="head"><span class="tag">Concept C · <b>52 LEDs · 314 mm path</b></span><h2>Floating lid</h2>
+      <p class="muted">The top 6 mm becomes a separate lid that seems to float on a 3 mm band of light running round all four sides. The band is a frosted ring set slightly back. Air moves through the seam above and below it.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_C_dark.jpg" alt="Concept C in a dark room: a thin glowing band running round the sides just under the top edge, making the lid appear to float" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_C_room.jpg" alt="Concept C in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_C_off.jpg" alt="Concept C in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Diffuser</span><p>A frosted ring in translucent white filament, set into the seam.</p></div>
+      <div class="fact"><span class="tag">Air</span><p>Through the seam around the lid: the largest, most even vent of the four.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Body, lid, frosted ring, base, light channel. One more than now.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Seen from eye level and from every side, not just from above.</li><li>The most distinctive silhouette; the lid really reads as floating.</li><li>Best airflow.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>The top surface stays plain, so the light doesn't trace the top face from above.</li><li>Needs translucent filament, and the lid needs hidden posts to hold it.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-d">
+    <div class="head"><span class="tag">Concept D · Wildcard · <b>52 LEDs · 326 mm path</b></span><h2>Underglow</h2>
+      <p class="muted">The shell sits on a small hidden base, 5 mm off the table. The light shines down and spreads onto whatever it sits on. Not a top ring, but worth seeing once.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_D_dark.jpg" alt="Concept D in a dark room: light spilling onto the surface from under the shell's edge" width="1280" height="960"><figcaption>Dark room</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_D_room.jpg" alt="Concept D in room light with the light on" width="1280" height="960"><figcaption>Room light · on</figcaption></figure>
+        <figure><img src="renders/concept_D_off.jpg" alt="Concept D in room light with the light off" width="1280" height="960"><figcaption>Room light · off</figcaption></figure>
+      </div>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Diffuser</span><p>The table. No translucent filament.</p></div>
+      <div class="fact"><span class="tag">Air</span><p>Underneath, through the gap around the base.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Shell, smaller base, light channel.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Calm and ambient; the device appears to hover.</li><li>Nothing to diffuse, so no new filament.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>The look depends on the surface: bright on a white shelf, faint on dark wood.</li><li>Hard to read a status at a glance.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept">
+    <div class="head"><span class="tag">Side by side</span><h2>How they compare</h2></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>A · Hidden halo</th><th>B · Light seam</th><th>C · Floating lid</th><th>D · Underglow</th></tr></thead>
+        <tbody>
+          <tr><th>Seen from</th><td>Above</td><td>Above</td><td>Every side, eye level</td><td>The surface around it</td></tr>
+          <tr><th>Brightness and colour</th><td>Soft, slightly pale</td><td>Crisp, vivid</td><td>Crisp, vivid</td><td>Diffuse, depends on surface</td></tr>
+          <tr><th>When off</th><td>Plain white (faint line possible)</td><td>Thin frosted line</td><td>Thin seam</td><td>Nothing visible</td></tr>
+          <tr><th>Vents hidden in</th><td>Shadow line</td><td>Gaps beside the insert</td><td>The seam</td><td>Underneath</td></tr>
+          <tr><th>Airflow</th><td>Fair</td><td>Good</td><td>Best</td><td>Good</td></tr>
+          <tr><th>New filament</th><td>None</td><td>Translucent white</td><td>Translucent white</td><td>None</td></tr>
+          <tr><th>Printing difficulty</th><td>0.6 mm skin must be consistent</td><td>Insert fit</td><td>Lid and ring fit</td><td>Easy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="concept">
+    <div class="head"><span class="tag">Same for every concept</span><h2>LEDs, power and wiring</h2></div>
+    <div class="common">
+      <div class="card"><h3>LEDs</h3><p>A WS2812B addressable strip at 144 LEDs per metre: 48–52 LEDs, about 7 mm apart. Every LED can be any colour, so light can flow, chase, breathe or show gradients like these.</p></div>
+      <div class="card"><h3>Mounting</h3><p>Strips bend through their thickness but not sideways, so the strip stands on edge around the inside of a printed black channel that follows the path. The channel also stops light leaking into the rest of the shell.</p></div>
+      <div class="card"><h3>Connected to the Pi only</h3><p>Three wires: 5 V (pin 2), ground (pin 6), data (pin 19, the Pi's SPI output). A diode, resistor and capacitor in line, as in the rev C plan. Software caps brightness so the strip draws under about 0.8 A.</p></div>
+    </div>
+  </section>
+
+  <section class="concept" id="recommendation">
+    <div class="head"><span class="tag">Recommendation</span><h2>Which I'd build</h2></div>
+    <div class="rec" id="rec-text"><p class="muted">Being written once the final renders are reviewed.</p></div>
+  </section>
+</div>

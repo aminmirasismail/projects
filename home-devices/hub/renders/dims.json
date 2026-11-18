@@ -1,26 +1,13 @@
 {
- "rev": "B",
+ "rev": "C",
  "W": 106.0,
  "D": 80.0,
- "TOP": 34.0,
+ "TOP": 40.0,
  "BASE_T": 3.0,
  "WALL": 2.0,
  "ROOF": 2.0,
  "R": 12.0,
  "shadow_gap": 0.6,
- "pipe": {
-  "x": 24.0,
-  "z": 18.5,
-  "d": 4.0,
-  "hole_d": 4.1,
-  "collar_d": 5.0,
-  "collar_t": 0.8
- },
- "socket": {
-  "id": 5.15,
-  "od": 7.6,
-  "len": 8.3
- },
  "port_win": {
   "y0": -26.549999999999997,
   "y1": 26.75,
@@ -54,10 +41,6 @@
  "boss_d": 9.0,
  "insert_d": 4.0,
  "insert_depth": 8.0,
- "fan_c": [
-  5.0,
-  1.0
- ],
  "pi_source": "provisional (to verify against RP-008347)",
  "feet": [
   [
@@ -77,8 +60,36 @@
    22
   ]
  ],
- "led_pins": {
-  "gnd": 9,
-  "gpio17": 11
+ "halo": {
+  "ch_r0": 25.5,
+  "ch_r1": 34.0,
+  "skin": 0.6,
+  "gap": 6.0,
+  "ring_od": 66.0,
+  "ring_id": 52.5,
+  "led_r": 29.625,
+  "z_skin_in": 39.4,
+  "z_led_top": 33.4,
+  "z_ring_bot": 30.199999999999996,
+  "z_car_bot": 28.999999999999996,
+  "car_wall": 1.6,
+  "roof_in": 38.0,
+  "tab_r": 38.5,
+  "tab_ang": [
+   0.0,
+   120.0,
+   240.0
+  ],
+  "dupont_top": 25.1
+ },
+ "vents": {
+  "pitch": 3.9,
+  "rad": 20.0,
+  "hole": 2.2
+ },
+ "ring_pins": {
+  "5v": 2,
+  "gnd": 6,
+  "data": 19
  }
 }

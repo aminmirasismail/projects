@@ -1,19 +1,18 @@
-"""Ray-traced study of how the red light pipe would actually glow.
+"""Ray-traced study of the rev C halo: 24 RGB LEDs glowing through 0.6 mm of white PLA.
 
-Run:  python light_study.py [--preview]
-Writes renders/light_*.png. Uses Cycles subsurface scattering so light really
-travels through (and gets absorbed by) the plastic, rather than faking a glow.
+Run:  python light_study.py [--preview] [--anim]
+Writes renders/halo_*.png (status stills) and renders/halo_flow.mp4 (animation).
 
-Rev A's study (Pi's own LED vs a dedicated LED vs translucent filament) produced
-renders/light_a_*, light_b_*, light_c_*; that geometry is in git history. The current
-script renders rev B: the dedicated LED in its socket, in a dim room and in room light.
+Each LED is a small coloured light at its real position under the roof. The white
+shell uses subsurface scattering, so light really diffuses and dims as it passes
+through the 0.6 mm skin; the black carrier absorbs whatever hits its walls.
+Optical values are estimates; the printed light-test coupon is the real check.
 
-Optical values are estimates: regular pigmented PLA scatters and absorbs light
-within roughly 1 mm; translucent filament lets most of it through. A 10-minute
-test print photographed in a dark room is the way to calibrate these.
+Earlier rev A/B light-pipe studies produced renders/light_*.png (see git history).
 """
-import math
+import colorsys
 import os
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -25,57 +24,75 @@ import studio as S  # noqa: E402
 
 PREVIEW = "--preview" in sys.argv
 OUT = os.path.join(HERE, "renders")
+LED_W = 0.006       # watts of light per LED at full pattern intensity (~40% drive)
 
 
-def principled(mat):
-    return mat.node_tree.nodes["Principled BSDF"]
-
-
-def set_white_translucent(shell):
+def scattering_white(shell):
     m = S.material("PLA white (scattering)", S.PLA["white"], rough=0.5)
-    b = principled(m)
+    b = m.node_tree.nodes["Principled BSDF"]
     b.inputs["Subsurface Weight"].default_value = 1.0
     b.inputs["Subsurface Radius"].default_value = (1.0, 1.0, 1.0)
-    b.inputs["Subsurface Scale"].default_value = 0.0012   # ~1.2 mm, scene is in metres
+    b.inputs["Subsurface Scale"].default_value = 0.0012     # ~1.2 mm in PLA
     S.assign(shell, m)
 
 
-def red_opaque():
-    m = S.material("PLA red (pigmented)", (0.62, 0.025, 0.02, 1), rough=0.45)
-    b = principled(m)
-    b.inputs["Subsurface Weight"].default_value = 1.0
-    b.inputs["Subsurface Radius"].default_value = (1.0, 0.08, 0.06)
-    b.inputs["Subsurface Scale"].default_value = 0.0012
-    return m
+def make_leds():
+    lights = []
+    for k in range(hub.RING_N):
+        a = 360.0 * k / hub.RING_N
+        x, y = hub._polar(hub.LED_R, a)
+        li = bpy.data.lights.new(f"px{k:02d}", "POINT")
+        li.shadow_soft_size = 0.0012
+        ob = bpy.data.objects.new(f"px{k:02d}", li)
+        bpy.context.collection.objects.link(ob)
+        ob.location = (x / 1000, y / 1000, (hub.Z_LED_TOP + 0.3) / 1000)
+        lights.append(ob)
+    return lights
 
 
-def red_translucent():
-    m = S.material("PLA red (translucent)", (0.9, 0.06, 0.04, 1), rough=0.25)
-    b = principled(m)
-    b.inputs["Transmission Weight"].default_value = 1.0
-    b.inputs["IOR"].default_value = 1.46
-    return m
+def apply(lights, pattern):
+    """pattern: list of 24 (r, g, b, intensity 0..1)."""
+    for ob, (r, g, b, i) in zip(lights, pattern):
+        ob.data.color = (r, g, b)
+        ob.data.energy = LED_W * i
+        ob.hide_render = i <= 0.001
 
 
-def led(name, loc_mm, power_w, kind="POINT", aim=None, radius_mm=0.4, spot_deg=30):
-    li = bpy.data.lights.new(name, kind)
-    li.energy = power_w
-    li.color = (1.0, 0.05, 0.02)
-    li.shadow_soft_size = radius_mm / 1000
-    if kind == "SPOT":
-        li.spot_size = math.radians(spot_deg)
-        li.spot_blend = 0.6
-    ob = bpy.data.objects.new(name, li)
-    bpy.context.collection.objects.link(ob)
-    ob.location = tuple(c / 1000 for c in loc_mm)
-    if aim:
-        from mathutils import Vector
-        ob.rotation_euler = Vector(aim).to_track_quat("-Z", "Y").to_euler()
-    return ob
+def comet(color, head, tail=9):
+    n = hub.RING_N
+    out = []
+    for k in range(n):
+        d = (head - k) % n
+        i = max(0.0, 1.0 - d / tail) ** 1.6 if d < tail else 0.0
+        out.append((*color, i))
+    return out
+
+
+def fill(color, i):
+    return [(*color, i)] * hub.RING_N
+
+
+def progress(color, frac):
+    n = hub.RING_N
+    return [(*color, 1.0 if k < frac * n else 0.06) for k in range(n)]
+
+
+def rainbow(phase):
+    n = hub.RING_N
+    return [(*colorsys.hsv_to_rgb(((k / n) + phase) % 1.0, 1.0, 1.0), 0.8) for k in range(n)]
+
+
+STATES = [
+    ("connecting", comet((0.1, 0.35, 1.0), 6), True),
+    ("allgood", fill((1.0, 0.78, 0.55), 0.22), True),
+    ("laundry", progress((1.0, 0.45, 0.02), 0.66), True),
+    ("alert", fill((1.0, 0.04, 0.02), 0.9), True),
+    ("connecting_day", comet((0.1, 0.35, 1.0), 6), False),
+    ("off_day", fill((1.0, 1.0, 1.0), 0.0), False),
+]
 
 
 def room(dim):
-    """Scale the studio lights: dim = an evening room with one lamp across the room."""
     k = 0.03 if dim else 1.0
     for ob in bpy.data.objects:
         if ob.type == "LIGHT" and ob.data.type == "AREA":
@@ -85,9 +102,9 @@ def room(dim):
 
 
 def main():
-    """Rev B: a 5 mm LED in the printed socket, tip against the pipe's collar."""
-    shell, base, pipe = hub.build()
-    S.to_studio([shell, base, pipe])
+    shell, base, carrier = hub.build()
+    pcb, leds = hub.led_ring()
+    S.to_studio([shell, base, carrier, pcb] + leds)
     S.studio(samples=24 if PREVIEW else 128, res=(800, 600) if PREVIEW else (1400, 1050))
     sc = bpy.context.scene
     sc.cycles.max_bounces = 16
@@ -95,24 +112,36 @@ def main():
     for ob in bpy.data.objects:
         if ob.type == "LIGHT":
             ob["base"] = ob.data.energy
-    set_white_translucent(shell)
-    S.assign(pipe, red_opaque())
-
-    m = 0.001
-    S.camera((hub.PIPE_X * m + 0.045, -0.15, 0.055),
-             target=(hub.PIPE_X * m, -hub.D / 2 * m, hub.PIPE_Z * m), lens=70)
-    # light leaves the LED's dome about 1.5 mm behind its tip, aimed out through the pipe
-    own_led = led("5 mm LED", (hub.PIPE_X, hub.Y_IN + hub.COLLAR_T + 1.5, hub.PIPE_Z), 0.03,
-                  kind="SPOT", aim=(0, -1, 0), radius_mm=2.0)
-    variants = [("revb_lit", [own_led], True), ("revb_room", [own_led], False)]
-    if PREVIEW:
-        variants = variants[:1]
+    scattering_white(shell)
+    lights = make_leds()
+    S.camera((0.19, -0.25, 0.25), target=(0.0, 0.0, 0.036), lens=68)
     os.makedirs(OUT, exist_ok=True)
-    for name, lights, dim in variants:
-        own_led.hide_render = own_led not in lights
+
+    if "--anim" in sys.argv:
+        frames_dir = os.path.join(OUT, "_halo_frames")
+        os.makedirs(frames_dir, exist_ok=True)
+        sc.cycles.samples = 20
+        sc.render.resolution_x, sc.render.resolution_y = 960, 720
+        room(True)
+        n = 48                                   # two laps of a blue comet, then a colour wash
+        for f in range(n):
+            apply(lights, comet((0.1, 0.35, 1.0), f % hub.RING_N))
+            S.render(os.path.join(frames_dir, f"f_{f:04d}.png"))
+        for f in range(n, n + 36):
+            apply(lights, rainbow((f - n) / 36.0))
+            S.render(os.path.join(frames_dir, f"f_{f:04d}.png"))
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", "16", "-i",
+                        os.path.join(frames_dir, "f_%04d.png"), "-c:v", "libx264",
+                        "-pix_fmt", "yuv420p", "-crf", "20", "-movflags", "+faststart",
+                        os.path.join(OUT, "halo_flow.mp4")], check=True)
+        return
+
+    states = STATES[:1] if PREVIEW else STATES
+    for name, pattern, dim in states:
+        apply(lights, pattern)
         room(dim)
         suffix = "_preview" if PREVIEW else ""
-        S.render(os.path.join(OUT, f"light_{name}{suffix}.png"))
+        S.render(os.path.join(OUT, f"halo_{name}{suffix}.png"))
 
 
 if __name__ == "__main__":

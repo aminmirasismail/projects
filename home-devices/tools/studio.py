@@ -262,7 +262,7 @@ def studio(backdrop=(0.013, 0.0135, 0.015, 1), samples=96, res=(1600, 1200)):
     _area("Rim", (0.15, 0.55, 0.45), (0.5, 0.2), 30)
     _area("Top", (0, 0, 0.7), (0.4, 0.4), 3)
     # Raking light: skims low across the roof so engraved text and vents cast shadows.
-    _area("Rake", (-0.55, 0.12, 0.075), (0.30, 0.03), 9, (1.0, 0.98, 0.95),
+    _area("Rake", (-0.55, 0.12, 0.075), (0.30, 0.03), 0.6, (1.0, 0.98, 0.95),
           target=(0.0, 0.0, 0.036), spread=25)
 
 
