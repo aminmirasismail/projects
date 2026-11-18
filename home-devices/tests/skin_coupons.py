@@ -78,11 +78,10 @@ def write_3mf(objs, path, bed=(180.0, 180.0)):
     for ob, (dx, dy) in objs:
         me = ob.data
         v = [(p.co.x + dx + bed[0] / 2, p.co.y + dy + bed[1] / 2, p.co.z) for p in me.vertices]
-        f = []
-        for poly in me.polygons:
-            idx = list(poly.vertices)
-            for k in range(1, len(idx) - 1):
-                f.append((idx[0], idx[k], idx[k + 1]))
+        # Blender's own triangulation: a naive fan from the first vertex folds concave ngons
+        # (e.g. a top face wrapped around pockets and engraved text) back over themselves.
+        me.calc_loop_triangles()
+        f = [tuple(t.vertices) for t in me.loop_triangles]
         scene.add_geometry(trimesh.Trimesh(vertices=v, faces=f, process=True), node_name=ob.name,
                            geom_name=ob.name)
     scene.export(path, file_type="3mf")
