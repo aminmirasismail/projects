@@ -1,0 +1,167 @@
+<title>Hub 01 Design Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a product review sheet. Big render first, then the facts in a quiet two-column grid. */
+:root {
+  --bg: #ececea;
+  --surface: #f7f7f5;
+  --ink: #121212;
+  --ink-2: #5d5d5a;
+  --rule: #d2d2ce;
+  --red: #c8231c;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #141414; --surface: #1c1c1b; --ink: #f0f0ee; --ink-2: #a2a29d; --rule: #313130; --red: #ff4a3d; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #141414; --surface: #1c1c1b; --ink: #f0f0ee; --ink-2: #a2a29d; --rule: #313130; --red: #ff4a3d; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-display); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 72px; }
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 56px; }
+.mono, .tag { font-family: var(--f-mono); }
+.tag { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+h1, h2 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); font-weight: 700; line-height: 0.95; }
+h2 { font-size: 1.6rem; font-weight: 600; }
+p { margin: 0; max-width: 64ch; }
+.dot { display: inline-block; width: 0.42em; height: 0.42em; border-radius: 50%; background: var(--red); vertical-align: 0.5em; margin-left: 0.08em; }
+
+header { display: grid; gap: 14px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.lede { color: var(--ink-2); font-size: 1.1rem; }
+
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+figure img, figure video { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--rule); }
+figcaption { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.grid2 { display: grid; gap: 28px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+
+section { display: grid; gap: 22px; }
+.sec-head { display: grid; gap: 6px; border-top: 1px solid var(--ink); padding-top: 14px; }
+
+.specs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 28px; }
+.spec { display: grid; gap: 2px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.spec b { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 18px; }
+.sw { display: grid; gap: 6px; font-size: 13px; }
+.sw i { width: 84px; height: 56px; border-radius: 6px; border: 1px solid var(--rule); display: block; }
+.rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.rules li { padding: 14px 16px; background: var(--surface); border-radius: 6px; display: grid; gap: 4px; }
+.rules b { font-weight: 600; }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tfoot td { font-weight: 600; border-bottom: 0; }
+.muted { color: var(--ink-2); }
+
+.decisions { display: grid; gap: 12px; }
+.decision { display: grid; grid-template-columns: 28px 1fr; gap: 10px; padding: 16px; background: var(--surface); border-radius: 6px; }
+.decision .n { font: 500 13px var(--f-mono); color: var(--red); }
+.decision b { display: block; margin-bottom: 2px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Home devices · 01 of 07 · Design review</span>
+    <h1>Hub<span class="dot"></span></h1>
+    <p class="lede">The always-on box that runs Home Assistant. Everything else in the house reports to it, and it puts all of it on your iPhone. A Raspberry Pi 5 inside a three-part printed enclosure: white shell, black base, one red light.</p>
+    <div class="meta tag"><span>106 × 78 × 30 mm</span><span>3 printed parts</span><span>A1 Mini · PLA</span><span>Rev A · concept</span></div>
+  </header>
+
+  <figure>
+    <img src="renders/hub_hero.png" alt="White rounded enclosure on a black base, with a small red light on its right end and a grid of vent holes on top" width="1600" height="1200">
+    <figcaption><span>Front three-quarter. The black base sits 0.6 mm inside the shell, so it reads as a shadow line.</span><span class="mono">01</span></figcaption>
+  </figure>
+
+  <figure>
+    <video src="renders/hub_turntable.mp4" autoplay muted loop playsinline width="1200" height="800"></video>
+    <figcaption><span>Turntable</span><span class="mono">02</span></figcaption>
+  </figure>
+
+  <div class="grid2">
+    <figure>
+      <img src="renders/hub_ports.png" alt="Rear three-quarter view showing one wide opening for Ethernet and USB, and a small USB-C slot on the back" width="1600" height="1200">
+      <figcaption><span>Ports. One opening for Ethernet and USB, a slot for power. The two micro-HDMI ports stay covered; the hub never needs a screen.</span><span class="mono">03</span></figcaption>
+    </figure>
+    <figure>
+      <img src="renders/hub_top.png" alt="Top view showing a circular field of small vent holes and a small engraved label" width="1600" height="1200">
+      <figcaption><span>Top. A circle of 2.4 mm holes sits right over the Pi's fan. Engraved label, bottom right.</span><span class="mono">04</span></figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <img src="renders/hub_exploded.png" alt="Exploded view: white shell lifted above a Raspberry Pi 5 with its cooler, sitting on the black base" width="1600" height="1200">
+    <figcaption><span>Exploded. The Pi screws to standoffs on the base; the base screws into brass inserts in the shell's four corner posts.</span><span class="mono">05</span></figcaption>
+  </figure>
+
+  <section>
+    <div class="sec-head"><span class="tag">Design language</span><h2>Rules every device follows</h2></div>
+    <p class="muted">The hub sets the look for the rest of the family, so the laundry pods, air station and timer will all read as one set.</p>
+    <div class="swatches">
+      <div class="sw"><i style="background:#e9e9e6"></i>White PLA<span class="tag">Body</span></div>
+      <div class="sw"><i style="background:#141415"></i>Black PLA<span class="tag">Base · controls</span></div>
+      <div class="sw"><i style="background:#c8231c"></i>Red PLA<span class="tag">One accent only</span></div>
+    </div>
+    <ul class="rules">
+      <li><b>One shape</b><span class="muted">Rounded rectangle in plan, 10–12 mm corners, flat top with a 1.2 mm edge.</span></li>
+      <li><b>One red thing</b><span class="muted">Each device gets a single red element, and it always means something: a light, a button, a dial.</span></li>
+      <li><b>Shadow line</b><span class="muted">The black base is inset 0.6 mm, so every device floats slightly off the surface.</span></li>
+      <li><b>Small mono labels</b><span class="muted">Engraved, uppercase, device name and number. No logos.</span></li>
+      <li><b>One colour per part</b><span class="muted">Every part prints in a single colour, so no AMS is needed. Colour comes from how parts stack.</span></li>
+      <li><b>Hidden fasteners</b><span class="muted">Screws only on the underside, countersunk into the base.</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Specs</span><h2>What's inside and how it's made</h2></div>
+    <div class="specs">
+      <div class="spec"><span class="tag">Computer</span><b>Raspberry Pi 5, 4 GB</b></div>
+      <div class="spec"><span class="tag">Software</span><b>Home Assistant OS</b></div>
+      <div class="spec"><span class="tag">Cooling</span><b>Official Active Cooler + top vent</b></div>
+      <div class="spec"><span class="tag">Power</span><b>27 W USB-C, about 4 W at idle</b></div>
+      <div class="spec"><span class="tag">Network</span><b>Ethernet recommended, Wi-Fi works</b></div>
+      <div class="spec"><span class="tag">Phone</span><b>Home Assistant app for iPhone</b></div>
+      <div class="spec"><span class="tag">Shell print</span><b>White, upside down, 0.16 mm layers, no supports</b></div>
+      <div class="spec"><span class="tag">Base print</span><b>Black, flat, 0.2 mm layers</b></div>
+      <div class="spec"><span class="tag">Fit</span><b>Largest part 106 × 78 mm, fits 180 mm bed</b></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Parts list</span><h2>Order for step 1</h2></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Part</th><th>Why</th><th class="num">Qty</th><th class="num">Approx.</th></tr></thead>
+        <tbody>
+          <tr><td>Raspberry Pi 5, 4 GB</td><td class="muted">Runs Home Assistant. 4 GB is plenty.</td><td class="num">1</td><td class="num">$60–85</td></tr>
+          <tr><td>Official Raspberry Pi 27 W USB-C power supply</td><td class="muted">The Pi 5 is fussy about power; use the official one.</td><td class="num">1</td><td class="num">$12</td></tr>
+          <tr><td>Official Raspberry Pi 5 Active Cooler</td><td class="muted">Keeps it quiet and cool in a closed case.</td><td class="num">1</td><td class="num">$5</td></tr>
+          <tr><td>High-endurance microSD, 32–64 GB</td><td class="muted">SanDisk High Endurance or Samsung PRO Endurance. Survives constant writes.</td><td class="num">1</td><td class="num">$12</td></tr>
+          <tr><td>Short Ethernet cable</td><td class="muted">Hub to router. More reliable than Wi-Fi.</td><td class="num">1</td><td class="num">$5</td></tr>
+          <tr><td>M3 brass heat-set inserts (kit)</td><td class="muted">Pressed into the shell with your soldering iron.</td><td class="num">4</td><td class="num">$8 kit</td></tr>
+          <tr><td>M3 × 8 countersunk screws</td><td class="muted">Base to shell.</td><td class="num">4</td><td class="num">in a kit</td></tr>
+          <tr><td>M2.5 × 6 screws</td><td class="muted">Pi to base standoffs.</td><td class="num">4</td><td class="num">$6 kit</td></tr>
+          <tr><td>Clear silicone bumper feet, 8 mm</td><td class="muted">Grip and quiet.</td><td class="num">4</td><td class="num">$4</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total</td><td></td><td></td><td class="num">≈ $110–135</td></tr></tfoot>
+      </table>
+    </div>
+    <p class="muted">The screw and insert kits get reused for every later device. Prices are rough US prices; Pi prices have moved around a lot.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">For you to decide</span><h2>Open questions</h2></div>
+    <div class="decisions">
+      <div class="decision"><span class="n">A</span><div><b>Where does it live?</b><span class="muted">Next to the router is easiest, using Ethernet. If it has to be on a shelf somewhere else, Wi-Fi works and the ports can move.</span></div></div>
+      <div class="decision"><span class="n">B</span><div><b>Red light: keep or drop?</b><span class="muted">It carries the Pi's own status LED to the outside. The alternative is a fully plain shell.</span></div></div>
+      <div class="decision"><span class="n">C</span><div><b>Label text</b><span class="muted">Currently "HOME / 01". Could be a name, a symbol, or nothing.</span></div></div>
+    </div>
+  </section>
+</div>

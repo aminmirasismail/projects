@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 *.egg-info/
+_frames/
+render.log
+*.blend1
