@@ -43,6 +43,9 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
   `S.product_label()` in `tools/studio.py`; `dot` is the default. (`ring`, `pair` and a red
   filament `inlay` exist, but the owner chose the plain dot.) In text (pages, captions)
   write the separator as `·`.
+- Engraved labels on vertical walls are cut on a 45° downward slant (`slant=1.0`, the
+  `S.product_label()` default) so letter ceilings print without sagging; straight cuts
+  squashed the letter tops on the purge bin rev B.
 - Inspiration: Apple, Teenage Engineering. Clean, quiet, deliberate.
 
 ## Render style (keep every render consistent)

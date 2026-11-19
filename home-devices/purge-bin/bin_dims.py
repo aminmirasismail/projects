@@ -68,6 +68,7 @@ def main():
     d = json.load(open(os.path.join(rd, "dims.json")))
     cams = json.load(open(os.path.join(rd, "dwg_cameras.json")))
     W, D, T, B = d["W"], d["D"], d["TOP"], d["BASE_T"]
+    LO, HI, X1, X2 = d.get("LOW", T), d.get("HIGH", T), d.get("X1"), d.get("X2")
     rev = d["rev"]
     out = {}
 
@@ -77,25 +78,30 @@ def main():
     # FRONT (looks +Y; right = +X, up = +Z)
     s = sheet("front")
     s.dim_h(-W / 2, W / 2, 0, -7, fmt(W))
-    s.dim_v(0, T, -W / 2, -W / 2 - 8, fmt(T))
-    s.dim_v(0, B, W / 2, W / 2 + 6, f"{fmt(B)} base")
+    s.dim_v(0, HI, -W / 2, -W / 2 - 8, fmt(HI))
+    s.dim_v(0, LO, W / 2, W / 2 + 8, fmt(LO))
+    if X1 is not None:
+        s.dim_h(X2, X1, HI, HI + 6, f"S-curve {fmt(X1 - X2)}")
+        s.dim_h(X1, W / 2, HI, HI + 6, fmt(W / 2 - X1))
+        s.dim_h(-W / 2, X2, HI, HI + 6, fmt(X2 + W / 2))
+    s.leader(W / 2 - 1, B / 2, W / 2 + 14, 12, f"{fmt(B)} base")
     lb = d["label_box"]
     s.dim_v(lb[1], lb[3], lb[2], lb[2] + 6, fmt(lb[3] - lb[1]), color=ACCENT)
-    s.dim_v(lb[3], T, lb[0], lb[0] - 5, fmt(T - lb[3]), color=ACCENT)
-    s.leader(lb[0] + 2, lb[1] + 0.5, -W / 2 + 4, 30,
-             f"label {d['label_size']:g} mm bold mono, {fmt(d['engrave'])} deep", color=ACCENT)
+    s.dim_v(lb[3], LO, lb[0], lb[0] - 5, fmt(LO - lb[3]), color=ACCENT)
+    s.leader(lb[0] + 0.5, lb[1] + 0.3, lb[0], 15, f"{fmt(d['engrave'])} deep, cut at 45°",
+             color=ACCENT)
     for sx, sz in d["seps"]:
-        s.leader(sx + d["dot_d"] / 2 * 0.7, sz - d["dot_d"] / 2 * 0.7, sx + 3, 22,
+        s.leader(sx + d["dot_d"] / 2 * 0.7, sz - d["dot_d"] / 2 * 0.7, sx + 3, 26,
                  f"dot Ø{fmt(d['dot_d'])}, {fmt(d['dot_depth'])} deep", color=ACCENT)
     out["front"] = s.svg(f"FRONT  ·  REV {rev}  ·  mm")
 
     # LEFT (looks +X; right = -Y, up = +Z): the long side away from the printer
     s = sheet("left")
     s.dim_h(-D / 2, D / 2, 0, -7, fmt(D))
-    s.dim_v(0, T, -D / 2, -D / 2 - 8, fmt(T))
-    s.leader(D / 2 - 3, T - 0.6, D / 2 - 18, T + 9, f"R{fmt(d['EDGE'])} top edge", anchor="end")
-    out["left"] = s.svg(f"OUTER SIDE  ·  REV {rev}  ·  mm",
-                        "Printer side (+X) is identical; the bin is symmetric")
+    s.dim_v(0, HI, -D / 2, -D / 2 - 8, fmt(HI))
+    s.leader(D / 2 - 3, HI - 0.6, D / 2 - 18, HI + 9, f"R{fmt(d['EDGE'])} top edge", anchor="end")
+    out["left"] = s.svg(f"BACKBOARD (FAR SIDE)  ·  REV {rev}  ·  mm",
+                        f"Printer side (+X) is {fmt(LO)} tall; front and back ends carry the S-curve")
 
     # TOP (looks -Z; right = +X, up = +Y)
     s = sheet("top")

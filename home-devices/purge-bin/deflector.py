@@ -3,12 +3,12 @@ toolhead flicks sideways into a straight drop, onto the low end of the purge bin
 
 The mount and the hood's envelope follow a proven community design ("Poop deflector (A1,
 A1 mini, AMS)", MakerWorld), measured from its STEP: a C-clip that wraps the two round ends
-of the wiper's 34.4 x 16 mm oval, and a hood beside it - open on the side the purge comes
+of the wiper's 34.4 x 14.2 mm oval, and a hood beside it - open on the side the purge comes
 from, a roof with a 45-degree lip, and a floor ramp that ends in a 22 x 14 mm drop opening.
 Staying inside that envelope keeps clear of printer parts we have not measured.
 
-House style on top: one black part, 3 mm plan corners, the 1.2 mm top edge, the clip block
-hollowed (it carried 9 cm3 of solid plastic), no logo.
+House style on top: one black part, 3 mm plan corners, the 1.2 mm top edge, no logo. (The clip block stays solid: a
+pocket would need a 36 mm bridge under the wiper seat, and sparse infill hollows it anyway.)
 
 Heat: the air there stays well under PLA's ~55 C softening point, but fresh purge lands on
 the ramp at ~220 C and can weld to PLA. Print it in PETG if you have it (PLA does not stick
@@ -36,7 +36,7 @@ REV = "A"
 # ---------------------------------------------------------------- reference geometry (mm)
 # wiper oval the clip wraps (from the reference clip's cavity)
 OVAL_X = (4.7, 39.1)        # 34.4 long
-OVAL_Y = (0.0, 16.0)        # 16 deep, round ends r 8
+OVAL_Y = (0.4, 14.6)        # 14.2 deep, round ends r 7.1 (reference cavity sectioned at z 21)
 CLIP_T = 2.4                # clip wall
 MOUTH_X = (8.4, 35.4)       # hook tips leave this opening on +Y
 CLIP_Z = (14.0, 28.0)       # clip height band
@@ -122,11 +122,10 @@ def build():
     # hook tips end where the reference's do (y 15.7): nothing new in front of the wiper
     cutters.append(S.box("tips", HOOD_X[0] - x0 + 2, 10, 40,
                          loc=((x0 + HOOD_X[0]) / 2, 15.7 + 5, 20)))
-    # hollow the clip block from below (prints as a pocket in the -Y-down orientation)
-    px0, px1 = x0 + 1.6, HOOD_X[0] - 0.2
-    cutters.append(S.box("pocket", px1 - px0, (OVAL_Y[0] - 1.6) - (BACK_Y + 1.6), hc - 1.6 + 1,
-                         loc=((px0 + px1) / 2, (BACK_Y + 1.6 + OVAL_Y[0] - 1.6) / 2,
-                              CLIP_Z[0] - 1 + (hc - 1.6 + 1) / 2)))
+    # nothing below z 5 in front of the wiper line: the reference has no material there and
+    # we have not measured what the printer has in that space
+    cutters.append(S.box("under", HOOD_X[1] - HOOD_X[0] + 2, 18, 6,
+                         loc=((HOOD_X[0] + HOOD_X[1]) / 2, 9, 2)))
     # the reference leaves the hood's inner wall off beside the wiper below the clip (the
     # wiper's own mount is there); do the same
     cutters.append(S.box("notch", HOOD_WALL + 1, OVAL_Y[1] + 1, CLIP_Z[0] + 1,

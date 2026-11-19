@@ -25,8 +25,8 @@ Print settings: PRINT_PROCESS (0.08 mm) plus PRINT_SETS, which slows only the ou
 Three wall loops fill the 2.5 mm wall solid (two left a sparse-infill core that ghosts
 through white PLA), twelve top layers (~1 mm) keep the floor from pillowing, and
 elephant-foot compensation keeps the shadow line crisp.
-The shell is turned 90 degrees on the plate so its printer side faces the back of the bed,
-where seam_position=back puts the seam: out of sight against the printer.
+The shell sits on the plate with its back end (+Y) to the back of the bed, where
+seam_position=back puts the seam: on the plain back end, never on the label face.
 
 Fit under the gantry: 70 mm measured clearance vs 52.2 mm bin (GANTRY_CLEAR below).
 """
@@ -51,7 +51,7 @@ PRINT_SETS = {"wall_loops": "3", "top_shell_layers": "12", "elefant_foot_compens
               "top_surface_speed": "100",      # calmer floor finish, cheaper than ironing
               # rev B showed faint layer lines: inner walls at ~300 mm/s behind a 60 mm/s
               # outer wall swing the nozzle pressure every loop. Keep them closer.
-              "inner_wall_speed": "120"}
+              "inner_wall_speed": "120", "inner_wall_acceleration": "3000"}
 
 # ---------------------------------------------------------------- size (mm)
 W, D = 90.0, 150.0          # footprint: across x along the printer's side (rev B: 72 wide)
@@ -85,6 +85,8 @@ RIM_CH = 0.5                # 45-deg inside chamfer; leaves a 0.8 mm flat = two 
 GANTRY_CLEAR = 70.0         # mm above the desk, lowest moving part over the bin (owner measured)
 DEFLECTOR_DROP = 14.0       # the clip-on deflector hangs this far below the wiper (deflector.py)
 assert LOW <= GANTRY_CLEAR - DEFLECTOR_DROP - 5, "low rim too close to the deflector"
+# the rim passes 70 mm for x < -9.2: only the far 55 mm of the width; nothing on the printer
+# may pass over that zone at its lowest Z (owner to confirm against the gantry end)
 
 # base-to-shell locating pins
 PIN_D, PIN_H, PIN_CH = 3.0, 1.8, 0.4      # pin with a 0.4 mm lead-in chamfer on its tip
@@ -201,29 +203,36 @@ def shell_mesh():
     """The white shell as one swept surface: rings around the plan outline, each ring a step of
     the wall's cross-section (outside, rim fillet, rim, inner chamfer, inside, floor fillet).
     Each point's rim height comes from rim_z() at the outer outline's x, so the whole cross
-    section - fillet included - rides the S-curve and stays a true fillet across the wall."""
+    section - fillet included - rides the S-curve; rim features are offset square to the rim."""
     import bmesh
     base_pts = outline(0.0)
     zt = [rim_z(p[0]) for p in base_pts]
-    prof = [(0.0, lambda z: BASE_T)]                         # (offset d, z from rim height)
+    # rim slope along the wall: the rim fillet and chamfer are offset along the rim's normal
+    # (-z', 0, 1)/L, i.e. square to the rim, so they keep full size on the steep S-curve
+    slope = [(rim_z(p[0] + 0.01) - rim_z(p[0] - 0.01)) / 0.02 for p in base_pts]
+    prof = [(0.0, "abs", BASE_T)]                     # (inward offset d, kind, value)
     ne = S.arc_segments(EDGE, 90, minimum=6)
     for k in range(ne + 1):
         t = math.pi / 2 * k / ne
-        prof.append((EDGE * (1 - math.cos(t)), lambda z, t=t: z - EDGE + EDGE * math.sin(t)))
-    prof.append((WALL - RIM_CH, lambda z: z))
-    prof.append((WALL, lambda z: z - RIM_CH))
+        prof.append((EDGE * (1 - math.cos(t)), "rim", -EDGE + EDGE * math.sin(t)))
+    prof.append((WALL - RIM_CH, "rim", 0.0))
+    prof.append((WALL, "rim", -RIM_CH))
     zf = BASE_T + FLOOR
     nf = S.arc_segments(FLOOR_R, 90, minimum=8)
     for k in range(nf + 1):
         t = math.pi / 2 * k / nf
-        prof.append((WALL + FLOOR_R * (1 - math.cos(t)),
-                     lambda z, t=t: zf + FLOOR_R - FLOOR_R * math.sin(t)))
+        prof.append((WALL + FLOOR_R * (1 - math.cos(t)), "abs",
+                     zf + FLOOR_R - FLOOR_R * math.sin(t)))
     bm = bmesh.new()
     rings = []
-    for d, zfun in prof:
+    for d, kind, val in prof:
         ring = []
-        for (x, y, nx, ny), z in zip(outline(d), zt):
-            ring.append(bm.verts.new((x, y, zfun(z))))
+        for (x, y, nx, ny), z, zp in zip(outline(d), zt, slope):
+            if kind == "abs":
+                ring.append(bm.verts.new((x, y, val)))
+            else:
+                L = math.hypot(1.0, zp)
+                ring.append(bm.verts.new((x - val * zp / L, y, z + val / L)))
         rings.append(ring)
     n = len(base_pts)
     for r0, r1 in zip(rings[:-1], rings[1:]):
@@ -299,9 +308,28 @@ def main():
     os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
     S.export_stl(shell, os.path.join(HERE, "stl", "purge_bin_shell_white.stl"))
     S.export_stl(base, os.path.join(HERE, "stl", "purge_bin_base_black.stl"))
-    # turned 90 deg: the printer side (+X) faces the back of the bed, where the seam goes
-    write_3mf(shell, os.path.join(HERE, "purge_bin_shell_white.3mf"), rot_z=math.pi / 2)
+        # model +Y faces the bed back: seam_position=back puts the seam on the plain back face (at
+    # 90 deg it rode the S-curve crest on the label face), and the 150 mm backboard runs along
+    # the bed's Y travel instead of taking its acceleration face-on
+    write_3mf(shell, os.path.join(HERE, "purge_bin_shell_white.3mf"))
     write_3mf(base, os.path.join(HERE, "purge_bin_base_black.3mf"))
+
+    if "--coupon" in args:
+        # finish test: a 70 x 12 mm piece of the front wall up to 50 mm (label, low rim, start
+        # of the S-curve). Same plate orientation as the shell, so seams and speeds match.
+        cp = shell.copy()
+        cp.data = shell.data.copy()
+        bpy.context.collection.objects.link(cp)
+        keep = S.box("keep", 70, 12, 50 - BASE_T,
+                     loc=(12.5, -D / 2 + 6 - 0.001, (50 + BASE_T) / 2 - 0.001))
+        md = cp.modifiers.new("k", "BOOLEAN")
+        md.operation, md.solver, md.object = "INTERSECT", "EXACT", keep
+        S.bake(cp)
+        bpy.data.objects.remove(keep, do_unlink=True)
+        cp.name = "Coupon"
+        print("coupon", S.dims(cp), round(S.volume(cp)))
+        write_3mf(cp, os.path.join(HERE, "coupon_wall_white.3mf"))
+        bpy.data.objects.remove(cp, do_unlink=True)
 
     root = S.to_studio([shell, base] + extras)
     S.studio()
@@ -352,9 +380,14 @@ def main():
         S.camera((-0.03, -0.17, 0.065), target=(0, -D / 2 * m, LABEL_Z * m), lens=100)
         S.render(os.path.join(out, "d_label.png"))
         cx, cy = -W / 2 * m, -D / 2 * m
-        S.camera((cx - 0.07, cy - 0.09, 0.075), target=(cx + 0.006, cy + 0.006, TOP * m - 0.004),
-                 lens=100)
+        S.camera((cx - 0.07, cy - 0.09, HIGH * m + 0.02), target=(cx + 0.006, cy + 0.006,
+                 HIGH * m - 0.004), lens=100)
         S.render(os.path.join(out, "d_corner.png"))
+        # the rim fillet on the steepest part of the S-curve (x ~ -10.5)
+        xc = -10.5
+        S.camera((xc * m - 0.05, cy - 0.11, rim_z(xc) * m + 0.03),
+                 target=(xc * m, cy, rim_z(xc) * m - 0.002), lens=100)
+        S.render(os.path.join(out, "d_curve.png"))
         S.camera((cx - 0.09, cy - 0.07, 0.012), target=(cx + 0.006, cy + 0.006, 0.003), lens=100)
         S.render(os.path.join(out, "d_shadowline.png"))
         S.camera((0.03, -0.12, 0.17), target=(0, -0.035, 0.008), lens=60)
@@ -367,7 +400,7 @@ def main():
         sc.view_layers[0].material_override = grey
         meta = {}
         # framed so every dimension line fits (drawings are 3:2; top view is 150 mm tall)
-        views = {"front": ((0, 0, HIGH / 2), 0.175), "left": ((0, 0, HIGH / 2), 0.230),
+        views = {"front": ((0, 0, HIGH / 2 + 4), 0.205), "left": ((0, 0, HIGH / 2), 0.230),
                  "top": ((0, 0, HIGH / 2), 0.270)}
         for v, (c, scale) in views.items():
             S.ortho_camera(v, tuple(k * m for k in c), scale)
@@ -382,12 +415,12 @@ def main():
         for o in (shell, base):
             md = o.modifiers.new("sec", "BOOLEAN")
             md.operation, md.solver, md.object = "DIFFERENCE", "EXACT", sec
-        c = (0, 0, HIGH / 2)
-        cam = S.ortho_camera("front", tuple(k * m for k in c), 0.175)
+        c = (0, 0, HIGH / 2 + 4)
+        cam = S.ortho_camera("front", tuple(k * m for k in c), 0.205)
         cam.location.y = PIN_XY[0][1] * m - 0.5      # 0.5 m in front of the cut plane
         cam.data.clip_start, cam.data.clip_end = 0.4998, 0.7
         S.render(os.path.join(out, "dwg_section.png"))
-        meta["section"] = {"view": "front", "center_mm": c, "scale_mm": 175.0,
+        meta["section"] = {"view": "front", "center_mm": c, "scale_mm": 205.0,
                            "res": [sc.render.resolution_x, sc.render.resolution_y]}
         with open(os.path.join(out, "dwg_cameras.json"), "w") as f:
             json.dump(meta, f, indent=1)

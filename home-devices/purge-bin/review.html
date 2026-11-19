@@ -93,125 +93,127 @@ dialog.lb::backdrop { background: var(--bg); }
 
 <div class="wrap">
   <header>
-    <span class="tag">Home devices · Printer accessory · Rev B</span>
+    <span class="tag">Home devices · Printer accessory · Rev C</span>
     <h1>Purge Bin<span class="dot"></span></h1>
-    <p class="lede">A slim side bin for the A1 Mini. It sits on the desk against the printer's left side, under the end of the gantry where the wiper drops purged filament. Same family as the hub: white shell, black base set in as a shadow line, 10 mm corners, one small engraved label.</p>
+    <p class="lede">Rev C adds a backboard. The rim stays low on the printer side so it tucks under the gantry, then sweeps up in one S-curve to a 100 mm wall that catches purge flung sideways. A small black deflector clips onto the nozzle wiper and drops most purge straight down. The bin is wider for a steadier footprint, and the label's letters are now cut at 45° so their tops don't sag.</p>
     <div class="facts">
-      <div><span class="tag">Size</span><b>72 × 150 × 52.16</b><span class="muted">mm</span></div>
-      <div><span class="tag">Holds</span><b>~0.44 L</b><span class="muted">months of purge</span></div>
-      <div><span class="tag">Shell · white</span><b>4 h 23 m</b><span class="muted">90 g · 0.08 mm</span></div>
-      <div><span class="tag">Base · black</span><b>34 m</b><span class="muted">23 g · 0.12 mm</span></div>
+      <div><span class="tag">Size</span><b>90 × 150 × 100</b><span class="muted">mm · 45 at the printer side</span></div>
+      <div><span class="tag">Shell · white</span><b>8 h 21 m</b><span class="muted">128 g · 0.08 mm</span></div>
+      <div><span class="tag">Base · black</span><b>41 m</b><span class="muted">29 g · 0.12 mm</span></div>
+      <div><span class="tag">Deflector · black</span><b>38 m</b><span class="muted">11 g · 0.12 mm</span></div>
     </div>
   </header>
 
   <figure>
-    <img src="renders/bin_hero.jpg" alt="White purge bin with a thin black base line and a small engraved PURGE · A1M label on its front end" width="1600" height="1200">
-    <figcaption><span><b>Hero.</b> The black base sits 0.6 mm inside the shell, so from the desk it reads as a shadow, like the hub.</span><span class="n">01</span></figcaption>
+    <img src="renders/bin_hero.jpg" alt="White purge bin whose rim sweeps from a low printer side up to a tall back wall, with a black base line and a small engraved label" width="1600" height="1200">
+    <figcaption><span><b>Hero.</b> Low where it meets the printer, tall where purge gets flung. One continuous R1.2 edge follows the whole curve.</span><span class="n">01</span></figcaption>
   </figure>
 
   <section>
-    <div class="sec-head"><span class="tag">Fit</span><h2>Clears the gantry by 17.8 mm</h2></div>
+    <div class="sec-head"><span class="tag">Fit</span><h2>What it assumes about your printer</h2></div>
     <div class="ask">
-      <p>You measured 70 mm under the left end of the gantry. The bin is 52.16 mm tall, so the rim sits 17.8 mm below anything that moves over it. <code>purge_bin.py</code> now holds that 70 mm and stops the build if the bin ever grows within 5 mm of it.</p>
-      <p class="muted">Placement: line the bin up under the wiper, with the long side against the printer. The 67 × 145 mm opening leaves plenty of room either side of where the purge drops.</p>
+      <p><b>Printer side, 45 mm.</b> You measured 70 mm under the gantry's left end. The deflector hangs about 14 mm below the wiper, so the low rim keeps 11 mm clear of it. <code>purge_bin.py</code> stops the build if that drops under 5 mm.</p>
+      <p><b>Backboard, 100 mm.</b> The rim passes 70 mm only in the far 55 mm of the width (more than 35 mm from the printer side). Nothing on the printer may pass over that zone at its lowest Z. Please check this against the gantry end before the long print.</p>
+      <p class="muted">Not measured yet: the deflector's real height and where its drop opening sits over the bin. Clip it on, lower Z, and look. The low end is 85 × 145 mm inside, so it has room to be off a little.</p>
     </div>
   </section>
 
   <section>
     <div class="sec-head"><span class="tag">Views</span><h2>Around the bin</h2></div>
     <div class="grid2">
-      <figure><img src="renders/bin_top.jpg" alt="Looking down into the bin" width="1600" height="1200" loading="lazy"><figcaption><span><b>Top.</b> 67 × 145 mm opening, all of it free to catch.</span><span class="n">02</span></figcaption></figure>
-      <figure><img src="renders/bin_front.jpg" alt="Front end of the bin at eye level" width="1600" height="1200" loading="lazy"><figcaption><span><b>Front.</b> The only face with a mark on it.</span><span class="n">03</span></figcaption></figure>
-      <figure><img src="renders/bin_exploded.jpg" alt="Shell lifted above the black base, showing four small locating pins" width="1600" height="1200" loading="lazy"><figcaption><span><b>Exploded.</b> Four chamfered pins locate the shell on the base.</span><span class="n">04</span></figcaption></figure>
-      <figure><img src="renders/bin_cutaway.jpg" alt="Bin cut through two pins, showing the wall, filleted floor and pin holes" width="1600" height="1200" loading="lazy"><figcaption><span><b>Cutaway.</b> A 6 mm fillet inside the floor, so purge slides out when you tip it.</span><span class="n">05</span></figcaption></figure>
-      <figure><img src="renders/bin_underside.jpg" alt="Bin upside down showing the black base" width="1600" height="1200" loading="lazy"><figcaption><span><b>Underside.</b> Plain black plate; the stray reflections are the studio lights.</span><span class="n">06</span></figcaption></figure>
-      <figure><img src="renders/d_inside.jpg" alt="Close-up into the bin past the chamfered rim" width="1400" height="1050" loading="lazy"><figcaption><span><b>Inside.</b> 1.2 mm round outside, 0.5 mm chamfer inside: soft to grip and tip.</span><span class="n">07</span></figcaption></figure>
+      <figure><img src="renders/bin_front.jpg" alt="Front end of the bin showing the S-curve profile and the label" width="1600" height="1200" loading="lazy"><figcaption><span><b>Front.</b> The profile: 33 mm flat at 45, a 45 mm S-curve, 12 mm flat at 100.</span><span class="n">02</span></figcaption></figure>
+      <figure><img src="renders/bin_top.jpg" alt="Looking down into the bin" width="1600" height="1200" loading="lazy"><figcaption><span><b>Top.</b> 85 × 145 mm inside.</span><span class="n">03</span></figcaption></figure>
+      <figure><img src="renders/bin_cutaway.jpg" alt="Bin cut on the printer side through two pins, showing the backboard from inside" width="1600" height="1200" loading="lazy"><figcaption><span><b>Cutaway.</b> The backboard from inside, with the R6 floor fillet.</span><span class="n">04</span></figcaption></figure>
+      <figure><img src="renders/bin_exploded.jpg" alt="Shell lifted above the black base" width="1600" height="1200" loading="lazy"><figcaption><span><b>Exploded.</b> Same four-pin base, now 88.8 × 148.8.</span><span class="n">05</span></figcaption></figure>
     </div>
   </section>
 
   <section>
     <div class="sec-head"><span class="tag">Details</span><h2>Close-ups</h2></div>
     <div class="grid2">
-      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved PURGE · A1M label" width="1400" height="1050" loading="lazy"><figcaption><span><b>Label.</b> 6 mm bold mono, 0.6 mm deep. The house dot is 1.2 mm deep.</span><span class="n">08</span></figcaption></figure>
-      <figure><img src="renders/d_corner.jpg" alt="Close-up of the top corner" width="1400" height="1050" loading="lazy"><figcaption><span><b>Corner.</b> R10 plan corner running into the R1.2 top edge.</span><span class="n">09</span></figcaption></figure>
-      <figure><img src="renders/d_shadowline.jpg" alt="Close-up of the black base line at the bottom corner" width="1400" height="1050" loading="lazy"><figcaption><span><b>Shadow line.</b> 0.6 mm inset, concentric R9.4 corners.</span><span class="n">10</span></figcaption></figure>
+      <figure><img src="renders/d_curve.jpg" alt="Close-up of the rim fillet on the steepest part of the S-curve" width="1400" height="1050" loading="lazy"><figcaption><span><b>The curve.</b> On the steepest part (62°), the fillet is built square to the rim so it keeps its full 1.2 mm.</span><span class="n">06</span></figcaption></figure>
+      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved PURGE · A1M label" width="1400" height="1050" loading="lazy"><figcaption><span><b>Label.</b> It looks the same from the front, but the cut now slopes down 45° into the wall.</span><span class="n">07</span></figcaption></figure>
+      <figure><img src="renders/d_corner.jpg" alt="Close-up of the top corner of the backboard" width="1400" height="1050" loading="lazy"><figcaption><span><b>Backboard corner.</b> The R10 plan corner meets the R1.2 edge.</span><span class="n">08</span></figcaption></figure>
+      <figure><img src="renders/d_shadowline.jpg" alt="Close-up of the black base line" width="1400" height="1050" loading="lazy"><figcaption><span><b>Shadow line.</b> Inset 0.6 mm, as on the hub.</span><span class="n">09</span></figcaption></figure>
     </div>
   </section>
 
   <section>
-    <div class="sec-head"><span class="tag">House mark</span><h2>The dot</h2>
-      <p class="muted">Every product label splits its words with the house dot instead of a slash. It's modelled geometry, not a font glyph: Ø1.3 mm at 6 mm text, centred on the cap height like a dot-product dot, and cut 1.2 mm deep, twice the letters, so it always reads a shade darker.</p></div>
-    <figure><img src="renders/sep_dot.jpg" alt="Label PURGE · A1M with a round engraved dot centred on the letters" width="1400" height="1050" loading="lazy"><figcaption><span><b>House standard.</b> Ø1.3 mm dot, 1.2 mm deep, centred on the capitals.</span><span class="n">S1</span></figcaption></figure>
-    <p class="muted">Also considered:</p>
-    <div class="grid3">
-      <figure><img src="renders/sep_inlay.jpg" alt="Label with a red filament dot inlaid between the words" width="1400" height="1050" loading="lazy"><figcaption><span><b>Red inlay.</b> A stub of red 1.75 mm filament, trimmed flush.</span><span class="n">S2</span></figcaption></figure>
-      <figure><img src="renders/sep_ring.jpg" alt="Label with a small open ring between the words" width="1400" height="1050" loading="lazy"><figcaption><span><b>Ring.</b> Ø2.2 mm with a 0.6 mm stroke.</span><span class="n">S3</span></figcaption></figure>
-      <figure><img src="renders/sep_pair.jpg" alt="Label with two stacked dots between the words" width="1400" height="1050" loading="lazy"><figcaption><span><b>Pair.</b> Two stacked dots, like a ratio colon.</span><span class="n">S4</span></figcaption></figure>
+    <div class="sec-head"><span class="tag">Deflector</span><h2>Clips on the wiper, drops purge straight down</h2>
+      <p class="muted">The mount and outer envelope come from the community design you found ("Poop deflector (A1, A1 mini, AMS)"), measured from its STEP. The C-clip wraps the two round ends of the wiper's 34.4 × 14.2 mm oval. The hood is open on the side purge comes from, has a roof with a 45° lip, and a ramp that ends in a 22 × 14 mm drop opening. It stays inside the reference's outline everywhere, so it can't reach printer parts we haven't measured. House style: black, one continuous R1.2 top edge, no logo.</p></div>
+    <div class="grid2">
+      <figure><img src="renders/defl_back.jpg" alt="Black deflector from the side where purge enters" width="1400" height="1050" loading="lazy"><figcaption><span><b>Entry side.</b> Purge flies into the hood here.</span><span class="n">F1</span></figcaption></figure>
+      <figure><img src="renders/defl_front.jpg" alt="Black deflector from the clip side" width="1400" height="1050" loading="lazy"><figcaption><span><b>Clip side.</b> The hooks wrap the wiper's round ends. Slide it down over the wiper; don't spread it.</span><span class="n">F2</span></figcaption></figure>
+      <figure><img src="renders/defl_top.jpg" alt="Deflector from above" width="1400" height="1050" loading="lazy"><figcaption><span><b>Top.</b> 62.7 × 32.7 × 28 mm.</span><span class="n">F3</span></figcaption></figure>
+      <figure><img src="renders/defl_under.jpg" alt="Deflector upside down showing the ramp and drop opening" width="1400" height="1050" loading="lazy"><figcaption><span><b>Underside.</b> The ramp, and the opening the purge drops through.</span><span class="n">F4</span></figcaption></figure>
     </div>
+    <p class="muted"><b>Heat:</b> the air there stays well under PLA's ~55 °C softening point, but fresh purge lands on the ramp at about 220 °C and can weld to PLA. Print it in PETG if you have it, since PLA doesn't stick to PETG. Otherwise line the ramp with kapton or aluminium tape, as the original's author recommends.</p>
   </section>
 
   <section>
     <div class="sec-head"><span class="tag">Drawings · mm</span><h2>Dimensions</h2><span class="hint">Click any image to open it full size; click again for 1:1 pixels.</span></div>
     <div class="dwgs">
-      <figure class="paper"><img src="renders/dwg_front.svg" alt="Front drawing with overall width, height and label position" loading="lazy"><figcaption><span><b>Front.</b></span><span class="n">D1</span></figcaption></figure>
-      <figure class="paper"><img src="renders/dwg_section.svg" alt="Section through the pins with wall, floor and pin dimensions" loading="lazy"><figcaption><span><b>Section through pins.</b></span><span class="n">D2</span></figcaption></figure>
-      <figure class="paper"><img src="renders/dwg_top.svg" alt="Top drawing with footprint and corner radius" loading="lazy"><figcaption><span><b>Top.</b> Printer is on the right.</span><span class="n">D3</span></figcaption></figure>
-      <figure class="paper"><img src="renders/dwg_left.svg" alt="Side drawing with length and height" loading="lazy"><figcaption><span><b>Outer side.</b></span><span class="n">D4</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_front.svg" alt="Front drawing with the S-curve profile, heights and label position" loading="lazy"><figcaption><span><b>Front.</b> Printer side on the right.</span><span class="n">D1</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_section.svg" alt="Section through the pins" loading="lazy"><figcaption><span><b>Section through pins.</b></span><span class="n">D2</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_top.svg" alt="Top drawing with footprint" loading="lazy"><figcaption><span><b>Top.</b></span><span class="n">D3</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_left.svg" alt="Backboard side drawing" loading="lazy"><figcaption><span><b>Backboard.</b></span><span class="n">D4</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Your rev B print</span><h2>Layer lines and squashed letters</h2></div>
+    <div class="rows">
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Letter tops compressed</h3><p class="muted">Each letter was a pocket with a flat ceiling, which is an unsupported overhang on a vertical wall, so it sagged. The cut now slopes 45° downward into the wall, so every ceiling is self-supporting. Checked in the G-code: no layer overhangs the one below by more than 0.19 mm at the face (rev B had 0.6 mm spans). It's now the default for every <code>S.product_label()</code>.</p></div></div>
+      <div class="row"><span class="pill open">Test first</span><div><h3>Visible layer lines</h3><p class="muted">Likely cause: the inner walls ran at about 300 mm/s and 6000 mm/s² right behind a 60 mm/s outer wall, so nozzle pressure swung on every loop. Rev C slows them to 120 mm/s and 3000 mm/s². That's still a guess, so I made a 1 h 11 m coupon (a piece of the front wall with the label and the low rim) at the new settings. Compare it with your rev B bin before committing 8 hours. If the lines persist, run flow-dynamics calibration for PLA Matte next.</p></div></div>
     </div>
   </section>
 
   <section>
     <div class="sec-head"><span class="tag">Design review</span><h2>What the review found, and what changed</h2></div>
-    <p class="muted">Independent review against the house checklist: geometry, mesh health, and every layer of the sliced G-code.</p>
+    <p class="muted">Independent review of both parts: geometry, mesh health, and the sliced G-code, layer by layer.</p>
     <div class="rows">
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fit under the gantry wasn't measured</h3><p class="muted">You measured 70 mm of clearance against a 52.16 mm bin. The model now checks it.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Wall printed as two shells around sparse infill</h3><p class="muted">The infill grid would ghost through white PLA. Now three wall loops: six solid lines across the 2.5 mm wall (checked at z = 20).</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Seam ran down the outward-facing side</h3><p class="muted">The shell is now turned 90° on the plate with the seam set to the back. 741 of 770 outer-wall starts now land on the printer-facing side, out of sight.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Pins too tight to drop the shell on blind</h3><p class="muted">Holes are now Ø3.4 and pins Ø3.0 × 1.8 with a 0.4 mm lead-in, leaving 0.6 mm of clearance at the tips. You can glue it with CA or leave it loose.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Floor would pillow</h3><p class="muted">Twelve top layers (about 1 mm of skin) instead of five.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Sharp inside rim, elephant's foot at the shadow line</h3><p class="muted">Added a 0.5 mm chamfer inside the rim, leaving a flat exactly two lines wide, and 0.15 mm elephant-foot compensation.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Label said A1, not A1 Mini</h3><p class="muted">Now <code>PURGE · A1M</code>. Every letter survives on all 31 layers it spans.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fillets looked low-poly</h3><p class="muted">Edge fillets used a fixed 6 facets, so the 6 mm inside-floor fillet had 1.6 mm flats that showed as bands. Every curve is now faceted by its radius, within 0.005 mm of the true arc, and the shell prints at 0.08 mm layers.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Flat faces between layers at 0.08 mm</h3><p class="muted">The rim top and floor fell exactly on a layer boundary, so the slicer printed the rim 0.04 mm proud and over-filled its top line. The shell is now 49.16 mm and the floor 3.64 mm, both on whole layers. Gap fill under the rim runs at 60 mm/s and the floor's top surface at 100 mm/s.</p></div></div>
-      <div class="row"><span class="pill kept">Kept</span><div><h3>No feet on the base</h3><p class="muted">Glued, it's one solid part and doesn't slide. Stick-on bumpers work if you want them.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Deflector clip 1.8 mm loose</h3><p class="muted">I'd modelled the wiper oval as 16 mm deep; the reference cavity is 14.2 with R7.1 ends. Corrected, so the clip grips like the original.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Seam rode the curve on the label face</h3><p class="muted">With the shell turned 90°, every layer above 45 mm started its wall on the S-curve crest of the front face. The shell now sits with its back end to the bed's back: 1,115 of 1,211 layers start on the plain back end, and the rest are inside the pin holes or the engraved letters. The 150 mm backboard now also runs along the bed's travel, not across it.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Deflector reached below the reference outline</h3><p class="muted">Its outer hood wall went down to z 0 in front of the wiper, where the original has nothing and we haven't measured. Trimmed to match.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>36 mm bridge inside the clip</h3><p class="muted">The hollowed clip block needed a long bridge right under the wiper seat. The block is solid again; sparse infill hollows it anyway.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Rim fillet thinned on the steep curve</h3><p class="muted">It was offset straight down, which shrank it to 0.55 mm at 62°. It's now built square to the rim.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Grooves where the deflector's blocks met</h3><p class="muted">Two rounded blocks met in a half-fillet groove. The whole top outline is now filleted in one pass, after every cut.</p></div></div>
+      <div class="row"><span class="pill kept">Checked</span><div><h3>Backboard stiffness</h3><p class="muted">The 2.5 mm wall with its returns works as a U-channel: under 0.5 mm of flex at the top for 1 N. Purge hitting it is negligible.</p></div></div>
     </div>
   </section>
 
   <section>
-    <div class="sec-head"><span class="tag">Print plan</span><h2>Two plates, one colour each</h2></div>
+    <div class="sec-head"><span class="tag">Print plan</span><h2>Coupon first, then three parts</h2></div>
     <div class="print">
       <div class="plate">
-        <h3><span class="swatch" style="background:#e6e6e2"></span>Shell · white PLA</h3>
-        <dl>
-          <dt>File</dt><dd><code>print_shell_white.gcode.3mf</code></dd>
-          <dt>Orientation</dt><dd>Upright, open top up, no supports</dd>
-          <dt>Time</dt><dd>4 h 23 m</dd>
-          <dt>Filament</dt><dd>~90 g</dd>
-        </dl>
+        <h3><span class="swatch" style="background:#e6e6e2"></span>0 · Wall coupon · white</h3>
+        <dl><dt>File</dt><dd><code>print_coupon_white.gcode.3mf</code></dd><dt>Time</dt><dd>1 h 11 m · ~12 g</dd><dt>Why</dt><dd>Checks the layer-line and label fixes</dd></dl>
       </div>
       <div class="plate">
-        <h3><span class="swatch" style="background:#111112"></span>Base · black PLA</h3>
-        <dl>
-          <dt>File</dt><dd><code>print_base_black.gcode.3mf</code></dd>
-          <dt>Orientation</dt><dd>Flat, pins up</dd>
-          <dt>Time</dt><dd>34 m</dd>
-          <dt>Filament</dt><dd>~23 g</dd>
-        </dl>
+        <h3><span class="swatch" style="background:#111112"></span>1 · Deflector · black</h3>
+        <dl><dt>File</dt><dd><code>print_deflector_black.gcode.3mf</code></dd><dt>Time</dt><dd>38 m · ~11 g</dd><dt>Orientation</dt><dd>On its entry face, no supports</dd></dl>
+      </div>
+      <div class="plate">
+        <h3><span class="swatch" style="background:#e6e6e2"></span>2 · Shell · white</h3>
+        <dl><dt>File</dt><dd><code>print_shell_white.gcode.3mf</code></dd><dt>Time</dt><dd>8 h 21 m · ~128 g</dd><dt>Orientation</dt><dd>Upright, back end to the bed's back</dd></dl>
+      </div>
+      <div class="plate">
+        <h3><span class="swatch" style="background:#111112"></span>3 · Base · black</h3>
+        <dl><dt>File</dt><dd><code>print_base_black.gcode.3mf</code></dd><dt>Time</dt><dd>41 m · ~29 g</dd><dt>Orientation</dt><dd>Flat, pins up</dd></dl>
       </div>
     </div>
     <ul class="plain muted">
-      <li>Shell, for surface finish: 0.08mm Extra Fine @BBL A1M, Bambu PLA Basic, Textured PEI. Changes from the preset: outer wall slowed to 60 mm/s at 2000 mm/s², gap fill 60 mm/s, top surface 100 mm/s, 3 walls, 12 top layers, seam at back, elephant-foot compensation 0.15. Only the visible wall is slowed; the 0.08 High Quality preset slows everything and takes 6 h 30 m for the same look.</li>
-      <li>Base: 0.12mm Fine, 3 walls. Only its 3 mm edge shows, as the shadow line.</li>
-      <li>The times are Bambu Studio CLI estimates. Check them in the Studio GUI before sending.</li>
-      <li>Nothing has been sent to the printer.</li>
+      <li>Shell and coupon: 0.08mm Extra Fine, outer wall 60 mm/s at 2000 mm/s², inner walls 120 mm/s at 3000 mm/s², 3 walls, 12 top layers, seam at back, elephant-foot compensation 0.15.</li>
+      <li>Do the deflector before the shell. Clip it on, then check where the purge drops and how far it hangs at the lowest Z.</li>
+      <li>Times are Bambu Studio CLI estimates. Nothing has been sent to the printer.</li>
     </ul>
   </section>
 
   <section>
-    <div class="sec-head"><span class="tag">Inspiration</span><h2>Where the idea came from</h2></div>
+    <div class="sec-head"><span class="tag">Inspiration</span><h2>Where the ideas came from</h2></div>
     <ul class="plain muted">
-      <li>Most community A1 Mini bins sit under the left side of the printer, under the wiper. That's the placement used here.</li>
-      <li>References: <a href="https://makerworld.com/en/models/484983">A1 Mini Side Tray Organizer &amp; Poop Tray "Slim"</a>, <a href="https://makerworld.com/models/1206775">Poop Holder A1 / A1 Mini</a>, <a href="https://makerworld.com/en/models/15603">A1 mini Purge Bucket Bin</a>, and Bambu's <a href="https://wiki.bambulab.com/en/a1-mini/purge-wiper-replacement">purge wiper page</a>.</li>
+      <li>Deflector mount and envelope: "Poop deflector (A1, A1 mini, AMS)" and its compact bucket, from MakerWorld (the STEP files you sent).</li>
+      <li>Other references: <a href="https://makerworld.com/models/561633">A1 Purge Waste Bin and Deflector</a>, <a href="https://makerworld.com/en/models/484983">A1 Mini Side Tray "Slim"</a>, and Bambu's <a href="https://wiki.bambulab.com/en/a1-mini/purge-wiper-replacement">purge wiper page</a>.</li>
     </ul>
   </section>
 </div>
