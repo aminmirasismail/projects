@@ -1,0 +1,189 @@
+<title>A1 Mini Purge Bin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the hub's dark product sheet, continued. Full-bleed renders, facts in quiet grids, one red accent. */
+:root {
+  --bg: #0d0d0e;
+  --surface: #161617;
+  --ink: #ededeb;
+  --ink-2: #9a9a96;
+  --rule: #2a2a2c;
+  --red: #ff4136;
+  --amber: #e8b43a;
+  --green: #5fc48a;
+  --paper: #ffffff;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-display);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 80px; }
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 64px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.6rem, 8vw, 5rem); font-weight: 700; line-height: 0.95; }
+h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+code { font-family: var(--f-mono); font-size: 0.88em; }
+.tag { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
+.dot { display: inline-block; width: 0.36em; height: 0.36em; border-radius: 50%; background: var(--red); vertical-align: 0.55em; margin-left: 0.06em; }
+a { color: var(--ink); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+header { display: grid; gap: 18px; }
+.lede { font-size: 1.12rem; color: var(--ink-2); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.facts div { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; }
+.facts b { font: 500 1.25rem/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); }
+figure.paper img { background: var(--paper); }
+figcaption { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--ink-2); }
+figcaption b { color: var(--ink); font-weight: 600; }
+figcaption .n { font-family: var(--f-mono); flex: none; }
+.grid2 { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+
+section { display: grid; gap: 24px; }
+.sec-head { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 18px; }
+.sec-head .tag { color: var(--red); }
+
+.ask { background: var(--surface); border-left: 3px solid var(--amber); border-radius: 0 8px 8px 0; padding: 18px 20px; display: grid; gap: 10px; }
+.ask ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 70ch; }
+
+.rows { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.row { background: var(--surface); padding: 14px 18px; display: grid; grid-template-columns: 110px 1fr; gap: 16px; }
+.row > div { min-width: 0; display: grid; gap: 4px; }
+.pill { justify-self: start; align-self: start; font: 500 10.5px/1 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 8px; border-radius: 99px; border: 1px solid currentColor; }
+.pill.fixed { color: var(--green); }
+.pill.open { color: var(--amber); }
+.pill.kept { color: var(--ink-2); }
+.muted { color: var(--ink-2); }
+
+.print { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.plate { background: var(--surface); border-radius: 8px; padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+.plate dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 14px; }
+.plate dt { color: var(--ink-2); }
+.plate dd { margin: 0; font-variant-numeric: tabular-nums; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; border: 1px solid var(--rule); }
+ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 70ch; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; gap: 8px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Home devices · Printer accessory · Rev B</span>
+    <h1>Purge Bin<span class="dot"></span></h1>
+    <p class="lede">A slim side bin for the A1 Mini. It sits on the desk against the printer's left side, under the end of the gantry where the wiper drops purged filament. Same family as the hub: white shell, black base set in as a shadow line, 10 mm corners, one small engraved label.</p>
+    <div class="facts">
+      <div><span class="tag">Size</span><b>72 × 150 × 52.2</b><span class="muted">mm</span></div>
+      <div><span class="tag">Holds</span><b>~0.44 L</b><span class="muted">months of purge</span></div>
+      <div><span class="tag">Shell · white</span><b>1 h 51 m</b><span class="muted">88 g · 0.12 mm</span></div>
+      <div><span class="tag">Base · black</span><b>38 m</b><span class="muted">27 g · 0.12 mm</span></div>
+    </div>
+  </header>
+
+  <figure>
+    <img src="renders/bin_hero.jpg" alt="White purge bin with a thin black base line and a small engraved PURGE / A1M label on its front end" width="1600" height="1200">
+    <figcaption><span><b>Hero.</b> The black base sits 0.6 mm inside the shell, so from the desk it reads as a shadow, like the hub.</span><span class="n">01</span></figcaption>
+  </figure>
+
+  <section>
+    <div class="sec-head"><span class="tag">Before printing</span><h2>One measurement I need from you</h2></div>
+    <div class="ask">
+      <p>I couldn't find reliable numbers online for the space under the left end of the A1 Mini's gantry. The bin is 52 mm tall. If the toolhead or gantry passes over it any lower than about 57 mm above the desk, it will hit the rim on homing.</p>
+      <ol>
+        <li>Home the printer, then lower Z to 0 from the screen. Measure from the desk to the lowest part of the toolhead or gantry at the left end.</li>
+        <li>Watch a purge, or check where the old purge waste lands. Note how far it falls from the printer's left edge and from the front.</li>
+      </ol>
+      <p class="muted">Send me both numbers. I'll set the height and position in <code>purge_bin.py</code> (there's an assert waiting for them) and re-slice.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Views</span><h2>Around the bin</h2></div>
+    <div class="grid2">
+      <figure><img src="renders/bin_top.jpg" alt="Looking down into the bin" width="1600" height="1200" loading="lazy"><figcaption><span><b>Top.</b> 67 × 145 mm opening, all of it free to catch.</span><span class="n">02</span></figcaption></figure>
+      <figure><img src="renders/bin_front.jpg" alt="Front end of the bin at eye level" width="1600" height="1200" loading="lazy"><figcaption><span><b>Front.</b> The only face with a mark on it.</span><span class="n">03</span></figcaption></figure>
+      <figure><img src="renders/bin_exploded.jpg" alt="Shell lifted above the black base, showing four small locating pins" width="1600" height="1200" loading="lazy"><figcaption><span><b>Exploded.</b> Four chamfered pins locate the shell on the base.</span><span class="n">04</span></figcaption></figure>
+      <figure><img src="renders/bin_cutaway.jpg" alt="Bin cut through two pins, showing the wall, filleted floor and pin holes" width="1600" height="1200" loading="lazy"><figcaption><span><b>Cutaway.</b> A 6 mm fillet inside the floor, so purge slides out when you tip it.</span><span class="n">05</span></figcaption></figure>
+      <figure><img src="renders/bin_underside.jpg" alt="Bin upside down showing the black base" width="1600" height="1200" loading="lazy"><figcaption><span><b>Underside.</b> Plain black plate; the stray reflections are the studio lights.</span><span class="n">06</span></figcaption></figure>
+      <figure><img src="renders/d_inside.jpg" alt="Close-up into the bin past the chamfered rim" width="1400" height="1050" loading="lazy"><figcaption><span><b>Inside.</b> 1.2 mm round outside, 0.6 mm chamfer inside: soft to grip and tip.</span><span class="n">07</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Details</span><h2>Close-ups</h2></div>
+    <div class="grid2">
+      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved PURGE / A1M label" width="1400" height="1050" loading="lazy"><figcaption><span><b>Label.</b> 6 mm bold mono, 0.6 mm deep, 5.9 mm below the rim fillet.</span><span class="n">08</span></figcaption></figure>
+      <figure><img src="renders/d_corner.jpg" alt="Close-up of the top corner" width="1400" height="1050" loading="lazy"><figcaption><span><b>Corner.</b> R10 plan corner running into the R1.2 top edge.</span><span class="n">09</span></figcaption></figure>
+      <figure><img src="renders/d_shadowline.jpg" alt="Close-up of the black base line at the bottom corner" width="1400" height="1050" loading="lazy"><figcaption><span><b>Shadow line.</b> 0.6 mm inset, concentric R9.4 corners.</span><span class="n">10</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Drawings · mm</span><h2>Dimensions</h2></div>
+    <div class="grid2">
+      <figure class="paper"><img src="renders/dwg_front.svg" alt="Front drawing with overall width, height and label position" loading="lazy"><figcaption><span><b>Front.</b></span><span class="n">D1</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_section.svg" alt="Section through the pins with wall, floor and pin dimensions" loading="lazy"><figcaption><span><b>Section through pins.</b></span><span class="n">D2</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_top.svg" alt="Top drawing with footprint and corner radius" loading="lazy"><figcaption><span><b>Top.</b> Printer is on the right.</span><span class="n">D3</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_left.svg" alt="Side drawing with length and height" loading="lazy"><figcaption><span><b>Outer side.</b></span><span class="n">D4</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Design review</span><h2>What the review found, and what changed</h2></div>
+    <p class="muted">Independent review against the house checklist: geometry, mesh health, and every layer of the sliced G-code.</p>
+    <div class="rows">
+      <div class="row"><span class="pill open">Open</span><div><h3>Fit under the gantry isn't measured</h3><p class="muted">The model has no printer reference. It needs the two measurements above before it prints.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Wall printed as two shells around sparse infill</h3><p class="muted">The infill grid would ghost through white PLA. Now three wall loops: six solid lines across the 2.5 mm wall (checked at z = 20).</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Seam ran down the outward-facing side</h3><p class="muted">The shell is now turned 90° on the plate with the seam set to the back. 741 of 770 outer-wall starts now land on the printer-facing side, out of sight.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Pins too tight to drop the shell on blind</h3><p class="muted">Holes are now Ø3.4 and pins Ø3.0 × 1.8 with a 0.4 mm lead-in, leaving 0.6 mm of clearance at the tips. You can glue it with CA or leave it loose.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Floor would pillow</h3><p class="muted">Eight top layers instead of five.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Sharp inside rim, elephant's foot at the shadow line</h3><p class="muted">Added a 0.6 mm chamfer inside the rim and 0.15 mm elephant-foot compensation.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Label said A1, not A1 Mini</h3><p class="muted">Now <code>PURGE / A1M</code>. Every letter survives on all 31 layers it spans.</p></div></div>
+      <div class="row"><span class="pill kept">Kept</span><div><h3>No feet on the base</h3><p class="muted">Glued, it's one solid part and doesn't slide. Stick-on bumpers work if you want them.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Print plan</span><h2>Two plates, one colour each</h2></div>
+    <div class="print">
+      <div class="plate">
+        <h3><span class="swatch" style="background:#e6e6e2"></span>Shell · white PLA</h3>
+        <dl>
+          <dt>File</dt><dd><code>print_shell_white.gcode.3mf</code></dd>
+          <dt>Orientation</dt><dd>Upright, open top up, no supports</dd>
+          <dt>Time</dt><dd>1 h 51 m</dd>
+          <dt>Filament</dt><dd>~88 g</dd>
+        </dl>
+      </div>
+      <div class="plate">
+        <h3><span class="swatch" style="background:#111112"></span>Base · black PLA</h3>
+        <dl>
+          <dt>File</dt><dd><code>print_base_black.gcode.3mf</code></dd>
+          <dt>Orientation</dt><dd>Flat, pins up</dd>
+          <dt>Time</dt><dd>38 m</dd>
+          <dt>Filament</dt><dd>~27 g</dd>
+        </dl>
+      </div>
+    </div>
+    <ul class="plain muted">
+      <li>Settings: 0.12mm Fine @BBL A1M, Bambu PLA Basic, Textured PEI. Changes from the preset: 3 walls, 8 top layers, seam at back, elephant-foot compensation 0.15.</li>
+      <li>The times are Bambu Studio CLI estimates. Check them in the Studio GUI before sending.</li>
+      <li>Nothing has been sent to the printer.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Inspiration</span><h2>Where the idea came from</h2></div>
+    <ul class="plain muted">
+      <li>Most community A1 Mini bins sit under the left side of the printer, under the wiper. That's the placement used here.</li>
+      <li>References: <a href="https://makerworld.com/en/models/484983">A1 Mini Side Tray Organizer &amp; Poop Tray "Slim"</a>, <a href="https://makerworld.com/models/1206775">Poop Holder A1 / A1 Mini</a>, <a href="https://makerworld.com/en/models/15603">A1 mini Purge Bucket Bin</a>, and Bambu's <a href="https://wiki.bambulab.com/en/a1-mini/purge-wiper-replacement">purge wiper page</a>.</li>
+    </ul>
+  </section>
+</div>
