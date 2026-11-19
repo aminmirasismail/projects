@@ -115,20 +115,54 @@ def mesh_report(path):
 
 
 # ------------------------------------------------------------------ slice
+def resolve(kind, name):
+    """A system preset with its whole 'inherits' chain merged in (child wins).
+    The CLI does NOT do this reliably: given 'Bambu PLA Basic @BBL A1M' it sliced at 200 C,
+    2 mm3/s and 500 mm/s2 (generic fallbacks) instead of 220 C, 21 mm3/s, 6000 mm/s2."""
+    folder = os.path.join(PROFILES, kind)
+    by_name = {}
+    for f in os.listdir(folder):
+        if f.endswith(".json"):
+            try:
+                d = json.load(open(os.path.join(folder, f), encoding="utf-8"))
+            except ValueError:
+                continue
+            if "name" in d:
+                by_name[d["name"]] = d
+    chain, n = [], name
+    while n:
+        if n not in by_name:
+            raise SystemExit(f"preset {n!r} not found in {folder}")
+        chain.append(by_name[n])
+        n = by_name[n].get("inherits")
+    merged = {}
+    for d in reversed(chain):
+        merged.update(d)
+    merged.pop("inherits", None)
+    merged["name"] = name
+    merged["from"] = "system"
+    merged["instantiation"] = "true"
+    return merged
+
+
 def slice_part(path, out=None, sets=()):
     out = out or tempfile.mkdtemp(prefix="slice_")
     os.makedirs(out, exist_ok=True)
-    proc = {"type": "process", "name": "printcheck", "from": "User", "inherits": PROCESS,
-            "compatible_printers": [MACHINE], "print_settings_id": "printcheck",
-            "curr_bed_type": BED, "version": "2.0.0.0"}
+    machine = resolve("machine", MACHINE)
+    proc = resolve("process", PROCESS)
+    fil = resolve("filament", FILAMENT)
+    proc.update({"name": "printcheck", "print_settings_id": "printcheck",
+                 "compatible_printers": [MACHINE], "curr_bed_type": BED})
     for s in sets:
         k, v = s.split("=", 1)
         proc[k] = v
-    pj = os.path.join(out, "process.json")
-    json.dump(proc, open(pj, "w"), indent=1)
+    files = {}
+    for key, d in (("machine", machine), ("process", proc), ("filament", fil)):
+        files[key] = os.path.join(out, key + ".json")
+        json.dump(d, open(files[key], "w", encoding="utf-8"), indent=1)
     cmd = [BAMBU, "--arrange", "1", "--orient", "0",
-           "--load-settings", f"{PROFILES}\\machine\\{MACHINE}.json;{pj}",
-           "--load-filaments", f"{PROFILES}\\filament\\{FILAMENT}.json",
+           "--load-settings", f"{files['machine']};{files['process']}",
+           "--load-filaments", files["filament"],
            "--slice", "0", "--export-3mf", "sliced.gcode.3mf", "--outputdir", out,
            os.path.abspath(path)]
     subprocess.run(cmd, cwd=out, capture_output=True)

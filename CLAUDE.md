@@ -82,6 +82,10 @@ building new lighting.
 - Engraved strokes must be wider than the nozzle (aim >= 0.6 mm): use `S.label_font()` (bold
   mono) at ~6 mm. Don't thicken text with the curve `offset`: it self-intersects and wrecks
   booleans (it emptied a whole part once; `S.cut` now raises if that happens).
+- Bambu Studio's CLI does not resolve preset `inherits` chains reliably: it once sliced
+  "Bambu PLA Basic" at 200 C and 2 mm3/s. `printcheck.py` flattens the chains itself; always
+  check temps, volumetric speed and acceleration in the G-code header, and cross-check the
+  estimate against the Studio GUI before sending a print.
 
 ## Open items
 
