@@ -1,17 +1,26 @@
-"""Home Assistant hub enclosure for a Raspberry Pi 5 + official Active Cooler. Rev C.
+"""Home Assistant hub enclosure for a Raspberry Pi 5 + official Active Cooler. Rev D.
 
-Rev C replaces the single red light with a "halo": a 24-LED addressable RGB ring
-under the roof that glows through a 0.6 mm skin of the white shell.
+Rev D is lighting concept D, "underglow": the white shell floats 5 mm above the table on a
+small inset black plinth, and an addressable RGBW strip under the shell's edge washes light
+onto the table. No light goes through the white plastic. Rev C's halo (LED ring under a
+thinned roof) is gone.
 
-Run:  python hub.py [--renders] [--details] [--drawings] [--preview]
+Run:  python hub.py [--renders] [--details] [--light] [--drawings] [--preview]
 Writes hub.blend, stl/*.stl, and optionally renders/*.png plus drawing data.
 
 Printed parts (one colour each, no AMS needed):
-  shell    - white PLA, printed upside-down (roof on the plate)
-  base     - black PLA, printed flat
-  carrier  - black PLA light carrier that holds the LED ring, printed floor-down
-Bought parts: see review.html (Pi 5, cooler, inserts, screws, 24-LED WS2812B ring,
-1N4001 diode, 330 ohm resistor, 470 uF capacitor, three female jumper wires, feet).
+  shell   - white PLA, printed upside-down (roof on the plate)
+  floor   - black PLA, printed flat: closes the shell, carries the Pi and the ESP32
+  plinth  - black PLA, printed upside-down: the foot under the floor plus the downward
+            LED channel round its edge
+Bought parts: Pi 5 + Active Cooler, SK6812 RGBW 5 V 60/m strip (14 LEDs used),
+ESP32-C3 SuperMini, 4x M3 heat-set inserts, 4x M3x12 button-head screws,
+4x M2.5x6 screws, 330 ohm resistor, 1000 uF capacitor, jumper wires, 4 small rubber feet.
+
+Why an ESP32: Home Assistant OS on a Pi 5 can't drive addressable LEDs from the GPIO
+header (no integration for it, and the Pi 5's RP1 chip breaks the usual LED library).
+A ESP32-C3 running ESPHome drives the strip and talks to Home Assistant over Wi-Fi;
+it takes 5 V and ground from the Pi's header.
 """
 import json
 import math
@@ -23,18 +32,26 @@ sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import bpy  # noqa: E402
 import studio as S  # noqa: E402
 
-REV = "C"
+REV = "D"
 
 # ---------------------------------------------------------------- enclosure (mm)
 W, D = 106.0, 80.0          # outer footprint
 R = 12.0                    # plan corner radius
-BASE_T = 3.0                # black base plate
-TOP = 40.0                  # overall height
-SHELL_H = TOP - BASE_T
+LIFT = 5.0                  # gap from the table to the white shell's bottom edge
+SHELL_Z0 = LIFT             # the shell comes all the way down: from the side it floats
+TOP = 40.0                  # overall height (table to roof), as in the concept render
+SHELL_H = TOP - SHELL_Z0
 WALL, ROOF = 2.0, 2.0
 ROOF_IN = TOP - ROOF        # underside of the roof
+FIT = 0.2                   # clearance between the black parts and the shell's inner wall
+SKIRT = 5.0                 # the black parts sit this far up inside the shell's bottom edge
+PLATE_T = 1.4               # plinth top plate; the strip sticks to its underside
+FLOOR_T = 2.5               # black floor plate that carries the Pi and the ESP32
+Z_PLATE_BOT = LIFT + SKIRT - PLATE_T
+FLOOR_Z0 = LIFT + SKIRT
+FLOOR_TOP = FLOOR_Z0 + FLOOR_T
 STANDOFF_H = 4.0
-BOARD_Z = BASE_T + STANDOFF_H        # underside of the Pi PCB
+BOARD_Z = FLOOR_TOP + STANDOFF_H    # underside of the Pi PCB
 PCB_T = 1.6
 BOARD_TOP = BOARD_Z + PCB_T
 
@@ -42,7 +59,9 @@ BOARD_TOP = BOARD_Z + PCB_T
 # Maker guidance: 4.0 mm hole, depth >= insert length + 1 mm, wall >= ~2 mm around it.
 INSERT_HOLE_D, INSERT_HOLE_DEPTH = 4.0, 8.0
 BOSS_D = 9.0
-BOSS = [(sx * 36.0, sy * (D / 2 - WALL - BOSS_D / 2 + 0.3)) for sx in (-1, 1) for sy in (-1, 1)]
+BOSS_X = 38.0               # Rev C had 36; moved out so the strip clears the screw posts
+BOSS = [(sx * BOSS_X, sy * (D / 2 - WALL - BOSS_D / 2 + 0.3)) for sx in (-1, 1)
+        for sy in (-1, 1)]
 
 # ---------------------------------------------------------------- Raspberry Pi 5 data
 # Board coords: u along the 85 mm edge from the SD-card end, v along 56 mm from the
@@ -78,6 +97,7 @@ PI_HOLES = [pi_xy(u, v) for u in PI["holes_u"] for v in PI["holes_v"]]
 FAN_C = pi_xy(30.0, 27.0)
 USBC = pi_xy(PI["usbc_u"], 0)
 DUPONT_TOP = BOARD_TOP + 2.5 + 14.0            # top of a female jumper on a header pin
+HEADER_USED = {"5v": 2, "gnd": 6}              # ESP32 power from the Pi header
 
 _vs = [(v - w / 2, v + w / 2) for _, v, w, _, _, _ in PI["ports"]]
 _ys = sorted([28.0 - a for a, b in _vs] + [28.0 - b for a, b in _vs])
@@ -85,41 +105,88 @@ PORT_WIN = {"y0": _ys[0] - 1.0, "y1": _ys[-1] + 1.0,
             "z0": BOARD_TOP - 1.0, "z1": BOARD_TOP + max(p[3] for p in PI["ports"]) + 1.0}
 USBC_SLOT = (13.0, 7.5)
 
-# ---------------------------------------------------------------- halo light
-# LED ring: Adafruit NeoPixel Ring 24 (product 1586) or equivalent WS2812B 24-LED ring.
-# Clones run 66-68 mm across; the channel fits either.
-RING_N = 24
-RING_OD, RING_ID, RING_PCB_T = 66.0, 52.5, 1.6
-LED_SIZE, LED_H = 5.0, 1.6                     # 5050 package
-LED_R = (RING_OD + RING_ID) / 4                # radius of the LED centres, ~29.6
-CH_R0, CH_R1 = 25.5, 34.0                      # light channel = groove in the roof
-SKIN = 0.6                                     # white PLA left over the LEDs
-GAP = 6.0                                      # LED top to the underside of the skin
-Z_SKIN_IN = TOP - SKIN
-Z_LED_TOP = Z_SKIN_IN - GAP
-Z_RING_TOP = Z_LED_TOP - LED_H
-Z_RING_BOT = Z_RING_TOP - RING_PCB_T
-FLOOR_T, CAR_WALL = 1.2, 1.6
-Z_CAR_BOT = Z_RING_BOT - FLOOR_T
-CAR_TAB_R, CAR_TAB_ANG = 38.5, (0.0, 120.0, 240.0)   # M2.5 screws into roof posts
-CAR_TAB_TOP = ROOF_IN - 5.0
-WIRE_ANG = -68.0                               # where the wires leave the carrier
-VENT_PITCH, VENT_RAD, VENT_HOLE = 3.9, 20.0, 2.2
-# wiring: 5 V on pin 2, ground on pin 6, data on pin 19 (GPIO10, SPI MOSI)
-RING_PINS = {"5v": 2, "gnd": 6, "data": 19}
+# ---------------------------------------------------------------- underglow plinth
+# SK6812 RGBW 5 V, 60 LEDs/m, 10 mm wide, bare (IP30). Cut points every 16.67 mm.
+# The strip can't bend sideways, so it lies flat (LEDs down) in straight runs along the
+# four sides; short jumper wires carry 5 V / GND / data round each corner.
+STRIP_W, STRIP_PCB_T, LED_SIZE, LED_H = 10.0, 0.25, 5.0, 1.6
+PITCH = 1000.0 / 60
+IN_IN = WALL + FIT           # black parts' outline, inset from the shell outline
+LINING_T = 1.0              # black lining inside the skirt: no light reaches the white wall
+LINING_Z = LIFT + 0.3       # bottom of the lining, just above the shell's bottom edge
+FOOT_IN = 14.0              # the foot (inner channel wall) inset from the shell outline
+FOOT_R = 4.0
+CH_IN0, CH_IN1 = IN_IN + LINING_T, FOOT_IN             # channel, inset from outline
+CH_MID = (CH_IN0 + CH_IN1) / 2                         # strip centreline inset
+Z_LED_FACE = Z_PLATE_BOT - STRIP_PCB_T - LED_H
+SCREW_POST_D, SCREW_SEAT = 7.0, LIFT + 2.0   # M3 button head seats here, hidden by the skirt
+SCREW_HEAD_D = 5.7
+N_LONG, N_SHORT = 4, 3
+WIRE_HOLE = (W / 2 - CH_MID, (N_SHORT / 2) * PITCH + 2.0, 5.0)   # x, y, diameter
+FEET = [(sx * 30.0, sy * 16.0) for sx in (-1, 1) for sy in (-1, 1)]
+FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.2
+
+# ---------------------------------------------------------------- ESP32-C3 SuperMini
+ESP_L, ESP_W, ESP_T = 22.5, 18.0, 1.0           # PCB; parts stand ~3 mm off one face
+ESP_X = 45.0                                    # board plane, standing on edge
+ESP_SLOT_W = 1.4
+ESP_PINS = {"5v": 5, "gnd": 6, "data": 2}       # strip data on GPIO2 via 330 ohm
 
 
-def _ring(name, r0, r1, z0, z1, seg=128):
-    outer = S.cylinder(name, 2 * r1, z1 - z0, loc=(0, 0, (z0 + z1) / 2), seg=seg)
+def led_positions():
+    """(x, y, run) of each LED, in chain order: +X side going -Y, -Y side going -X,
+    -X side going +Y, +Y side going +X."""
+    a, b = W / 2 - CH_MID, D / 2 - CH_MID
+    out = []
+    for k in range(N_SHORT):
+        out.append((a, (N_SHORT - 1) / 2 * PITCH - k * PITCH, "+x"))
+    for k in range(N_LONG):
+        out.append(((N_LONG - 1) / 2 * PITCH - k * PITCH, -b, "-y"))
+    for k in range(N_SHORT):
+        out.append((-a, -(N_SHORT - 1) / 2 * PITCH + k * PITCH, "-x"))
+    for k in range(N_LONG):
+        out.append((-(N_LONG - 1) / 2 * PITCH + k * PITCH, b, "+y"))
+    return out
+
+
+def strip_runs():
+    """(x0, y0, x1, y1) of each cut strip segment: one LED pitch per LED."""
+    a, b = W / 2 - CH_MID, D / 2 - CH_MID
+    hs, hl = N_SHORT * PITCH / 2, N_LONG * PITCH / 2
+    return [(a, hs, a, -hs), (hl, -b, -hl, -b), (-a, -hs, -a, hs), (-hl, b, hl, b)]
+
+
+def _ring_rect(name, inset0, inset1, z0, z1, r_out):
+    """Rounded-rectangle band between two insets from the shell outline."""
+    outer = S.rounded_box(name, W - 2 * inset0, D - 2 * inset0, z1 - z0,
+                          r=max(r_out - inset0, 0.5), loc=(0, 0, z0))
     S.bake(outer)
-    inner = S.cylinder(name + "_in", 2 * r0, z1 - z0 + 2, loc=(0, 0, (z0 + z1) / 2), seg=seg)
+    inner = S.rounded_box(name + "_in", W - 2 * inset1, D - 2 * inset1, z1 - z0 + 2,
+                          r=max(r_out - inset1, 0.5), loc=(0, 0, z0 - 1))
     S.cut(outer, inner)
     return outer
 
 
-def _polar(r, deg):
-    a = math.radians(deg)
-    return r * math.cos(a), r * math.sin(a)
+def label_cutter(body, size, right_x, front_y, top_z, depth=0.6):
+    """Engraved label in the bold mono label font, placed by its real bounding box:
+    right edge at right_x, front edge at front_y."""
+    ob = S.text("label", body, size, 2 * depth, loc=(0, 0, top_z), align="LEFT",
+                font=S.label_font())
+    S.bake(ob)
+    vs = [v.co for v in ob.data.vertices]
+    dx = right_x - max(v.x for v in vs)
+    dy = front_y - min(v.y for v in vs)
+    for v in ob.data.vertices:
+        v.co.x += dx
+        v.co.y += dy
+    vs = [v.co for v in ob.data.vertices]
+    box = (min(v.x for v in vs), min(v.y for v in vs), max(v.x for v in vs),
+           max(v.y for v in vs))
+    return ob, box
+
+
+# The separator is a placeholder: the owner is choosing a new one (CLAUDE.md, open items).
+LABEL = {"text": "HOME / 01", "size": 6.0, "right_inset": 14.0, "front_inset": 10.0}
 
 
 def build():
@@ -128,117 +195,110 @@ def build():
 
     # ------------------------------------------------ shell
     shell = S.rounded_box("Shell", W, D, SHELL_H, r=R, r_top=S.EDGE_R, r_bot=0.4,
-                          loc=(0, 0, BASE_T))
+                          loc=(0, 0, SHELL_Z0))
     S.bake(shell)
     cavity = S.rounded_box("cavity", W - 2 * WALL, D - 2 * WALL, SHELL_H - ROOF + 1,
-                           r=R - WALL, loc=(0, 0, BASE_T - 1))
+                           r=R - WALL, loc=(0, 0, SHELL_Z0 - 1))
     S.cut(shell, cavity)
-
     adds = []
-    for x, y in BOSS:
-        h = ROOF_IN - BASE_T + 0.5
-        adds.append(S.cylinder("boss", BOSS_D, h, loc=(x, y, BASE_T + h / 2)))
-    for a in CAR_TAB_ANG:          # short posts under the roof for the carrier screws
-        x, y = _polar(CAR_TAB_R, a)
-        h = ROOF_IN - CAR_TAB_TOP + 0.5
-        adds.append(S.cylinder("car_post", 6.0, h, loc=(x, y, CAR_TAB_TOP + h / 2)))
+    for x, y in BOSS:      # bosses stand on the floor plate, above the skirt
+        h = ROOF_IN - FLOOR_TOP + 0.5
+        adds.append(S.cylinder("boss", BOSS_D, h, loc=(x, y, FLOOR_TOP + h / 2)))
     S.union(shell, adds)
-
     cutters = []
     for x, y in BOSS:
         cutters.append(S.cylinder("insert", INSERT_HOLE_D, INSERT_HOLE_DEPTH + 1,
-                                  loc=(x, y, BASE_T + (INSERT_HOLE_DEPTH - 1) / 2)))
-    for a in CAR_TAB_ANG:
-        x, y = _polar(CAR_TAB_R, a)
-        cutters.append(S.cylinder("car_post_hole", 2.2, 4.2, loc=(x, y, CAR_TAB_TOP + 2.0)))
+                                  loc=(x, y, FLOOR_TOP + (INSERT_HOLE_DEPTH - 1) / 2)))
     pw = PORT_WIN
     cutters.append(S.slot("ports", pw["y1"] - pw["y0"], pw["z1"] - pw["z0"], 10,
                           loc=(-W / 2, (pw["y0"] + pw["y1"]) / 2, (pw["z0"] + pw["z1"]) / 2),
                           axis="X", r=2.5))
     cutters.append(S.slot("usbc", *USBC_SLOT, 10, loc=(USBC[0], D / 2, BOARD_TOP + 1.6),
                           axis="Y"))
-    # the halo groove: thins the roof to SKIN above the LEDs, from the inside
-    cutters.append(_ring("groove", CH_R0, CH_R1, ROOF_IN - 1.0, Z_SKIN_IN))
-    vents = []
-    rows = int(VENT_RAD / (VENT_PITCH * 0.866)) + 1
-    for j in range(-rows, rows + 1):
-        y = j * VENT_PITCH * 0.866
-        off = VENT_PITCH / 2 if j % 2 else 0
-        for i in range(-8, 9):
-            x = i * VENT_PITCH + off
-            if math.hypot(x, y) <= VENT_RAD - VENT_HOLE / 2:
-                vents.append(S.cylinder("vent", VENT_HOLE, 6, loc=(x, y, TOP), seg=20))
-    cutters.append(S.join(vents, "vents"))
-    cutters.append(S.text("label", "HOME / 01", 4.2, 1.6, loc=(W / 2 - 15, -D / 2 + 10, TOP),
-                          align="RIGHT"))   # 0.8 mm deep
     S.cut(shell, cutters)
+    vents = []
+    rows = int(20.0 / (3.9 * 0.866)) + 1
+    for j in range(-rows, rows + 1):
+        y = j * 3.9 * 0.866
+        off = 3.9 / 2 if j % 2 else 0
+        for i in range(-8, 9):
+            x = i * 3.9 + off
+            if math.hypot(x, y) <= 20.0 - 1.1:
+                vents.append(S.cylinder("vent", 2.2, 6, loc=(x, y, TOP), seg=20))
+    S.cut(shell, [S.join(vents, "vents")])
+    lab, box = label_cutter(LABEL["text"], LABEL["size"], W / 2 - LABEL["right_inset"],
+                            -D / 2 + LABEL["front_inset"], TOP)
+    flat = (-W / 2 + S.EDGE_R, -D / 2 + S.EDGE_R, W / 2 - S.EDGE_R, D / 2 - S.EDGE_R)
+    assert box[2] <= flat[2] - 1 and box[1] >= flat[1] + 1, f"label {box} too near the fillet"
+    S.cut(shell, [lab])
+    check(shell, (W, D, SHELL_H))
     S.assign(shell, white)
     S.smooth(shell)
 
-    # ------------------------------------------------ base
-    g = S.SHADOW_GAP
-    base = S.rounded_box("Base", W - 2 * g, D - 2 * g, BASE_T, r=R - g, r_bot=0.8)
+    # ------------------------------------------------ floor (black, printed flat)
+    fw, fd, fr = W - 2 * IN_IN, D - 2 * IN_IN, R - IN_IN
+    floor = S.rounded_box("Floor", fw, fd, FLOOR_T, r=fr, loc=(0, 0, FLOOR_Z0))
+    S.bake(floor)
+    z1 = FLOOR_TOP
     stand = [S.cylinder("standoff", 6, STANDOFF_H + 0.5,
-                        loc=(x, y, BASE_T + STANDOFF_H / 2 - 0.25)) for x, y in PI_HOLES]
-    lip = S.rounded_box("lip", W - 2 * WALL - 0.4, D - 2 * WALL - 0.4, 1.6,
-                        r=R - WALL - 0.2, loc=(0, 0, BASE_T - 0.01))
-    lip_in = S.rounded_box("lip_in", W - 2 * WALL - 3.6, D - 2 * WALL - 3.6, 3,
-                           r=R - WALL - 1.8, loc=(0, 0, BASE_T - 0.5))
-    S.cut(lip, lip_in)
-    S.union(base, stand + [lip])
+                        loc=(x, y, z1 + STANDOFF_H / 2 - 0.25)) for x, y in PI_HOLES]
+    # ESP32 holder: two posts with a slot each; the board stands on edge between them
+    rails = [S.box("esp_rail", 4.0, 3.0, 7.0, loc=(ESP_X, sy * (ESP_W / 2 + 0.9), z1 + 3.49))
+             for sy in (-1, 1)]
+    S.union(floor, stand + rails)
     holes = []
-    for x, y in PI_HOLES:
-        holes.append(S.cylinder("m25", 2.3, 10, loc=(x, y, BASE_T + 3)))
+    for x, y in PI_HOLES:   # M2.5 screws from the top, through the Pi into the standoffs
+        holes.append(S.cylinder("m25", 2.2, 6.0, loc=(x, y, z1 + STANDOFF_H - 2.5)))
     for x, y in BOSS:
-        holes.append(S.cylinder("m3", 3.4, 10, loc=(x, y, 0)))
-        bpy.ops.mesh.primitive_cone_add(vertices=40, radius1=3.1, radius2=1.7, depth=1.4,
-                                        location=(x, y, 0.7 - 0.01))
-        holes.append(bpy.context.active_object)
-        holes.append(S.cylinder("boss_clear", BOSS_D + 1.0, 4, loc=(x, y, BASE_T + 1)))
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            holes.append(S.cylinder("foot", 8.6, 1.2, loc=(sx * 40, sy * 22, 0)))
-    S.cut(base, holes)
-    S.assign(base, black)
-    S.smooth(base)
-
-    carrier = build_carrier()
-    S.assign(carrier, black)
-    return shell, base, carrier
-
-
-def build_carrier():
-    """Black ring-shaped channel: holds the LED ring and keeps its light inside the groove."""
-    r_in0, r_out1 = CH_R0 - CAR_WALL, CH_R1 + CAR_WALL
-    floor = _ring("Carrier", r_in0, r_out1, Z_CAR_BOT, Z_RING_BOT)
-    inner = _ring("car_inner", r_in0, CH_R0, Z_RING_BOT - 0.01, ROOF_IN)
-    outer = _ring("car_outer", CH_R1, r_out1, Z_RING_BOT - 0.01, ROOF_IN)
-    tabs = []
-    for a in CAR_TAB_ANG:
-        x, y = _polar(CAR_TAB_R, a)
-        post = S.cylinder("tab", 6.0, CAR_TAB_TOP - Z_CAR_BOT,
-                          loc=(x, y, (Z_CAR_BOT + CAR_TAB_TOP) / 2))
-        x2, y2 = _polar((CAR_TAB_R + r_out1) / 2 - 0.5, a)
-        web = S.box("web", 5.0, 5.0, CAR_TAB_TOP - Z_CAR_BOT,
-                    loc=(x2, y2, (Z_CAR_BOT + CAR_TAB_TOP) / 2))
-        web.rotation_euler = (0, 0, math.radians(a))
-        S.bake(web)
-        tabs += [post, web]
-    S.union(floor, [inner, outer] + tabs)
-    cuts = []
-    for a in CAR_TAB_ANG:
-        x, y = _polar(CAR_TAB_R, a)
-        cuts.append(S.cylinder("tab_hole", 2.8, 20, loc=(x, y, Z_CAR_BOT + 5)))
-    x, y = _polar(LED_R, WIRE_ANG)                       # wire exit under the ring's pads
-    slot = S.box("wire_slot", 8.0, 4.0, 6.0, loc=(x, y, Z_CAR_BOT))
-    slot.rotation_euler = (0, 0, math.radians(WIRE_ANG + 90))
-    S.bake(slot)
-    cuts.append(slot)
-    S.cut(floor, cuts)
+        holes.append(S.cylinder("m3", 3.4, 10, loc=(x, y, FLOOR_Z0)))
+    for sy in (-1, 1):
+        holes.append(S.box("esp_slot", ESP_SLOT_W, 3.2, 10,
+                           loc=(ESP_X, sy * (ESP_W / 2 + 0.2), z1 + 5.5)))
+    wx, wy, wd = WIRE_HOLE
+    holes.append(S.cylinder("wire", wd, 10, loc=(wx, wy, FLOOR_Z0)))
+    S.cut(floor, holes)
+    check(floor, (fw, fd, FLOOR_T + 7.0 - 0.01))
+    S.assign(floor, black)
     S.smooth(floor)
-    return floor
+
+    plinth = build_plinth()
+    S.assign(plinth, black)
+    return shell, floor, plinth
 
 
+def build_plinth():
+    """Top plate + black lining inside the shell's skirt + foot, with the LED channel
+    between lining and foot. Printed upside-down (top plate on the bed)."""
+    pw, pd, pr = W - 2 * IN_IN, D - 2 * IN_IN, R - IN_IN
+    plate = S.rounded_box("Plinth", pw, pd, PLATE_T, r=pr, loc=(0, 0, Z_PLATE_BOT))
+    S.bake(plate)
+    lining = _ring_rect("lining", IN_IN, CH_IN0, LINING_Z, Z_PLATE_BOT + 0.01, R)
+    foot = S.rounded_box("foot", W - 2 * FOOT_IN, D - 2 * FOOT_IN, Z_PLATE_BOT + 0.01,
+                         r=FOOT_R, loc=(0, 0, 0))
+    posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
+                        loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS]
+    S.union(plate, [lining, foot] + posts)
+    cuts = []
+    for x, y in BOSS:
+        cuts.append(S.cylinder("m3", 3.4, 2 * (LIFT + SKIRT), loc=(x, y, LIFT)))
+    for x, y in FEET:
+        cuts.append(S.cylinder("foot_recess", FOOT_RECESS_D, 2 * FOOT_RECESS, loc=(x, y, 0)))
+    wx, wy, wd = WIRE_HOLE
+    cuts.append(S.cylinder("wire", wd, 10, loc=(wx, wy, LIFT + SKIRT)))
+    S.cut(plate, cuts)
+    check(plate, (pw, pd, LIFT + SKIRT))
+    S.smooth(plate)
+    return plate
+
+
+def check(ob, size):
+    """Guard against a boolean quietly wrecking a part: outer size and positive volume."""
+    d = S.dims(ob)
+    assert all(abs(a - b) < 0.02 for a, b in zip(d, size)), f"{ob.name}: size {d} vs {size}"
+    assert S.volume(ob) > 0, f"{ob.name}: volume {S.volume(ob)}"
+
+
+# ---------------------------------------------------------------- reference parts
 def _curve(name, pts, radius, mat):
     cu = bpy.data.curves.new(name, "CURVE")
     cu.dimensions = "3D"
@@ -255,55 +315,60 @@ def _curve(name, pts, radius, mat):
     return ob
 
 
-def led_ring():
-    """24-LED WS2812B ring: black PCB, white 5050 LEDs facing up. Returns (pcb, [leds])."""
-    pcb = _ring("LED ring PCB", RING_ID / 2, RING_OD / 2, Z_RING_BOT, Z_RING_TOP)
-    S.assign(pcb, S.material("Ring PCB", (0.01, 0.01, 0.012, 1), rough=0.4, coat=0.5))
+def strip_mock():
+    """Cut strip segments (white PCB) with 5050 LEDs facing down. Returns (pcbs, leds)."""
+    pcb_mat = S.material("Strip PCB", (0.75, 0.75, 0.72, 1), rough=0.5)
     led_mat = S.material("5050 LED", (0.92, 0.92, 0.9, 1), rough=0.3)
-    leds = []
-    for k in range(RING_N):
-        a = 360.0 * k / RING_N
-        x, y = _polar(LED_R, a)
-        b = S.box(f"led{k:02d}", LED_SIZE, LED_SIZE, LED_H, loc=(x, y, Z_RING_TOP + LED_H / 2))
-        b.rotation_euler = (0, 0, math.radians(a))
-        S.bake(b)
+    pcbs, leds = [], []
+    z_pcb = Z_PLATE_BOT - STRIP_PCB_T / 2
+    for k, (x0, y0, x1, y1) in enumerate(strip_runs()):
+        L = math.dist((x0, y0), (x1, y1))
+        b = S.box(f"strip{k}", L if y0 == y1 else STRIP_W, STRIP_W if y0 == y1 else L,
+                  STRIP_PCB_T, loc=((x0 + x1) / 2, (y0 + y1) / 2, z_pcb))
+        pcbs.append(S.assign(b, pcb_mat))
+    for k, (x, y, _) in enumerate(led_positions()):
+        b = S.box(f"led{k:02d}", LED_SIZE, LED_SIZE, LED_H,
+                  loc=(x, y, Z_PLATE_BOT - STRIP_PCB_T - LED_H / 2))
         leds.append(S.assign(b, led_mat))
-    return pcb, leds
+    return pcbs, leds
 
 
-def ring_harness():
-    """Three wires from the ring's pads to the Pi header, with the diode, resistor and
-    capacitor in line. Returns (parts, wires)."""
+def esp_mock():
+    pcb = S.material("ESP PCB", (0.02, 0.02, 0.025, 1), rough=0.35, coat=0.5)
+    metal = S.material("Steel", (0.78, 0.78, 0.8, 1), rough=0.22)
+    metal.node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 1.0
+    z1 = FLOOR_TOP
+    board = S.box("esp_pcb", ESP_T, ESP_W, ESP_L, loc=(ESP_X, 0, z1 + ESP_L / 2))
+    usb = S.box("esp_usbc", 3.2, 8.9, 7.4, loc=(ESP_X - 2.1, 0, z1 + ESP_L - 3.2))
+    chip = S.box("esp_can", 1.0, 7.0, 7.0, loc=(ESP_X - 1.0, 0, z1 + 9.0))
+    return S.join([S.assign(board, pcb), S.assign(usb, metal), S.assign(chip, metal)],
+                  "ESP32-C3 (reference)")
+
+
+def harness():
+    """Strip leads up through the floor to the ESP32; ESP32 power from the Pi header."""
     w_red = S.material("Wire red", (0.55, 0.03, 0.02, 1), rough=0.45)
     w_blk = S.material("Wire black", (0.02, 0.02, 0.02, 1), rough=0.45)
     w_yel = S.material("Wire yellow", (0.75, 0.6, 0.05, 1), rough=0.45)
     housing = S.material("Dupont housing", (0.02, 0.02, 0.02, 1), rough=0.6)
-    shrink = S.material("Heat-shrink", (0.04, 0.04, 0.045, 1), rough=0.55)
-    cap_mat = S.material("Capacitor", (0.05, 0.12, 0.35, 1), rough=0.35)
-    parts, wires = [], []
-    px, py = _polar(LED_R, WIRE_ANG)
-    pad = (px, py, Z_CAR_BOT - 0.5)
-    mid = (13.0, -33.0, 22.0)                     # in-line parts sit in the gap by the wall
     cols = {"5v": w_red, "gnd": w_blk, "data": w_yel}
-    for i, (sig, pin) in enumerate(RING_PINS.items()):
+    wx, wy, _ = WIRE_HOLE
+    z1 = FLOOR_TOP
+    wires, parts = [], []
+    for i, sig in enumerate(("5v", "gnd", "data")):
+        off = (i - 1) * 1.3
+        pts = [(wx + off, wy - 2.0, Z_PLATE_BOT - 0.3), (wx + off, wy, LIFT - 0.5),
+               (wx + off, wy, z1 + 3.0), (ESP_X - 2.5, 6.0 + off, z1 + 6.0),
+               (ESP_X - 0.8, 4.0 + off * 2, z1 + 4.0 + i * 2.54)]
+        wires.append(_curve(f"wire_strip_{sig}", pts, 0.45, cols[sig]))
+    for i, (sig, pin) in enumerate(HEADER_USED.items()):
         hx, hy = header_pin_xy(pin)
         parts.append(S.assign(S.box(f"dupont_{sig}", 2.54, 2.54, 14.0,
                                     loc=(hx, hy, BOARD_TOP + 2.5 + 7.0)), housing))
-        off = (i - 1) * 1.6
-        pts = [(pad[0] + off, pad[1], pad[2]), (pad[0] + off, pad[1] - 2, pad[2] - 3),
-               (mid[0] + off, mid[1], mid[2] + 3), (mid[0] + off, mid[1], mid[2] - 4),
-               (hx, hy - 3, DUPONT_TOP + 3.5), (hx, hy, DUPONT_TOP)]
-        wires.append(_curve(f"wire_{sig}", pts, 0.55, cols[sig]))
-    # heat-shrunk diode (5 V) and resistor (data) on their wires, capacitor across 5 V/GND
-    for sig, dz in (("5v", 0.0), ("data", 0.0)):
-        i = list(RING_PINS).index(sig)
-        sl = S.cylinder(f"shrink_{sig}", 3.2, 9.0, loc=(mid[0] + (i - 1) * 1.6, mid[1],
-                                                       mid[2] - 0.5 + dz))
-        S.smooth(sl)
-        parts.append(S.assign(sl, shrink))
-    cap = S.cylinder("cap_470uF", 6.3, 11.0, loc=(mid[0] + 6.5, mid[1] - 0.5, mid[2] - 1.0))
-    S.smooth(cap)
-    parts.append(S.assign(cap, cap_mat))
+        pts = [(hx, hy, DUPONT_TOP), (hx, hy - 3, DUPONT_TOP + 3.0),
+               (ESP_X - 6.0, -2.0 - i * 1.5, DUPONT_TOP + 1.0),
+               (ESP_X - 0.8, -4.0 - i * 2.54, z1 + 4.0 + i * 2.54)]
+        wires.append(_curve(f"wire_pwr_{sig}", pts, 0.45, cols[sig]))
     return parts, wires
 
 
@@ -344,7 +409,7 @@ def pi_mock():
     hy = pi_xy(0, PI["header_v"])[1]
     parts.append(S.assign(S.box("header", 50.8, 5.08, 2.5, loc=(hx, hy, BOARD_TOP + 1.25)), fan))
     for n in range(1, 41):
-        if n in RING_PINS.values():
+        if n in HEADER_USED.values():
             continue
         px, py = header_pin_xy(n)
         parts.append(S.assign(S.box("pin", 0.64, 0.64, 6.0, loc=(px, py, BOARD_TOP + 5.5)), gold))
@@ -355,23 +420,58 @@ def pi_mock():
     return S.join(parts, "Pi5 (reference)")
 
 
+# ---------------------------------------------------------------- light
+BLUE, ORANGE = (0.08, 0.32, 1.0), (1.0, 0.42, 0.03)
+LED_W_NIGHT = 0.02 * 52 / 14     # same total light as the concept D render (52 x 0.02 W)
+LED_W_DAY = 0.02 * 52 / 14
+
+
+def gradient(t):
+    k = 0.5 - 0.5 * math.cos(2 * math.pi * t)
+    return tuple(b + (o - b) * k for b, o in zip(BLUE, ORANGE))
+
+
+def led_lights():
+    obs = []
+    pos = led_positions()
+    for k, (x, y, _) in enumerate(pos):
+        li = bpy.data.lights.new(f"glow{k:02d}", "POINT")
+        li.energy = LED_W_NIGHT
+        li.color = gradient(k / len(pos))
+        li.shadow_soft_size = 0.002
+        ob = bpy.data.objects.new(li.name, li)
+        bpy.context.collection.objects.link(ob)
+        ob.location = (x / 1000, y / 1000, (Z_LED_FACE - 0.3) / 1000)
+        obs.append(ob)
+    return obs
+
+
+def room(dim):
+    k = 0.03 if dim else 1.0
+    for ob in bpy.data.objects:
+        if ob.type == "LIGHT" and ob.data.type == "AREA":
+            ob.data.energy = ob["base"] * k
+    bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = (
+        0.08 * k)
+
+
 def write_dims_json(out):
     """Every number the dimension drawings print, taken from the model."""
     data = {
-        "rev": REV, "W": W, "D": D, "TOP": TOP, "BASE_T": BASE_T, "WALL": WALL, "ROOF": ROOF,
-        "R": R, "shadow_gap": S.SHADOW_GAP,
+        "rev": REV, "W": W, "D": D, "TOP": TOP, "LIFT": LIFT, "FLOOR_T": FLOOR_T, "SKIRT": SKIRT,
+        "WALL": WALL, "ROOF": ROOF, "R": R, "shadow_gap": S.SHADOW_GAP,
         "port_win": PORT_WIN,
         "usbc": {"x": USBC[0], "z": BOARD_TOP + 1.6, "w": USBC_SLOT[0], "h": USBC_SLOT[1]},
         "boss": BOSS, "boss_d": BOSS_D, "insert_d": INSERT_HOLE_D,
-        "insert_depth": INSERT_HOLE_DEPTH, "pi_source": PI["source"],
-        "feet": [[sx * 40, sy * 22] for sx in (-1, 1) for sy in (-1, 1)],
-        "halo": {"ch_r0": CH_R0, "ch_r1": CH_R1, "skin": SKIN, "gap": GAP,
-                 "ring_od": RING_OD, "ring_id": RING_ID, "led_r": LED_R,
-                 "z_skin_in": Z_SKIN_IN, "z_led_top": Z_LED_TOP, "z_ring_bot": Z_RING_BOT,
-                 "z_car_bot": Z_CAR_BOT, "car_wall": CAR_WALL, "roof_in": ROOF_IN,
-                 "tab_r": CAR_TAB_R, "tab_ang": CAR_TAB_ANG, "dupont_top": DUPONT_TOP},
-        "vents": {"pitch": VENT_PITCH, "rad": VENT_RAD, "hole": VENT_HOLE},
-        "ring_pins": RING_PINS,
+        "insert_depth": INSERT_HOLE_DEPTH, "pi_source": PI["source"], "feet": FEET,
+        "plinth": {"inset": IN_IN, "plate_t": PLATE_T, "lining_t": LINING_T, "lining_z": LINING_Z,
+                   "foot_in": FOOT_IN, "ch_in0": CH_IN0, "ch_in1": CH_IN1, "ch_mid": CH_MID,
+                   "z_plate_bot": Z_PLATE_BOT, "z_led_face": Z_LED_FACE,
+                   "screw_seat": SCREW_SEAT, "post_d": SCREW_POST_D},
+        "strip": {"w": STRIP_W, "pitch": PITCH, "n_long": N_LONG, "n_short": N_SHORT,
+                  "runs": strip_runs(), "leds": [p[:2] for p in led_positions()]},
+        "wire_hole": WIRE_HOLE, "esp": {"x": ESP_X, "w": ESP_W, "l": ESP_L},
+        "fan_c": FAN_C, "label": LABEL,
     }
     with open(os.path.join(out, "dims.json"), "w") as f:
         json.dump(data, f, indent=1)
@@ -379,15 +479,16 @@ def write_dims_json(out):
 
 def main():
     args = sys.argv[1:]
-    shell, base, carrier = build()
+    shell, floor, plinth = build()
     os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
-    for f in ("hub_lightpipe_red.stl",):          # rev B part, no longer used
+    for f in ("hub_lightpipe_red.stl", "hub_lightcarrier_black.stl", "hub_base_black.stl",
+              "hub_lighttest_skin_white.stl"):     # earlier revisions' parts
         p = os.path.join(HERE, "stl", f)
         if os.path.exists(p):
             os.remove(p)
     S.export_stl(shell, os.path.join(HERE, "stl", "hub_shell_white.stl"))
-    S.export_stl(base, os.path.join(HERE, "stl", "hub_base_black.stl"))
-    S.export_stl(carrier, os.path.join(HERE, "stl", "hub_lightcarrier_black.stl"))
+    S.export_stl(floor, os.path.join(HERE, "stl", "hub_floor_black.stl"))
+    S.export_stl(plinth, os.path.join(HERE, "stl", "hub_plinth_black.stl"))
     # Fit test: the last 15 mm of the shell at the ports end (~20 min print).
     test = shell.copy()
     test.data = shell.data.copy()
@@ -399,34 +500,24 @@ def main():
     bpy.data.objects.remove(keep, do_unlink=True)
     S.export_stl(test, os.path.join(HERE, "stl", "hub_fittest_portsend_white.stl"))
     bpy.data.objects.remove(test, do_unlink=True)
-    # Light test: a 14 x 20 mm piece of roof across the groove, to hold over the lit ring.
-    test = shell.copy()
-    test.data = shell.data.copy()
-    bpy.context.collection.objects.link(test)
-    keep = S.box("keep", 14, 20, 2.4, loc=(0, LED_R, TOP - 1.0))
-    md = test.modifiers.new("keep", "BOOLEAN")
-    md.operation, md.solver, md.object = "INTERSECT", "EXACT", keep
-    S.bake(test)
-    bpy.data.objects.remove(keep, do_unlink=True)
-    S.export_stl(test, os.path.join(HERE, "stl", "hub_lighttest_skin_white.stl"))
-    bpy.data.objects.remove(test, do_unlink=True)
 
     pi = pi_mock()
-    pcb, leds = led_ring()
-    harness, wires = ring_harness()
-    ring = [pcb] + leds
-    root = S.to_studio([shell, base, carrier, pi] + ring + harness + wires)
+    pcbs, leds = strip_mock()
+    esp = esp_mock()
+    hparts, wires = harness()
+    strip = pcbs + leds
+    root = S.to_studio([shell, floor, plinth, pi, esp] + strip + hparts + wires)
     S.studio()
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, "hub.blend"))
     out = os.path.join(HERE, "renders")
+    sc = bpy.context.scene
     if "--preview" in args:
         out = os.path.join(HERE, "renders", "_preview")
-        sc = bpy.context.scene
         sc.cycles.samples = 16
         sc.render.resolution_x, sc.render.resolution_y = 800, 600
     os.makedirs(out, exist_ok=True)
     write_dims_json(out)
-    inside = [pi, carrier] + ring + harness + wires
+    inside = [pi, esp] + hparts + wires
     m = 0.001
 
     def show(objs, on):
@@ -447,30 +538,38 @@ def main():
         show([pi], False)
         S.camera((0.10, -0.16, 0.52), target=(0.0, 0.0, 0.02), lens=80)
         S.render(os.path.join(out, "hub_top.png"))
-        # exploded, bottom to top: base | Pi + wires | LED ring | carrier | shell
+        # exploded, bottom to top: plinth + strip | floor + ESP32 | Pi | shell
         show(inside, True)
-        show(wires + harness, False)
-        moves = [(shell, (0, 0, 120)), (carrier, (0, 0, 72)), (pi, (0, 0, 8))]
-        moves += [(o, (0, 0, 42)) for o in ring]
+        show(wires + hparts, False)
+        moves = [(shell, (0, 0, 115)), (pi, (0, 0, 55)), (floor, (0, 0, 28)), (esp, (0, 0, 28))]
         for o, d in moves:
             shift([o], d)
-        S.camera((0.36, -0.52, 0.32), target=(0, 0, 0.082), lens=55)
+        S.camera((0.36, -0.52, 0.32), target=(0, 0, 0.075), lens=55)
         S.render(os.path.join(out, "hub_exploded.png"))
         for o, d in moves:
             shift([o], tuple(-k for k in d))
-        # cutaway: roof cut off just under the carrier top to show ring, carrier and wiring
+        # cutaway: the shell's +Y half removed to show the stack and the wiring
         show(inside, True)
-        cut = S.box("roof_cut", W + 10, D + 10, 30, loc=(0, 0, ROOF_IN - 3 + 15))
-        cut.parent = root
-        cut.hide_render = True
-        for o in (shell, carrier):
-            md = o.modifiers.new("cut", "BOOLEAN")
-            md.operation, md.solver, md.object = "DIFFERENCE", "EXACT", cut
-        S.camera((0.12, -0.20, 0.26), target=(0.006, -0.008, 0.02), lens=58)
+        # (cut copies with the guarded S.cut: a live EXACT modifier emptied floor and plinth)
+        halves = []
+        gone = [o for o in strip if S.dims(o) and min(v.co.y for v in o.data.vertices) > 2]
+        show(gone + [pi], False)
+        for o in (shell, floor, plinth):   # (the Pi and ESP32 stand-ins are too crude to cut;
+                                           #  the Pi stays out of this view)
+            c = o.copy()
+            c.data = o.data.copy()
+            bpy.context.collection.objects.link(c)
+            cut = S.box("half_cut", W + 20, D, TOP + 20, loc=(0, D / 2 + 2, TOP / 2))
+            cut.parent = root
+            S.cut(c, [cut])
+            c.hide_render = False
+            halves.append(c)
+        show([shell, floor, plinth], False)
+        S.camera((0.20, 0.30, 0.17), target=(0.004, 0.0, 0.016), lens=60)
         S.render(os.path.join(out, "hub_cutaway.png"))
-        for o in (shell, carrier):
-            o.modifiers.remove(o.modifiers["cut"])
-        bpy.data.objects.remove(cut, do_unlink=True)
+        for c in halves:
+            bpy.data.objects.remove(c, do_unlink=True)
+        show([shell, floor, plinth] + gone, True)
         show(inside, False)
         root.rotation_euler = (math.pi, 0, 0)
         root.location = (0, 0, TOP * m)
@@ -481,32 +580,52 @@ def main():
 
     if "--details" in args:
         show(inside, False)
-        sc = bpy.context.scene
         res0 = (sc.render.resolution_x, sc.render.resolution_y)
         if "--preview" not in args:
             sc.render.resolution_x, sc.render.resolution_y = 1400, 1050
-        lx, ly = (W / 2 - 15 - 12) * m, (-D / 2 + 11) * m
+        lx, ly = (W / 2 - LABEL["right_inset"] - 15) * m, (-D / 2 + LABEL["front_inset"] + 2) * m
         S.camera((lx + 0.02, ly - 0.075, 0.11), target=(lx, ly, TOP * m), lens=100)
         S.render(os.path.join(out, "d_label.png"))
         S.camera((0.02, -0.09, 0.13), target=(0, 0, TOP * m), lens=90)
         S.render(os.path.join(out, "d_vents.png"))
-        S.camera((0.105, -0.085, 0.012), target=(W / 2 * m - 0.006, -D / 2 * m + 0.006, 0.004),
+        # the float: low view of the corner, shadow line, gap and plinth
+        S.camera((0.110, -0.090, 0.008), target=(W / 2 * m - 0.010, -D / 2 * m + 0.010, 0.005),
                  lens=100)
-        S.render(os.path.join(out, "d_shadowline.png"))
+        S.render(os.path.join(out, "d_float.png"))
         show([pi], True)
-        S.camera((-0.13, -0.05, 0.035), target=(-W / 2 * m, 0, 0.016), lens=70)
+        S.camera((-0.13, -0.05, 0.035), target=(-W / 2 * m, 0, 0.020), lens=70)
         S.render(os.path.join(out, "d_ports_end.png"))
-        S.camera((0.05, 0.14, 0.04), target=(USBC[0] * m, D / 2 * m, 0.010), lens=100)
+        S.camera((0.05, 0.14, 0.045), target=(USBC[0] * m, D / 2 * m, 0.015), lens=100)
         S.render(os.path.join(out, "d_usbc.png"))
         show([pi], False)
-        # the carrier with the ring in it, on its own
-        show([carrier] + ring, True)
-        show([shell, base], False)
-        S.camera((0.09, -0.13, 0.15), target=(0, 0, 0.032), lens=75)
-        S.render(os.path.join(out, "d_carrier.png"))
-        show([shell, base], True)
-        show(inside, False)
+        # underside close-up of the channel with the strip in it
+        root.rotation_euler = (math.pi, 0, 0)
+        root.location = (0, 0, TOP * m)
+        S.camera((0.12, -0.11, 0.11), target=(W / 2 * m - 0.012, -D / 2 * m + 0.02, 0.040),
+                 lens=85)
+        S.render(os.path.join(out, "d_channel.png"))
+        root.rotation_euler = (0, 0, 0)
+        root.location = (0, 0, 0)
         sc.render.resolution_x, sc.render.resolution_y = res0
+
+    if "--light" in args:
+        # dark room and room light, glow on (gradient as in the concept renders), plus off
+        show(inside, False)
+        lights = led_lights()
+        sc.cycles.max_bounces = 16
+        for ob in bpy.data.objects:
+            if ob.type == "LIGHT" and ob.data.type == "AREA":
+                ob["base"] = ob.data.energy
+        S.camera((0.22, -0.31, 0.13), target=(0.0, 0.0, 0.018), lens=62)
+        for name, dim, on in (("dark", True, True), ("room", False, True)):
+            for li in lights:
+                li.hide_render = not on
+                li.data.energy = LED_W_NIGHT if dim else LED_W_DAY
+            room(dim)
+            S.render(os.path.join(out, f"hub_light_{name}.png"))
+        room(False)
+        for li in lights:
+            li.hide_render = True
 
     if "--drawings" in args:
         show(inside, False)
@@ -520,25 +639,26 @@ def main():
             S.ortho_camera(v, tuple(k * m for k in c), scale)
             S.render(os.path.join(out, f"dwg_{v}.png"))
             meta[v] = {"view": v, "center_mm": c, "scale_mm": scale * 1000,
-                       "res": [bpy.context.scene.render.resolution_x,
-                               bpy.context.scene.render.resolution_y]}
-        # section through the halo at y = 0, seen from the front
+                       "res": [sc.render.resolution_x, sc.render.resolution_y]}
+        # section through the channel at y = 0, seen from the front, +X end
         bpy.context.scene.view_layers[0].material_override = None
-        sec = S.box("sec", 300, 200, 200, loc=(0, -100 + 0.0, 0))
-        sec.parent = root
-        sec.hide_render = True
-        show([carrier] + ring, True)
-        for o in [shell, carrier] + ring:
-            md = o.modifiers.new("sec", "BOOLEAN")
-            md.operation, md.object = "DIFFERENCE", sec
-            md.solver = "EXACT"
-        c = (LED_R, 0, (Z_CAR_BOT + TOP) / 2)
-        cam = S.ortho_camera("front", tuple(k * m for k in c), 0.032)
+        # cut copies with the guarded S.cut; the strip needs no cut, the camera's near clip
+        # plane (at y = 0) hides everything in front of the section
+        show(strip, True)
+        for o in (shell, floor, plinth):
+            c = o.copy()
+            c.data = o.data.copy()
+            bpy.context.collection.objects.link(c)
+            sec = S.box("sec", 300, 100, 200, loc=(0, -50.0 + 0.001, 0))
+            sec.parent = root
+            S.cut(c, [sec])
+            o.hide_render = True
+        c = (W / 2 - 12.0, 0, 9.0)
+        cam = S.ortho_camera("front", tuple(k * m for k in c), 0.030)
         cam.data.clip_start, cam.data.clip_end = 0.5 - 0.0002, 0.5 + 0.004
-        S.render(os.path.join(out, "dwg_section_halo.png"))
-        meta["section_halo"] = {"view": "front", "center_mm": c, "scale_mm": 32.0,
-                                "res": [bpy.context.scene.render.resolution_x,
-                                        bpy.context.scene.render.resolution_y]}
+        S.render(os.path.join(out, "dwg_section_channel.png"))
+        meta["section_channel"] = {"view": "front", "center_mm": c, "scale_mm": 30.0,
+                                   "res": [sc.render.resolution_x, sc.render.resolution_y]}
         with open(os.path.join(out, "dwg_cameras.json"), "w") as f:
             json.dump(meta, f, indent=1)
 

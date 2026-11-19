@@ -1,7 +1,7 @@
 """Print-readiness checks for home-devices parts (plain Python, no Blender needed).
 
   python printcheck.py mesh  part.3mf|part.stl      mesh health per object
-  python printcheck.py slice part.3mf [--out DIR] [--set key=value ...]
+  python printcheck.py slice part.3mf [--out DIR] [--process NAME] [--set key=value ...]
                                                     slice for the A1 Mini with Bambu Studio's CLI
                                                     and print time, filament and per-object extents
   python printcheck.py paths sliced.gcode            dump extrusion paths to paths.json for
@@ -145,11 +145,11 @@ def resolve(kind, name):
     return merged
 
 
-def slice_part(path, out=None, sets=()):
+def slice_part(path, out=None, sets=(), process=PROCESS):
     out = out or tempfile.mkdtemp(prefix="slice_")
     os.makedirs(out, exist_ok=True)
     machine = resolve("machine", MACHINE)
-    proc = resolve("process", PROCESS)
+    proc = resolve("process", process)
     fil = resolve("filament", FILAMENT)
     proc.update({"name": "printcheck", "print_settings_id": "printcheck",
                  "compatible_printers": [MACHINE], "curr_bed_type": BED})
@@ -227,7 +227,8 @@ if __name__ == "__main__":
         a = sys.argv[3:]
         out = a[a.index("--out") + 1] if "--out" in a else None
         sets = [a[i + 1] for i, x in enumerate(a) if x == "--set"]
-        slice_part(path, out, sets)
+        proc = a[a.index("--process") + 1] if "--process" in a else PROCESS
+        slice_part(path, out, sets, proc)
     elif cmd == "paths":
         dump_paths(path)
     else:
