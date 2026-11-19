@@ -169,7 +169,7 @@ DOT_DEPTH = 1.2     # house dot: cut 1.2 mm deep, twice the letters, so it reads
 INLAY_HOLE = 1.85    # for a stub of 1.75 mm filament, pressed in and trimmed flush
 
 
-def product_label(name, parts, size, depth, sep="dot", font=None):
+def product_label(name, parts, size, depth, sep="dot", font=None, slant=1.0):
     """Engraving cutter for a product label such as PURGE · A1M (house style: words split by a
     modelled mark, never a font slash).
 
@@ -183,7 +183,9 @@ def product_label(name, parts, size, depth, sep="dot", font=None):
     Lies in XY with letters extruded +-depth/2 about z = 0, baseline at y = 0, centred on x.
     Place it centred on the surface it cuts (letters then go depth/2 deep, the dot DOT_DEPTH).
     Expects capital letters and digits (no descenders). The separator centres are stored on
-    the result as ob["seps"] (x, y pairs), e.g. to place inlays."""
+    the result as ob["seps"] (x, y pairs), e.g. to place inlays.
+    slant (default 1.0 = 45 deg) shears the cut downward with depth; orient the label with
+    -z into the part and +y up the (vertical) face. slant=0 gives a straight cut."""
     font = font or label_font()
     gap = 0.3 * size                     # clear space each side of the mark
     mark_w = {"dot": 0.22, "ring": 0.36, "pair": 0.17}.get(sep, 0) * size or INLAY_HOLE
@@ -228,6 +230,11 @@ def product_label(name, parts, size, depth, sep="dot", font=None):
     sx = (min(xs) + max(xs)) / 2
     for v in ob.data.vertices:
         v.co.x -= sx
+        if slant:
+            # 45-degree slanted cut: deeper (-z) points drop by their depth, so every glyph's
+            # ceiling is a 45-degree slope that prints on a vertical wall instead of a flat
+            # overhang that sags (squashed letter tops). The face outline is unchanged.
+            v.co.y += v.co.z * slant
     ob.data.update()
     ob["seps"] = [(cx - sx, cy) for cx, cy in seps]
     return ob
