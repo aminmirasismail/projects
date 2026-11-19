@@ -8,7 +8,7 @@ shortages have pushed up Pi and SD card prices this year), so check before order
 
 | # | Part | Spec / what to search for | Qty | Approx. |
 |---|---|---|---|---|
-| 1 | Raspberry Pi 5, **2 GB** (SC1110) | Home Assistant's minimum, and enough for this hub. Buy from an official reseller: CanaKit had it in stock at list price on 2026-11-19 (PiShop and Adafruit were out). 4 GB ($110 at CanaKit, $130 at Adafruit) gives more headroom; 1 GB is below Home Assistant's minimum. Avoid marketplace listings above list price | 1 | $77.50 |
+| 1 | Raspberry Pi 5, **4 GB** (SC1111), board only | Headroom for later devices (camera doorbell, local voice, add-ons); RAM can't be upgraded. Buy from an official reseller: CanaKit had it in stock at list price on 2026-11-19 (Adafruit $130, PiShop out). 2 GB ($77.50) is Home Assistant's minimum and would do for sensor-type devices only; 1 GB is below it. Avoid marketplace listings above list price | 1 | $110 |
 | 2 | Raspberry Pi 5 Active Cooler | official one; the case is designed around it | 1 | $5 |
 | 3 | Raspberry Pi 27 W USB-C power supply | **official 27 W (5.1 V 5 A)**: the LEDs and ESP32 run off the Pi's 5 V, so a 3 A supply would brown out | 1 | $12 |
 | 4 | microSD card, 64 GB high endurance | SanDisk High Endurance or Samsung PRO Endurance | 1 | $12 |
@@ -42,7 +42,7 @@ shortages have pushed up Pi and SD card prices this year), so check before order
 | 19 | White PLA (Bambu PLA Matte, the spool synced to your printer) | shell about 55 g + diffuser about 3 g | 1 kg | $20 |
 | 20 | Black PLA (any; load and sync it in Bambu Studio before slicing) | plinth + frame about 22 g, floor about 17 g | 1 kg | $20 |
 
-Parts total (without filament): about $180–200 with the 2 GB Pi (about $210–230 with 4 GB).
+Parts total (without filament): about $210–230.
 
 ## Tools (skip whatever you already have)
 
