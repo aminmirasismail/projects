@@ -88,6 +88,10 @@ button:focus-visible, a:focus-visible, img:focus-visible { outline: 2px solid va
 a { color: var(--accent) }
 .toc { display: flex; flex-wrap: wrap; gap: 8px 18px; font: 500 13px var(--mono) }
 .toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line) }
+.pv { display: grid; gap: 10px; min-width: 0 }
+.pv h3 { margin: 0 }
+.pv-row { display: grid; grid-template-columns: minmax(0, 1.33fr) minmax(0, 1fr); gap: 16px; align-items: start }
+@media (max-width: 760px) { .pv-row { grid-template-columns: 1fr } }
 </style>
 
 <div class="page">
@@ -96,7 +100,7 @@ a { color: var(--accent) }
     <h1>HOME · 01 hub, v5</h1>
     <p class="lede">A Raspberry Pi 5 Home Assistant hub in a floating white shell. A continuous band of light washes onto the table from underneath; air comes in through a hidden, light-trapped intake below and leaves through the recessed I/O bay at the back. This report covers every printed part with its dimensions and print settings, the drawings, assembly and wiring, airflow, the design review and the bill of materials.</p>
     <nav class="toc" aria-label="Sections">
-      <a href="#overview">Overview</a><a href="#light">Light</a><a href="#air">Airflow</a><a href="#parts">Parts</a>
+      <a href="#overview">Overview</a><a href="#light">Light</a><a href="#air">Airflow</a><a href="#parts">Parts</a><a href="#part-views">Part views</a>
       <a href="#drawings">Drawings</a><a href="#electrical">Electrical</a><a href="#assembly">Assembly</a><a href="#review">Review</a>
       <a href="#risks">Open items</a><a href="#bom">BOM</a>
     </nav>
@@ -168,6 +172,7 @@ a { color: var(--accent) }
 
   <section id="parts">
     <div class="sec-head"><span class="label">Printed parts</span><h2>Six parts, one colour each</h2></div>
+    <p class="muted">Two words used throughout: the <b>plinth</b> is the black base the white shell sits on (it carries the LED channel and the feet). The <b>plenum</b> is the 2 mm air gap between the plinth and the floor, held open by the frame, where incoming air turns sideways from one set of slots to the other.</p>
 
     <article class="part">
       <figure><img src="renders/d_iobay.jpg" alt="The I/O bay: a recessed panel with three port windows" loading="lazy"><figcaption>I/O bay: one 0.8 mm recess round three full-height port windows.</figcaption></figure>
@@ -244,6 +249,53 @@ a { color: var(--accent) }
         </ul>
       </div>
     </article>
+  </section>
+
+  <section id="part-views">
+    <div class="sec-head"><span class="label">Part views</span><h2>What you're printing, and how it sits on the bed</h2></div>
+    <p class="muted">Each printed part on its own, from four angles, then placed on the A1 Mini plate the way it should be printed. Quick renders straight from the STLs in <code>stl/</code> (<code>part_views.py</code>), not product shots. Click any image to enlarge.</p>
+    <div class="pv">
+      <h3>1 · Shell <span class="muted" style="font-weight:400;font-size:14px">· white PLA</span></h3>
+      <div class="pv-row">
+        <figure><img src="renders/parts/shell_views.jpg" alt="1 · Shell: views from above, from below, top and the -X side" loading="lazy"><figcaption>Above, below, top, and the −X (I/O) side.</figcaption></figure>
+        <figure><img src="renders/parts/shell_print.jpg" alt="1 · Shell placed on the A1 Mini plate in its print orientation" loading="lazy"><figcaption>Roof on the bed, so the visible roof is the smooth bed face and the walls print as clean vertical lines. No supports: the window tops are short bridges.</figcaption></figure>
+      </div>
+    </div>
+    <div class="pv">
+      <h3>2 · Plinth (the black base the shell sits on) <span class="muted" style="font-weight:400;font-size:14px">· black PLA</span></h3>
+      <div class="pv-row">
+        <figure><img src="renders/parts/plinth_views.jpg" alt="2 · Plinth (the black base the shell sits on): views from above, from below, top and the -X side" loading="lazy"><figcaption>Above, below, top, and the −X (I/O) side.</figcaption></figure>
+        <figure><img src="renders/parts/plinth_print.jpg" alt="2 · Plinth (the black base the shell sits on) placed on the A1 Mini plate in its print orientation" loading="lazy"><figcaption>Top plate on the bed; lining, channel lips, foot ring and pads all grow upward from it with no overhangs.</figcaption></figure>
+      </div>
+    </div>
+    <div class="pv">
+      <h3>3 · Frame <span class="muted" style="font-weight:400;font-size:14px">· black PLA</span></h3>
+      <div class="pv-row">
+        <figure><img src="renders/parts/frame_views.jpg" alt="3 · Frame: views from above, from below, top and the -X side" loading="lazy"><figcaption>Above, below, top, and the −X (I/O) side.</figcaption></figure>
+        <figure><img src="renders/parts/frame_print.jpg" alt="3 · Frame placed on the A1 Mini plate in its print orientation" loading="lazy"><figcaption>Flat as fitted. Prints on the same plate as the plinth (black plate A).</figcaption></figure>
+      </div>
+    </div>
+    <div class="pv">
+      <h3>4 · Floor <span class="muted" style="font-weight:400;font-size:14px">· black PLA</span></h3>
+      <div class="pv-row">
+        <figure><img src="renders/parts/floor_views.jpg" alt="4 · Floor: views from above, from below, top and the -X side" loading="lazy"><figcaption>Above, below, top, and the −X (I/O) side.</figcaption></figure>
+        <figure><img src="renders/parts/floor_print.jpg" alt="4 · Floor placed on the A1 Mini plate in its print orientation" loading="lazy"><figcaption>Plate on the bed, standoffs and the ESP32 card slot up (black plate B).</figcaption></figure>
+      </div>
+    </div>
+    <div class="pv">
+      <h3>5 · Diffuser ring <span class="muted" style="font-weight:400;font-size:14px">· white PLA</span></h3>
+      <div class="pv-row">
+        <figure><img src="renders/parts/diffuser_views.jpg" alt="5 · Diffuser ring: views from above, from below, top and the -X side" loading="lazy"><figcaption>Above, below, top, and the −X (I/O) side.</figcaption></figure>
+        <figure><img src="renders/parts/diffuser_print.jpg" alt="5 · Diffuser ring placed on the A1 Mini plate in its print orientation" loading="lazy"><figcaption>Flat. Its lower face (the one you see from the side of the table) prints last, on top, so it is the smooth face.</figcaption></figure>
+      </div>
+    </div>
+    <div class="pv">
+      <h3>6 · Fit-test piece <span class="muted" style="font-weight:400;font-size:14px">· white PLA</span></h3>
+      <div class="pv-row">
+        <figure><img src="renders/parts/fittest_views.jpg" alt="6 · Fit-test piece: views from above, from below, top and the -X side" loading="lazy"><figcaption>Above, below, top, and the −X (I/O) side.</figcaption></figure>
+        <figure><img src="renders/parts/fittest_print.jpg" alt="6 · Fit-test piece placed on the A1 Mini plate in its print orientation" loading="lazy"><figcaption>Like the shell, roof on the bed: the last 16 mm of the I/O end.</figcaption></figure>
+      </div>
+    </div>
   </section>
 
   <section id="drawings">

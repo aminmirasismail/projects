@@ -99,6 +99,9 @@ building new lighting.
   output across options when comparing them.
 - Standard set per design: hero, ports, top, exploded, cutaway, underside, close-ups
   (1400×1050), and dimensioned drawings via `--drawings` plus `tools/dims.py`.
+- Engineering reports also show every printed part on its own: a quick 4-view sheet (above,
+  below, top, side) plus a render of it on the A1 Mini plate in its print orientation, with a
+  line on why that way up. Low fidelity is fine (see `hub/part_views.py`).
 
 ## Lessons learned
 
