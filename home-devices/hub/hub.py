@@ -137,6 +137,27 @@ SCREW_HEAD_D = 5.7
 N_LONG, N_SHORT = 9, 7
 WIRE_HOLE = (46.0, 28.0, 5.0)      # x, y, diameter: through the plinth, beside the +X run's end
 FLOOR_HOLE = (46.0, 19.0)          # through the floor, offset: light must turn a corner
+POSTS = True                       # v4: screw heads on posts in the channel corners
+
+
+def configure(posts=True):
+    """posts=True: v4 (screw posts in the channel corners, runs stop short of them).
+    posts=False: screw heads sit flush in pockets in the plinth plate, tucked into the
+    corners, so the strip runs reach the corners (11 + 8 LEDs per side pair)."""
+    global POSTS, BOSS_X, BOSS, N_LONG, N_SHORT, WIRE_HOLE, FLOOR_HOLE
+    POSTS = posts
+    if posts:
+        BOSS_X, by = 40.0, D / 2 - WALL - BOSS_D / 2 + 0.3
+        N_LONG, N_SHORT = 9, 7
+        WIRE_HOLE, FLOOR_HOLE = (46.0, 28.0, 5.0), (46.0, 19.0)
+    else:
+        BOSS_X, by = 42.0, 33.5
+        N_LONG, N_SHORT = 11, 8
+        WIRE_HOLE, FLOOR_HOLE = (47.3, 31.0, 4.0), (47.3, 19.0)
+    BOSS = [(sx * BOSS_X, sy * by) for sx in (-1, 1) for sy in (-1, 1)]
+
+
+HEAD_POCKET_D = 5.8                # M3 button head (5.7) sits flush in the plinth plate
 FEET = [(sx * 28.0, sy * 14.0) for sx in (-1, 1) for sy in (-1, 1)]
 # 3M Bumpon SJ5302 (7.9 mm x 2.2 mm): 1.8 mm recess leaves 0.4 mm proud
 FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.8
@@ -274,6 +295,8 @@ def build():
         holes.append(S.cylinder("m25", 2.2, 6.0, loc=(x, y, z1 + STANDOFF_H - 2.5)))
     for x, y in BOSS:
         holes.append(S.cylinder("m3", 3.4, 10, loc=(x, y, FLOOR_Z0)))
+        if not POSTS:   # the head's last 0.25 mm sits in the floor
+            holes.append(S.cylinder("head", HEAD_POCKET_D, 1.25, loc=(x, y, FLOOR_Z0 - 0.375)))
     zs = z1 + 2.0 - ESP_SLOT_D + (ESP_SLOT_D + 1) / 2
     holes.append(S.box("esp_slot", ESP_SLOT_W, ESP_W + 0.4, ESP_SLOT_D + 1, loc=(ESP_X, 0, zs)))
     # relief in the middle: only the board's bare corners are gripped (antenna, end pads clear)
@@ -310,7 +333,8 @@ def build_plinth():
     foot = S.rounded_box("foot", W - 2 * FOOT_IN, D - 2 * FOOT_IN, Z_PLATE_BOT + 0.01,
                          r=FOOT_R, loc=(0, 0, 0))
     posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
-                        loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS]
+                        loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS] \
+        if POSTS else []
     zl = Z_PLATE_BOT - LEDGE_GAP                   # strip PCB rests on these lips
     ledge_in = S.rounded_box("ledge_in", W - 2 * (FOOT_IN - LEDGE), D - 2 * (FOOT_IN - LEDGE),
                              LEDGE_T, r=FOOT_R + LEDGE, loc=(0, 0, zl - LEDGE_T))
@@ -324,6 +348,10 @@ def build_plinth():
     cuts = []
     for x, y in BOSS:
         cuts.append(S.cylinder("m3", 3.4, 2 * (LIFT + SKIRT), loc=(x, y, LIFT)))
+        if not POSTS:   # flush head pocket through the plate, the lip and the flange below
+            z0 = LINING_Z - 0.5
+            cuts.append(S.cylinder("head", HEAD_POCKET_D, LIFT + SKIRT + 0.01 - z0,
+                                   loc=(x, y, (z0 + LIFT + SKIRT + 0.01) / 2)))
     for x, y in FEET:
         cuts.append(S.cylinder("foot_recess", FOOT_RECESS_D, 2 * FOOT_RECESS, loc=(x, y, 0)))
     wx, wy, wd = WIRE_HOLE
