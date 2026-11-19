@@ -228,7 +228,7 @@ a { color: var(--accent) }
           <li>Frame: 2.5 mm rim plus 4 spacers Ø7 at the screws. It holds the 2 mm plenum and is its own part so nothing has to bridge it.</li>
           <li>Floor: 2.5 mm plate at z 12.0–14.5; 4 Pi standoffs Ø6 × 4 with Ø2.2 pilot holes (M2.5 from the top).</li>
           <li>ESP32 card slot 1.3 × 18.4 × 1.5 deep at x 45.5, gripping only the board's corners.</li>
-          <li>Saddle for a 470 µF 6.3 × 11 capacitor at y 24.8; 5 intake slots at x −28, −14, 0, 14, 28; wire hole Ø4 at (47.3, 19).</li>
+          <li>Saddle for a 470 µF 6.3 × 11 capacitor at y 24.8; 5 intake slots at x −28, −14, 0, 14, 28; wire hole Ø4 at (46.0, 18.5), inside the frame rim and clear of the capacitor saddle.</li>
         </ul>
       </div>
     </article>
@@ -319,10 +319,10 @@ a { color: var(--accent) }
     <h3>Soldering order</h3>
     <ol class="steps">
       <li>Cut the strip only at its printed cut marks: two runs of 10 and two of 7. Lay them out as in the plan, LEDs facing up on the bench, with the printed arrows following the chain.</li>
-      <li>Tin all the pads first, then tin each wire end. Cut 26 AWG silicone wire to about 25 mm per jumper.</li>
+      <li>Tin all the pads first, then tin each wire end. Cut 28 AWG silicone wire (about 1.0 mm across, so three fit the 4.1 mm bay) to about 25 mm per jumper.</li>
       <li>Solder the three jumpers at each of the three corners on the bench, routed as drawn: each pad to the pad on the same edge of the next run. Check continuity across each corner, and check 5 V to GND for no short.</li>
       <li>Solder the input wires (5 V, DIN, GND, about 120 mm) to Run 1's start, put the 330 Ω resistor in the DIN wire right at the strip, and heat-shrink it.</li>
-      <li>Snap the chain into the plinth's channel. Thread the input wires through the wire hole and seal the hole round them with black hot glue.</li>
+      <li>Snap the chain into the plinth's channel. Thread the input wires through the wire hole and seal the hole round them with black hot glue (it also stops LED light leaking up the hole into the shell). Put a dab of hot glue in each corner bay so the jumpers lie flat against the plate, out of the screwdriver's path.</li>
       <li>Solder the 74AHCT1G125 to its SOT-23 adapter, add the 0.1 µF across pins 5 and 3, and tie pin 1 to pin 3. Wire it in line between the ESP32's GPIO4 and the strip's DIN, and heat-shrink it.</li>
       <li>Join the 5 V and GND wires from the strip, the ESP32 and the level shifter to the 1 × 2 female header, with the 470 µF capacitor across them (+ to 5 V). The header goes on Pi pins 4 and 6.</li>
       <li>Before closing up, power the Pi on the bench and run a slow colour sweep from ESPHome to check every LED lights in order.</li>
@@ -336,9 +336,9 @@ a { color: var(--accent) }
       <tbody>
         <tr><td>Pi header pin 4 (5 V)</td><td>ESP32 5V, strip 5 V, capacitor +, 74AHCT1G125 pin 5</td><td>22–24 AWG red</td><td class="muted">1 × 2 female header on pins 4 + 6</td></tr>
         <tr><td>Pi header pin 6 (GND)</td><td>ESP32 GND, strip GND, capacitor −, 74AHCT1G125 pins 3 and 1 (/OE)</td><td>22–24 AWG black</td><td class="muted">common ground</td></tr>
-        <tr><td>ESP32 GPIO4</td><td>74AHCT1G125 pin 2 (A)</td><td>26 AWG</td><td class="muted">GPIO2 is a boot pin, so not that one</td></tr>
-        <tr><td>74AHCT1G125 pin 4 (Y)</td><td>330 Ω → strip DIN</td><td>26 AWG</td><td class="muted">resistor at the strip end; 0.1 µF across pins 5 and 3</td></tr>
-        <tr><td>Strip DO (end of each run)</td><td>DI of the next run</td><td>26 AWG × 3 per corner</td><td class="muted">5 V and GND jumpers alongside</td></tr>
+        <tr><td>ESP32 GPIO4</td><td>74AHCT1G125 pin 2 (A)</td><td>28 AWG</td><td class="muted">GPIO2 is a boot pin, so not that one</td></tr>
+        <tr><td>74AHCT1G125 pin 4 (Y)</td><td>330 Ω → strip DIN</td><td>28 AWG</td><td class="muted">resistor at the strip end; 0.1 µF across pins 5 and 3</td></tr>
+        <tr><td>Strip DO (end of each run)</td><td>DI of the next run</td><td>28 AWG × 3 per corner</td><td class="muted">5 V and GND jumpers alongside</td></tr>
       </tbody>
     </table></div>
     <p class="muted">Power cap: set <code>max_brightness</code> and <code>color_correct</code> in ESPHome so the strip stays near 0.5 A. Full RGBW on 34 LEDs would draw about 2.5 A. Never plug USB into the ESP32 while the Pi is powered.</p>
@@ -348,9 +348,9 @@ a { color: var(--accent) }
     <ol class="steps">
       <li>Flash Home Assistant OS onto the microSD card, and ESPHome onto the ESP32 over USB, before anything is wired to the Pi.</li>
       <li>With the shell upside down, press the four M3 heat-set inserts into the bosses with the insert tip, flush and square.</li>
-      <li>Cut the strip at its cut marks into two runs of 10 and two of 7. Lay them out as in the strip wiring plan below and join them in chain order (Run 1 to Run 4) with three short 26 AWG jumpers at each corner: 5 V, GND and data (DO to DI, following the arrows).</li>
+      <li>Cut the strip at its cut marks into two runs of 10 and two of 7. Lay them out as in the strip wiring plan below and join them in chain order (Run 1 to Run 4) with three short 28 AWG jumpers at each corner: 5 V, GND and data (DO to DI, following the arrows).</li>
       <li>Snap the runs into the plinth's channel, LEDs facing down, bowing each slightly to get it past the lips.</li>
-      <li>Take the chain's input wires (5 V, GND, DIN) up through the plinth's wire hole, the frame and the floor's wire hole, then seal the plinth hole round them with black hot glue.</li>
+      <li>Take the chain's input wires (5 V, GND, DIN) up through the plinth's wire hole, the frame and the floor's wire hole, then seal the plinth hole round them with black hot glue. Bare wires only on this path: a connector won't pass, so any plug goes on the ESP32 end.</li>
       <li>On the floor: seat the 470 µF capacitor in its saddle across 5 V / GND, and wire the 74AHCT1G125 (on its adapter, under heat-shrink) and the 330 Ω resistor in the data line. Stand the ESP32 in its card slot, antenna end down, with a dab of hot glue on the corners.</li>
       <li>Fit the Active Cooler to the Pi, screw the Pi to the floor's standoffs with 4 × M2.5 × 6 from the top, and push the 1 × 2 header onto pins 4 and 6.</li>
       <li>Lower the floor into the upside-down shell, Pi first, so the ports line up with the I/O bay. Then lay the frame on it, then the plinth.</li>
@@ -417,7 +417,7 @@ a { color: var(--accent) }
         <tr><td>Electrolytic capacitor</td><td class="muted">470 µF, 10 V, 6.3 × 11 mm</td><td class="num">1</td><td class="num">$1</td></tr>
         <tr><td>Resistor 330 Ω</td><td class="muted">¼ W</td><td class="num">1</td><td class="num">$1</td></tr>
         <tr><td>Female pin header 1 × 40, 2.54 mm</td><td class="muted">cut a 1 × 2 for pins 4 + 6</td><td class="num">1</td><td class="num">$2</td></tr>
-        <tr><td>Silicone wire</td><td class="muted">26 AWG, 3 colours; 22–24 AWG red + black</td><td class="num">1 set</td><td class="num">$10</td></tr>
+        <tr><td>Silicone wire</td><td class="muted">28 AWG, 3 colours; 22–24 AWG red + black</td><td class="num">1 set</td><td class="num">$10</td></tr>
         <tr><td>Heat-shrink assortment</td><td class="muted">1.5–3 mm</td><td class="num">1</td><td class="num">$6</td></tr>
       </tbody>
     </table></div>

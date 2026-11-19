@@ -162,8 +162,10 @@ def configure(posts=True):
         N_LONG, N_SHORT = 10, 7       # 10 + 7: long runs end at x +-34.7, short runs at y +-24.3:
                                       # a 4 mm wiring bay at each corner for the jumpers, clear
                                       # of the screwdriver's path to the head pocket
-        WIRE_HOLE, FLOOR_HOLE = (46.5, 27.0, 4.0), (47.3, 19.0)   # beside the chain's start,
-                                      # clear of the +X+Y screw pocket
+        WIRE_HOLE, FLOOR_HOLE = (46.5, 27.0, 4.0), (46.0, 18.5)   # beside the chain's start,
+                                      # clear of the +X+Y screw pocket; the floor hole
+                                      # stays inside the frame rim (x < 48.5), off the
+                                      # capacitor saddle, 3 mm from the shell wall
     BOSS = [(sx * BOSS_X, sy * by) for sx in (-1, 1) for sy in (-1, 1)]
 
 

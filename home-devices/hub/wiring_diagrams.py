@@ -110,9 +110,9 @@ def pads(run, at_start):
 def corner_route(sx, sy):
     """Jumper polylines for the corner at (sx, sy), from the short run's pads to the long run's
     pads (template drawn for +X -Y and mirrored). Returns {signal: [(x, y), ...]}."""
-    t = {"GND": [(40.15, -23.3), (40.15, -25.3), (35.5, -25.3), (35.5, -27.15), (33.72, -27.15)],
-         "DATA": [(43.65, -23.3), (43.65, -26.3), (36.5, -26.3), (36.5, -30.65), (33.72, -30.65)],
-         "5V": [(47.15, -23.3), (47.15, -27.6), (37.6, -27.6), (37.6, -34.15), (33.72, -34.15)]}
+    t = {"GND": [(40.15, -23.3), (40.15, -25.3), (35.4, -25.3), (35.4, -27.15), (33.72, -27.15)],
+         "DATA": [(43.65, -23.3), (43.65, -26.3), (36.4, -26.3), (36.4, -30.65), (33.72, -30.65)],
+         "5V": [(47.15, -23.3), (47.15, -27.6), (37.4, -27.6), (37.4, -34.15), (33.72, -34.15)]}
     return {k: [(sx * x, -sy * y) for x, y in v] for k, v in t.items()}
 
 
@@ -248,10 +248,11 @@ def corner():
         S.line([P(*q) for q in pts], color="#ffffff", sw=1.2, dash="1 9")
     # notes
     notes = ["1  Tin the six pads first, then tin each wire end.",
-             "2  26 AWG silicone, about 25 mm each (5V longest, GND shortest).",
+             "2  28 AWG silicone (~1.0 mm), about 25 mm each (5V longest, GND shortest).",
              "3  Route as drawn: the wires never cross and stay out of the screw circle.",
              "4  Solder on the LED side; the wires sit in the 3.5 mm under the strip.",
-             "5  Check each joint for continuity, and 5V to GND for no short."]
+             "5  Check each joint for continuity, and 5V to GND for no short.",
+             "6  After fitting: a dab of hot glue holds the wires flat in the bay."]
     for i, n in enumerate(notes):
         S.text(60, 712 + i * 30, n, size=15, anchor="start")
     S.text(60, 682, "HOW", size=13, color=MUTED, anchor="start", weight=600)

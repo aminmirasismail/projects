@@ -20,7 +20,7 @@ US estimates (late 2026), not checked against live listings; check before orderi
 | 9 | Electrolytic capacitor, **470 µF, 10 V, 6.3 × 11 mm** | across the strip's 5 V / GND; sits in the saddle beside the ESP32 | 1 | $1 |
 | 10 | Resistor, 330 Ω, ¼ W | in the data line, at the strip end | 1 | $1 (kit) |
 | 11 | Female pin header, 2.54 mm, 1 × 40 | cut a 1 × 2 piece; plugs onto the Pi's **pins 4 (5 V) and 6 (GND)**, which sit next to each other; wires soldered to its tails | 1 strip | $2 |
-| 12 | Silicone hook-up wire, 26 AWG, 3 colours | strip corner jumpers and data | 1 set | $10 |
+| 12 | Silicone hook-up wire, 28 AWG, 3 colours | strip corner jumpers and data (28 AWG so three fit each 4.1 mm corner bay) | 1 set | $10 |
 | 13 | Silicone hook-up wire, 22–24 AWG, red + black | 5 V / GND from the Pi to the ESP32 and strip | 1 set | (in 12 if a mixed kit) |
 | 14 | Heat-shrink tubing assortment, 1.5–3 mm | covers every joint | 1 kit | $6 |
 
