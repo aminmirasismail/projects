@@ -10,6 +10,7 @@ import base64
 import io
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -18,22 +19,46 @@ from dims import ACCENT, FONT, INK, Sheet, fmt  # noqa: E402
 from PIL import Image  # noqa: E402
 
 
+TEXT_SCALE = 1.5   # dims.py sizes text for print; on a web page the drawing shows ~0.6x
+
+
+def _scale_attr(s, attr, k):
+    return re.sub(rf'{attr}="([\d.]+)"', lambda m: f'{attr}="{float(m.group(1)) * k:g}"', s)
+
+
 class PilSheet(Sheet):
+    def text(self, a, b, s, anchor="middle", size=24, color=INK, dy=0, rot=0, weight=500):
+        super().text(a, b, s, anchor, size, color, dy * TEXT_SCALE, rot, weight)
+
+    def dim_v(self, b1, b2, a_feat, a_line, label, color=INK):
+        """dims.py's vertical dimension, with its text pushed clear of the bigger font."""
+        n = len(self.els)
+        super().dim_v(b1, b2, a_feat, a_line, label, color)
+        side = -1 if a_line < a_feat else 1
+        k = 18 * (TEXT_SCALE - 1) + 4
+        self.els[-1] = re.sub(r'x="([\d.]+)"', lambda m: f'x="{float(m.group(1)) + side * k:.1f}"',
+                              self.els[-1], count=1)
+        self.els[-1] = re.sub(r'rotate\(-90 ([\d.]+)',
+                              lambda m: f'rotate(-90 {float(m.group(1)) + side * k:.1f}', self.els[-1])
+        assert len(self.els) == n + 6
+
     def svg(self, title, note=""):
+        self.els = [_scale_attr(_scale_attr(e, "font-size", TEXT_SCALE), "stroke-width", 1.3)
+                    for e in self.els]
         im = Image.open(self.png).convert("RGBA")
         bg = Image.new("RGBA", im.size, (255, 255, 255, 255))
         bg.alpha_composite(im)
         buf = io.BytesIO()
         bg.convert("RGB").save(buf, "JPEG", quality=90)
         b64 = base64.b64encode(buf.getvalue()).decode()
-        foot = (f'<text x="24" y="{self.h - 24}" font-family="{FONT}" font-size="20" '
+        foot = (f'<text x="24" y="{self.h - 24}" font-family="{FONT}" font-size="26" '
                 f'fill="#77777a">{note}</text>') if note else ""
         return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {self.w} {self.h}" '
                 f'width="{self.w}" height="{self.h}">'
                 f'<rect width="100%" height="100%" fill="#ffffff"/>'
                 f'<image href="data:image/jpeg;base64,{b64}" width="{self.w}" '
                 f'height="{self.h}"/>'
-                f'<text x="24" y="40" font-family="{FONT}" font-size="22" font-weight="600" '
+                f'<text x="24" y="40" font-family="{FONT}" font-size="30" font-weight="600" '
                 f'fill="{INK}" letter-spacing="2">{title}</text>'
                 + "".join(self.els) + foot + "</svg>")
 
@@ -57,7 +82,7 @@ def main():
     lb = d["label_box"]
     s.dim_v(lb[1], lb[3], lb[2], lb[2] + 6, fmt(lb[3] - lb[1]), color=ACCENT)
     s.dim_v(lb[3], T, lb[0], lb[0] - 5, fmt(T - lb[3]), color=ACCENT)
-    s.leader(lb[0] + 2, lb[1] + 0.5, -W / 2 + 4, 12,
+    s.leader(lb[0] + 2, lb[1] + 0.5, -W / 2 + 4, 30,
              f"label {d['label_size']:g} mm bold mono, {fmt(d['engrave'])} deep", color=ACCENT)
     out["front"] = s.svg(f"FRONT  ·  REV {rev}  ·  mm")
 
@@ -75,19 +100,19 @@ def main():
     s.dim_v(-D / 2, D / 2, -W / 2, -W / 2 - 8, fmt(D))
     r = d["R"]
     s.leader(W / 2 - r * 0.3, D / 2 - r * 0.3, W / 2 + 8, D / 2 + 6, f"R{fmt(r)}")
-    s.dim_h(W / 2 - d["WALL"], W / 2, 10, 20, f"{fmt(d['WALL'])} wall", color=ACCENT)
+    s.leader(W / 2 - d["WALL"] / 2, 20, W / 2 + 10, 30, f"{fmt(d['WALL'])} wall", color=ACCENT)
     s.text(0, 0, "PRINTER SIDE →", size=22, color="#77777a")
     out["top"] = s.svg(f"TOP  ·  REV {rev}  ·  mm")
 
     # SECTION at y = pin row, seen from the front
     s = sheet("section")
     px, ph = d["pins"][2][0], d["hole_h"]
-    s.dim_v(B, B + d["FLOOR"], -W / 2 + d["WALL"] + 10, -W / 2 + d["WALL"] + 10,
-            f"{fmt(d['FLOOR'])} floor")
-    s.dim_h(-W / 2, -W / 2 + d["WALL"], 30, 34, f"{fmt(d['WALL'])}", color=ACCENT)
+    s.leader(-8, B + d["FLOOR"] / 2, 0, B + 12, f"{fmt(d['FLOOR'])} floor")
+    s.leader(-W / 2 + d["WALL"] / 2, 34, -W / 2 - 4, 42, f"{fmt(d['WALL'])} wall", color=ACCENT,
+             anchor="end")
     s.leader(-W / 2 + d["WALL"] + d["FLOOR_R"] * 0.3, B + d["FLOOR"] + d["FLOOR_R"] * 0.3,
              -W / 2 + 14, 22, f"R{fmt(d['FLOOR_R'])} inside floor", color=ACCENT)
-    s.leader(px + d["hole_d"] / 2, B + ph - 0.3, px + 4, 16,
+    s.leader(px + d["hole_d"] / 2, B + ph - 0.3, px + 4, 30,
              f"4× pin Ø{fmt(d['pin_d'])} × {fmt(d['pin_h'])} in Ø{fmt(d['hole_d'])} × "
              f"{fmt(ph)} hole", anchor="end")
     s.leader(W / 2 - d["GAP"] / 2, B / 2, W / 2 + 4, -5, f"{fmt(d['GAP'])} shadow line")

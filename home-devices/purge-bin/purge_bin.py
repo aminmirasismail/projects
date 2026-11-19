@@ -22,7 +22,7 @@ layers keep the floor from pillowing, and elephant-foot compensation keeps the s
 The shell is turned 90 degrees on the plate so its printer side faces the back of the bed,
 where seam_position=back puts the seam: out of sight against the printer.
 
-Fit against the printer is NOT yet measured: see GANTRY_CLEAR below.
+Fit under the gantry: 70 mm measured clearance vs 52.2 mm bin (GANTRY_CLEAR below).
 """
 import json
 import math
@@ -54,9 +54,9 @@ GAP = S.SHADOW_GAP          # base inset under the shell
 RIM_CH = 0.6                # 45-degree chamfer on the inside top edge: soft to grip and tip
 
 # The bin sits under the left end of the X gantry. The lowest the toolhead/gantry passes over
-# it must clear the rim, or it will hit on homing. Owner to measure; TOP must stay below it.
-GANTRY_CLEAR = None         # mm above the desk, lowest moving part over the bin (unmeasured)
-assert GANTRY_CLEAR is None or TOP <= GANTRY_CLEAR - 5, "bin rim too close to the gantry"
+# it must clear the rim, or it will hit on homing.
+GANTRY_CLEAR = 70.0         # mm above the desk, lowest moving part over the bin (owner measured)
+assert TOP <= GANTRY_CLEAR - 5, "bin rim too close to the gantry"
 
 # base-to-shell locating pins
 PIN_D, PIN_H, PIN_CH = 3.0, 1.8, 0.4      # pin with a 0.4 mm lead-in chamfer on its tip
@@ -268,8 +268,9 @@ def main():
         grey = S.material("Drawing grey", (0.86, 0.86, 0.86, 1), rough=0.9)
         sc.view_layers[0].material_override = grey
         meta = {}
+        # framed so every dimension line fits (drawings are 3:2; top view is 150 mm tall)
         views = {"front": ((0, 0, TOP / 2), 0.120), "left": ((0, 0, TOP / 2), 0.200),
-                 "top": ((0, 0, TOP / 2), 0.200)}
+                 "top": ((0, 0, TOP / 2), 0.270)}
         for v, (c, scale) in views.items():
             S.ortho_camera(v, tuple(k * m for k in c), scale)
             S.render(os.path.join(out, f"dwg_{v}.png"))

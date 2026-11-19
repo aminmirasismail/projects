@@ -72,6 +72,22 @@ section { display: grid; gap: 24px; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; border: 1px solid var(--rule); }
 ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 70ch; }
 @media (max-width: 520px) { .row { grid-template-columns: 1fr; gap: 8px; } }
+
+/* click any image to see it full size */
+.zoomable { cursor: zoom-in; }
+.dwgs { display: grid; gap: 28px; }
+.hint { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.06em; color: var(--ink-2); }
+dialog.lb { border: 0; padding: 0; margin: 0; width: 100vw; height: 100vh; max-width: none; max-height: none; background: var(--bg); color: var(--ink); }
+dialog.lb::backdrop { background: var(--bg); }
+.lb-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--bg);
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--rule); }
+.lb-bar span { font-size: 13px; color: var(--ink-2); min-width: 0; }
+.lb-bar button { font: 500 12px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 12px; cursor: pointer; flex: none; }
+.lb-body { overflow: auto; height: calc(100% - 52px - env(safe-area-inset-top, 0px)); display: grid; place-items: center; padding: 16px; }
+.lb-body img { display: block; max-width: 100%; height: auto; border-radius: 6px; cursor: zoom-in; }
+.lb-body.full { place-items: start; }
+.lb-body.full img { max-width: none; width: auto; cursor: zoom-out; }
+.lb-body.paper img { background: var(--paper); }
 </style>
 
 <div class="wrap">
@@ -93,14 +109,10 @@ ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 7
   </figure>
 
   <section>
-    <div class="sec-head"><span class="tag">Before printing</span><h2>One measurement I need from you</h2></div>
+    <div class="sec-head"><span class="tag">Fit</span><h2>Clears the gantry by 17.8 mm</h2></div>
     <div class="ask">
-      <p>I couldn't find reliable numbers online for the space under the left end of the A1 Mini's gantry. The bin is 52 mm tall. If the toolhead or gantry passes over it any lower than about 57 mm above the desk, it will hit the rim on homing.</p>
-      <ol>
-        <li>Home the printer, then lower Z to 0 from the screen. Measure from the desk to the lowest part of the toolhead or gantry at the left end.</li>
-        <li>Watch a purge, or check where the old purge waste lands. Note how far it falls from the printer's left edge and from the front.</li>
-      </ol>
-      <p class="muted">Send me both numbers. I'll set the height and position in <code>purge_bin.py</code> (there's an assert waiting for them) and re-slice.</p>
+      <p>You measured 70 mm under the left end of the gantry. The bin is 52.2 mm tall, so the rim sits 17.8 mm below anything that moves over it. <code>purge_bin.py</code> now holds that 70 mm and stops the build if the bin ever grows within 5 mm of it.</p>
+      <p class="muted">Placement: line the bin up under the wiper, with the long side against the printer. The 67 × 145 mm opening leaves plenty of room either side of where the purge drops.</p>
     </div>
   </section>
 
@@ -126,8 +138,8 @@ ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 7
   </section>
 
   <section>
-    <div class="sec-head"><span class="tag">Drawings · mm</span><h2>Dimensions</h2></div>
-    <div class="grid2">
+    <div class="sec-head"><span class="tag">Drawings · mm</span><h2>Dimensions</h2><span class="hint">Click any image to open it full size; click again for 1:1 pixels.</span></div>
+    <div class="dwgs">
       <figure class="paper"><img src="renders/dwg_front.svg" alt="Front drawing with overall width, height and label position" loading="lazy"><figcaption><span><b>Front.</b></span><span class="n">D1</span></figcaption></figure>
       <figure class="paper"><img src="renders/dwg_section.svg" alt="Section through the pins with wall, floor and pin dimensions" loading="lazy"><figcaption><span><b>Section through pins.</b></span><span class="n">D2</span></figcaption></figure>
       <figure class="paper"><img src="renders/dwg_top.svg" alt="Top drawing with footprint and corner radius" loading="lazy"><figcaption><span><b>Top.</b> Printer is on the right.</span><span class="n">D3</span></figcaption></figure>
@@ -139,7 +151,7 @@ ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 7
     <div class="sec-head"><span class="tag">Design review</span><h2>What the review found, and what changed</h2></div>
     <p class="muted">Independent review against the house checklist: geometry, mesh health, and every layer of the sliced G-code.</p>
     <div class="rows">
-      <div class="row"><span class="pill open">Open</span><div><h3>Fit under the gantry isn't measured</h3><p class="muted">The model has no printer reference. It needs the two measurements above before it prints.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fit under the gantry wasn't measured</h3><p class="muted">You measured 70 mm of clearance against a 52.2 mm bin. The model now checks it.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Wall printed as two shells around sparse infill</h3><p class="muted">The infill grid would ghost through white PLA. Now three wall loops: six solid lines across the 2.5 mm wall (checked at z = 20).</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Seam ran down the outward-facing side</h3><p class="muted">The shell is now turned 90° on the plate with the seam set to the back. 741 of 770 outer-wall starts now land on the printer-facing side, out of sight.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Pins too tight to drop the shell on blind</h3><p class="muted">Holes are now Ø3.4 and pins Ø3.0 × 1.8 with a 0.4 mm lead-in, leaving 0.6 mm of clearance at the tips. You can glue it with CA or leave it loose.</p></div></div>
@@ -187,3 +199,33 @@ ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 7
     </ul>
   </section>
 </div>
+
+<dialog class="lb" id="lb" aria-label="Image viewer">
+  <div class="lb-bar"><span id="lb-cap"></span><button type="button" id="lb-close">Close</button></div>
+  <div class="lb-body" id="lb-body"><img id="lb-img" alt=""></div>
+</dialog>
+<script>
+(() => {
+  const lb = document.getElementById("lb"), body = document.getElementById("lb-body"),
+        img = document.getElementById("lb-img"), cap = document.getElementById("lb-cap");
+  document.querySelectorAll("figure img").forEach(el => {
+    el.classList.add("zoomable");
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    const open = () => {
+      img.src = el.currentSrc || el.src;
+      img.alt = el.alt;
+      const fc = el.closest("figure").querySelector("figcaption");
+      cap.textContent = fc ? fc.textContent.replace(/\s+/g, " ").trim() : el.alt;
+      body.classList.remove("full");
+      body.classList.toggle("paper", !!el.closest("figure.paper"));
+      lb.showModal();
+    };
+    el.addEventListener("click", open);
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  });
+  img.addEventListener("click", () => body.classList.toggle("full"));
+  document.getElementById("lb-close").addEventListener("click", () => lb.close());
+  lb.addEventListener("click", e => { if (e.target === body) lb.close(); });
+})();
+</script>
