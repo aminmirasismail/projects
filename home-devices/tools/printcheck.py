@@ -10,7 +10,7 @@
 mesh: counts non-manifold edges and finds folded or overlapping triangles on every flat
 level (signed vs unsigned area). A hand-written fan triangulation of concave faces shows up
 here; slicers often hide it, but Bambu Studio draws it as triangle fans.
-slice: defaults are 0.4 mm nozzle, Bambu PLA Basic, 0.20 mm Standard @BBL A1M; pass process
+slice: defaults are 0.4 mm nozzle, Bambu PLA Basic, Textured PEI Plate, 0.20 mm Standard @BBL A1M; pass process
 overrides with --set (e.g. --set wall_loops=3 --set sparse_infill_density=15%).
 Slicing never prints anything; sending to the printer needs the owner's explicit yes.
 """
@@ -30,6 +30,7 @@ PROFILES = r"C:\Program Files\Bambu Studio\resources\profiles\BBL"
 MACHINE = "Bambu Lab A1 mini 0.4 nozzle"
 PROCESS = "0.20mm Standard @BBL A1M"
 FILAMENT = "Bambu PLA Basic @BBL A1M"
+BED = "Textured PEI Plate"        # the owner's A1 Mini plate; the CLI default is Cool Plate
 
 
 # ------------------------------------------------------------------ mesh
@@ -119,7 +120,7 @@ def slice_part(path, out=None, sets=()):
     os.makedirs(out, exist_ok=True)
     proc = {"type": "process", "name": "printcheck", "from": "User", "inherits": PROCESS,
             "compatible_printers": [MACHINE], "print_settings_id": "printcheck",
-            "version": "2.0.0.0"}
+            "curr_bed_type": BED, "version": "2.0.0.0"}
     for s in sets:
         k, v = s.split("=", 1)
         proc[k] = v
