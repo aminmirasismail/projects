@@ -1,13 +1,14 @@
 # Hub v5: bill of materials
 
-Everything needed to build the v5 hub (concept D, underglow) from nothing. Prices are rough
-US estimates (late 2026), not checked against live listings; check before ordering.
+Everything needed to build the v5 hub (concept D, underglow) from nothing. The Pi 5 price was
+checked against live listings on 2026-11-19; the rest are rough US estimates (memory-chip
+shortages have pushed up Pi and SD card prices this year), so check before ordering.
 
 ## Electronics
 
 | # | Part | Spec / what to search for | Qty | Approx. |
 |---|---|---|---|---|
-| 1 | Raspberry Pi 5 | 4 GB is plenty for Home Assistant (2 GB works) | 1 | $60 |
+| 1 | Raspberry Pi 5, **2 GB** (SC1110) | Home Assistant's minimum, and enough for this hub. Buy from an official reseller: CanaKit had it in stock at list price on 2026-11-19 (PiShop and Adafruit were out). 4 GB ($110 at CanaKit, $130 at Adafruit) gives more headroom; 1 GB is below Home Assistant's minimum. Avoid marketplace listings above list price | 1 | $77.50 |
 | 2 | Raspberry Pi 5 Active Cooler | official one; the case is designed around it | 1 | $5 |
 | 3 | Raspberry Pi 27 W USB-C power supply | **official 27 W (5.1 V 5 A)**: the LEDs and ESP32 run off the Pi's 5 V, so a 3 A supply would brown out | 1 | $12 |
 | 4 | microSD card, 64 GB high endurance | SanDisk High Endurance or Samsung PRO Endurance | 1 | $12 |
@@ -38,10 +39,10 @@ US estimates (late 2026), not checked against live listings; check before orderi
 
 | # | Part | Spec | Qty | Approx. |
 |---|---|---|---|---|
-| 19 | White PLA (Bambu PLA Basic or similar) | shell about 55 g + diffuser about 3 g | 1 kg | $20 |
-| 20 | Black PLA (Bambu PLA Basic or similar) | plinth + frame about 22 g, floor about 17 g | 1 kg | $20 |
+| 19 | White PLA (Bambu PLA Matte, the spool synced to your printer) | shell about 55 g + diffuser about 3 g | 1 kg | $20 |
+| 20 | Black PLA (any; load and sync it in Bambu Studio before slicing) | plinth + frame about 22 g, floor about 17 g | 1 kg | $20 |
 
-Parts total (without filament): about $160–180.
+Parts total (without filament): about $180–200 with the 2 GB Pi (about $210–230 with 4 GB).
 
 ## Tools (skip whatever you already have)
 
