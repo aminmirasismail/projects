@@ -73,7 +73,13 @@ project's `dev` branch, not from `main`. Never push to `main` without the owner'
   A1 Mini (180 × 180 mm bed), one colour per part, no AMS.
 - Rounded-rectangle plan, 10–12 mm corners, 1.2 mm top edge fillet.
 - Black base inset 0.6 mm under the shell, so it reads as a shadow line.
-- Small engraved mono labels, e.g. `HOME / 01`. No logos. Screws only on the underside.
+- Small engraved mono labels, e.g. `HOME · 01`. No logos. Screws only on the underside.
+- Label words are split by the house dot: a modelled round dot (0.22 × text size, Ø1.3 at
+  6 mm) centred on the cap height like a dot-product dot, cut 1.2 mm deep (twice the letters)
+  so it reads a shade darker. Never a `/` or a font glyph. Build labels with
+  `S.product_label()` in `tools/studio.py`; `dot` is the default. (`ring`, `pair` and a red
+  filament `inlay` exist, but the owner chose the plain dot.) In text (pages, captions)
+  write the separator as `·`.
 - Inspiration: Apple, Teenage Engineering. Clean, quiet, deliberate.
 
 ## Render style (keep every render consistent)
@@ -130,8 +136,3 @@ building new lighting.
   2026-11-18) plus a jig with pin-located LED carriers on interchangeable spacer pins and
   black walls. See the "Light diffusion test rig" idea on the Idea Bench.
 - `README.md` links to `dexter_handheld_mobile_agent/`, but the folder is `dexter/`.
-- Product-name label style: the owner wants the "/" in names like `HOME / 01` replaced with
-  a distinctive separator (first idea: a vertically centred dot, like a dot-product dot).
-  It's being designed in the purge-bin session as a shared `studio.py` helper (branch
-  `claude/a1-filament-disposal-design-f7589b`). Once agreed, apply it to the hub label
-  (`hub/hub.py`, the "HOME / 01" text) using `S.label_font()` and bounding-box centring.

@@ -63,10 +63,24 @@ def _link(name, bm):
     return ob
 
 
-def rounded_box(name, sx, sy, sz, r=CORNER_R, r_top=0.0, r_bot=0.0, seg=24,
+ARC_SAG = 0.005      # max gap between a faceted arc and the true curve, mm (well under a layer)
+
+
+def arc_segments(r, degrees=90.0, sag=ARC_SAG, minimum=4):
+    """Facets needed for an arc of radius r to stay within `sag` of the true curve.
+    A fixed count looks fine on a small round and low-poly on a big one (6 segments on a
+    6 mm fillet left 1.6 mm wide flats that showed up as bands in the slicer)."""
+    if r <= sag:
+        return minimum
+    step = 2 * math.acos(1 - sag / r)
+    return max(minimum, math.ceil(math.radians(degrees) / step))
+
+
+def rounded_box(name, sx, sy, sz, r=CORNER_R, r_top=0.0, r_bot=0.0, seg=None,
                 loc=(0, 0, 0)):
     """Box with rounded vertical corners; optional fillets on top/bottom rims.
-    Origin at the bottom-centre."""
+    Origin at the bottom-centre. Facet counts follow the radius (arc_segments) unless
+    `seg` forces the plan-corner count."""
     bm = bmesh.new()
     bmesh.ops.create_cube(bm, size=1)
     for v in bm.verts:
@@ -74,21 +88,22 @@ def rounded_box(name, sx, sy, sz, r=CORNER_R, r_top=0.0, r_bot=0.0, seg=24,
     if r > 0:
         vert = [e for e in bm.edges if abs(e.verts[0].co.z - e.verts[1].co.z) > 1e-6]
         bmesh.ops.bevel(bm, geom=vert, offset=min(r, sx / 2 - 1e-3, sy / 2 - 1e-3),
-                        segments=seg, profile=0.5, affect="EDGES")
+                        segments=seg or arc_segments(r), profile=0.5, affect="EDGES")
     for zt, rr in ((sz, r_top), (0.0, r_bot)):
         if rr > 0:
             rim = [e for e in bm.edges
                    if all(abs(v.co.z - zt) < 1e-6 for v in e.verts)
                    and len(e.link_faces) == 2
                    and any(abs(f.normal.z) < 0.5 for f in e.link_faces)]
-            bmesh.ops.bevel(bm, geom=rim, offset=rr, segments=6, profile=0.5,
+            bmesh.ops.bevel(bm, geom=rim, offset=rr, segments=arc_segments(rr), profile=0.5,
                             affect="EDGES")
     ob = _link(name, bm)
     ob.location = loc
     return ob
 
 
-def cylinder(name, d, h, loc=(0, 0, 0), rot=(0, 0, 0), seg=48):
+def cylinder(name, d, h, loc=(0, 0, 0), rot=(0, 0, 0), seg=None):
+    seg = seg or arc_segments(d / 2, 360, minimum=32)
     bpy.ops.mesh.primitive_cylinder_add(vertices=seg, radius=d / 2, depth=h,
                                         location=loc, rotation=rot)
     ob = bpy.context.active_object
@@ -109,7 +124,7 @@ def box(name, sx, sy, sz, loc=(0, 0, 0)):
 def slot(name, w, h, depth, loc, axis="Y", r=None):
     """Rounded-rectangle cutter (stadium-ish) going through a wall along axis."""
     r = min(w, h) / 2 - 1e-3 if r is None else r
-    ob = rounded_box(name, w, h, depth, r=r, seg=16)
+    ob = rounded_box(name, w, h, depth, r=r)
     ob.location = (0, 0, -depth / 2)
     bake(ob)
     if axis == "Y":
@@ -146,6 +161,75 @@ def text(name, body, size, depth, loc, align="LEFT", font=None):
     ob.data.align_x = align
     ob.data.space_character = 1.15
     bpy.ops.object.convert(target="MESH")
+    return ob
+
+
+SEPARATORS = ("dot", "ring", "pair", "inlay")
+DOT_DEPTH = 1.2     # house dot: cut 1.2 mm deep, twice the letters, so it reads darker
+INLAY_HOLE = 1.85    # for a stub of 1.75 mm filament, pressed in and trimmed flush
+
+
+def product_label(name, parts, size, depth, sep="dot", font=None):
+    """Engraving cutter for a product label such as PURGE · A1M (house style: words split by a
+    modelled mark, never a font slash).
+
+    The mark is real geometry, not a glyph, so its size, depth and position are ours:
+      dot     - the house standard: round dot, 0.22 x size, centred on the cap height like a
+                dot-product dot, cut DOT_DEPTH (1.2 mm) deep whatever the letter depth
+      ring    - open ring, 0.36 x size across with a 0.1 x size stroke (min 0.6 mm)
+      pair    - two small dots stacked on the cap height, like a ratio colon
+      inlay   - a hole for a stub of red 1.75 mm filament (the one accent, no AMS needed),
+                cut twice as deep so the stub holds; glue and trim flush
+    Lies in XY with letters extruded +-depth/2 about z = 0, baseline at y = 0, centred on x.
+    Place it centred on the surface it cuts (letters then go depth/2 deep, the dot DOT_DEPTH).
+    Expects capital letters and digits (no descenders). The separator centres are stored on
+    the result as ob["seps"] (x, y pairs), e.g. to place inlays."""
+    font = font or label_font()
+    gap = 0.3 * size                     # clear space each side of the mark
+    mark_w = {"dot": 0.22, "ring": 0.36, "pair": 0.17}.get(sep, 0) * size or INLAY_HOLE
+    words, x = [], 0.0
+    for i, p in enumerate(parts):
+        ob = text(f"{name}_{i}", p, size, depth, loc=(0, 0, 0), font=font)
+        bake(ob)
+        x0 = min(v.co.x for v in ob.data.vertices)
+        for v in ob.data.vertices:
+            v.co.x += x - x0
+        ob.data.update()
+        x = max(v.co.x for v in ob.data.vertices)
+        words.append((ob, x))
+        if i < len(parts) - 1:
+            x += gap * 2 + mark_w
+    cap = max(v.co.y for ob, _ in words for v in ob.data.vertices)
+    objs = [ob for ob, _ in words]
+    seps = []
+    for (_, xe), _ in zip(words[:-1], parts[1:]):
+        cx, cy = xe + gap + mark_w / 2, cap / 2
+        seps.append((cx, cy))
+        sd = {"dot": 2 * DOT_DEPTH, "inlay": 2 * depth}.get(sep, depth)
+        if sep == "dot":
+            objs.append(bake(cylinder(f"{name}_sep", 0.22 * size, sd, loc=(cx, cy, 0))))
+        elif sep == "ring":
+            od = 0.36 * size
+            stroke = max(0.6, 0.1 * size)
+            ring = bake(cylinder(f"{name}_sep", od, sd, loc=(cx, cy, 0)))
+            cut(ring, bake(cylinder("hole", od - 2 * stroke, sd + 1, loc=(cx, cy, 0))))
+            objs.append(ring)
+        elif sep == "pair":
+            d = 0.17 * size
+            for dy in (-0.26 * cap, 0.26 * cap):
+                objs.append(bake(cylinder(f"{name}_sep", d, sd, loc=(cx, cy + dy, 0))))
+        elif sep == "inlay":
+            objs.append(bake(cylinder(f"{name}_sep", INLAY_HOLE, sd, loc=(cx, cy, 0))))
+        else:
+            raise ValueError(f"separator {sep!r} not in {SEPARATORS}")
+    ob = join(objs, name)
+    bake(ob)
+    xs = [v.co.x for v in ob.data.vertices]
+    sx = (min(xs) + max(xs)) / 2
+    for v in ob.data.vertices:
+        v.co.x -= sx
+    ob.data.update()
+    ob["seps"] = [(cx - sx, cy) for cx, cy in seps]
     return ob
 
 
