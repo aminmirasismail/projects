@@ -92,4 +92,8 @@ building new lighting.
 - Pi 5 port positions in `hub/hub.py` are provisional until checked against RP-008347.
 - Hub lighting direction: concept F (thin-skin reveal line + underglow) recommended, pending
   the thin-skin coupon test.
+- Sliced files from `tools/printcheck.py` (Bambu CLI) open in Bambu Studio with the wrong
+  settings shown (owner, 2026-11-19, black base + deflector plate). Find out why: likely the
+  renamed `printcheck` process preset or presets merged into the file. Until then, check the
+  settings in Studio, or set the plate up in the Studio GUI, before handing a file over.
 - `README.md` links to `dexter_handheld_mobile_agent/`, but the folder is `dexter/`.
