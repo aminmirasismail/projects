@@ -1,0 +1,405 @@
+<title>Hub v5 Engineering Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one reading column for text, figures and drawings at full column width; tables scroll inside their own box. */
+:root {
+  --bg: #f3f3f1; --surface: #ffffff; --ink: #18181a; --muted: #66666b; --line: #dcdcd7;
+  --accent: #b3261e; --accent-soft: #f6e4e2; --ok: #2f6b3f; --warn: #8a5a00; --crit: #b3261e;
+  --chip: #ececea;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121213; --surface: #1b1b1d; --ink: #ececea; --muted: #a2a2a6; --line: #2f2f32;
+  --accent: #ec5a50; --accent-soft: #3a1c1a; --ok: #6fbf84; --warn: #e0a84a; --crit: #ec5a50;
+  --chip: #262628; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121213; --surface: #1b1b1d; --ink: #ececea; --muted: #a2a2a6; --line: #2f2f32;
+  --accent: #ec5a50; --accent-soft: #3a1c1a; --ok: #6fbf84; --warn: #e0a84a; --crit: #ec5a50;
+  --chip: #262628; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--sans); }
+.page { max-width: 1040px; margin: 0 auto; padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+header { display: grid; gap: 14px }
+.eyebrow, .label { font: 500 12px/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted) }
+h1 { font: 600 clamp(30px, 5vw, 44px)/1.1 var(--sans); margin: 0; letter-spacing: -.01em; text-wrap: balance }
+h2 { font: 600 24px/1.25 var(--sans); margin: 0; text-wrap: balance }
+h3 { font: 600 17px/1.3 var(--sans); margin: 0 }
+p { margin: 0; max-width: 68ch }
+.lede { font-size: 18px; color: var(--muted); max-width: 70ch }
+section { display: grid; gap: 20px; min-width: 0 }
+.sec-head { display: grid; gap: 6px; border-top: 1px solid var(--line); padding-top: 18px }
+.mono, code, .num { font-family: var(--mono) }
+code { font-size: .92em; background: var(--chip); padding: 1px 5px; border-radius: 4px }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line);
+  border: 1px solid var(--line); border-radius: 10px; overflow: hidden }
+.fact { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; min-width: 0 }
+.fact b { font: 600 20px/1.2 var(--mono); font-variant-numeric: tabular-nums }
+.fact span { color: var(--muted); font-size: 13px }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0 }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); cursor: zoom-in;
+  border: 1px solid var(--line) }
+figcaption { color: var(--muted); font-size: 14px }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px }
+@media (max-width: 720px) { .grid2, .grid3 { grid-template-columns: 1fr } }
+.drawing img { background: #fff }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface) }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 560px }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { font: 500 12px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: var(--surface) }
+tr:last-child td { border-bottom: 0 }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap }
+td .muted, .muted { color: var(--muted) }
+tfoot td { font-weight: 600 }
+.part { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px }
+@media (max-width: 760px) { .part { grid-template-columns: 1fr } }
+.part dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; font-size: 14.5px }
+.part dt { color: var(--muted) }
+.part dd { margin: 0; font-variant-numeric: tabular-nums }
+.part ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14.5px }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0;
+  border: 1px solid var(--line) }
+.sw-white { background: #e9e9e4 } .sw-black { background: #111 }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; max-width: 74ch }
+ol.steps li::marker { font-family: var(--mono); color: var(--muted) }
+.pill { display: inline-block; font: 500 11.5px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+  padding: 5px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid currentColor }
+.pill.fixed { color: var(--ok) } .pill.open { color: var(--warn) } .pill.blocker { color: var(--crit) }
+.callout { border: 1px solid var(--line); border-left: 3px solid var(--accent); background: var(--surface);
+  padding: 14px 18px; border-radius: 8px; display: grid; gap: 6px; max-width: 80ch }
+.lightbox { position: fixed; inset: 0; background: rgba(10,10,12,.92); display: grid; place-items: center; z-index: 50;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  overflow: auto; cursor: zoom-in }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; background: #fff; border-radius: 6px }
+.lightbox.actual { place-items: start; cursor: zoom-out }
+.lightbox.actual img { max-width: none; max-height: none }
+.lightbox .hint { position: fixed; bottom: max(14px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%);
+  color: #ddd; font: 500 12px var(--mono); letter-spacing: .06em }
+button.close { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
+  font: 500 13px var(--mono); background: #222; color: #eee; border: 1px solid #444; border-radius: 6px; padding: 8px 12px; cursor: pointer }
+button:focus-visible, a:focus-visible, img:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+a { color: var(--accent) }
+.toc { display: flex; flex-wrap: wrap; gap: 8px 18px; font: 500 13px var(--mono) }
+.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line) }
+</style>
+
+<div class="page">
+  <header>
+    <div class="eyebrow">Home devices · Hub · v5 · concept D underglow · 19 Nov 2026</div>
+    <h1>HOME · 01 hub, v5</h1>
+    <p class="lede">A Raspberry Pi 5 Home Assistant hub in a floating white shell. A continuous band of light washes onto the table from underneath; air comes in through a hidden, light-trapped intake below and leaves through the recessed I/O bay at the back. This report covers every printed part with its dimensions and print settings, the drawings, assembly and wiring, airflow, the design review and the bill of materials.</p>
+    <nav class="toc" aria-label="Sections">
+      <a href="#overview">Overview</a><a href="#light">Light</a><a href="#air">Airflow</a><a href="#parts">Parts</a>
+      <a href="#drawings">Drawings</a><a href="#assembly">Assembly</a><a href="#wiring">Wiring</a><a href="#review">Review</a>
+      <a href="#risks">Open items</a><a href="#bom">BOM</a>
+    </nav>
+  </header>
+
+  <section id="overview">
+    <div class="grid2">
+      <figure><img src="renders/hub_hero.jpg" alt="The hub: a plain white rounded box with HOME · 01 engraved on top" loading="lazy"><figcaption>Room light, lights off. The roof carries only the label.</figcaption></figure>
+      <figure><img src="renders/hub_light_dark.jpg" alt="The hub in a dark room with an orange-to-blue band of light under its edge" loading="lazy"><figcaption>Dark room, per-LED orange-to-blue gradient.</figcaption></figure>
+    </div>
+    <div class="facts">
+      <div class="fact"><b>106 × 80 × 42</b><span>mm overall (W × D × H)</span></div>
+      <div class="fact"><b>5.0</b><span>mm float under the shell</span></div>
+      <div class="fact"><b>36</b><span>RGBW LEDs, 4 straight runs</span></div>
+      <div class="fact"><b>6</b><span>printed parts, no AMS</span></div>
+      <div class="fact"><b>4 h 43 min</b><span>total print time</span></div>
+      <div class="fact"><b>97 g</b><span>filament (58 g white, 39 g black)</span></div>
+    </div>
+    <div class="grid3">
+      <figure><img src="renders/hub_exploded.jpg" alt="Exploded view: shell, Pi, floor, frame, plinth and diffuser" loading="lazy"><figcaption>Stack, top to bottom: shell, Pi 5, floor with ESP32, plenum frame, plinth, diffuser ring.</figcaption></figure>
+      <figure><img src="renders/hub_cutaway.jpg" alt="Cutaway through the hub" loading="lazy"><figcaption>Cutaway (Pi left out): floor, frame, plinth and channel inside the shell's skirt.</figcaption></figure>
+      <figure><img src="renders/hub_underside.jpg" alt="Underside: foot ring, four pads, intake slots and the white diffuser ring" loading="lazy"><figcaption>Underside: diffuser ring, foot ring, four pads, intake slots.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="light">
+    <div class="sec-head"><span class="label">Light</span><h2>Underglow: one continuous band</h2></div>
+    <p>The strip lies flat, LEDs down, in a black channel inside the shell's skirt: an SK6812 RGBW 5 V strip at 144 LEDs/m, 12 mm wide. It is cut into four straight runs (11 + 7 + 11 + 7) joined by three short wires at each corner. A 0.6 mm white PLA diffuser ring across the channel opening blends the LEDs into one band, carries it round the corners, and hides the reflections of individual LEDs on glossy tables. The black lining hangs 1.5 mm below the shell's edge and reads as a thin shadow line. No light reaches the white shell.</p>
+    <div class="grid2">
+      <figure><img src="renders/glow_wood_dim_grad.jpg" alt="Hub on a satin oak table in warm evening light with the gradient glow" loading="lazy"><figcaption>Satin oak, dim warm room.</figcaption></figure>
+      <figure><img src="renders/glow_quartz_dark_grad.jpg" alt="Hub on cream quartz in a dark room" loading="lazy"><figcaption>Honed cream quartz, dark room.</figcaption></figure>
+      <figure><img src="renders/glow_wood_dark_grad.jpg" alt="Hub on oak in a dark room" loading="lazy"><figcaption>Satin oak, dark room.</figcaption></figure>
+      <figure><img src="renders/glow_quartz_bright_grad.jpg" alt="Hub on quartz in a bright room: the glow is a faint accent" loading="lazy"><figcaption>Quartz, bright room: a faint accent, as expected.</figcaption></figure>
+    </div>
+    <p class="muted">All light renders use the same output: about 4.5 lm per LED at the 0.5 A power cap, each LED modelled as a 5 mm emitter facing down. Colours in renders look paler than the LEDs' raw colours; judge the gradient on the real strip.</p>
+    <div class="grid2">
+      <figure><img src="renders/corner_EF_corner.jpg" alt="Corner close-ups comparing variants E and F" loading="lazy"><figcaption>Corner study: with the screw posts gone and the diffuser fitted (F, right), the band runs round the corner with no extra LEDs.</figcaption></figure>
+      <figure><img src="renders/d_channel.jpg" alt="Close-up of the channel from below with the diffuser ring" loading="lazy"><figcaption>Channel from below: diffuser ring, foot ring, screw pocket under the diffuser.</figcaption></figure>
+    </div>
+  </section>
+
+  <section id="air">
+    <div class="sec-head"><span class="label">Airflow</span><h2>Ventilation: low intake, high exhaust, nothing on top</h2></div>
+    <p>Air enters under the foot ring (a 2 mm gap round the four pads). It passes through four slots in the plinth plate into a 2 mm plenum, then out of five floor slots offset from the first four. There is no straight line from any lit surface into the shell, so no light gets in. Hot air leaves through the I/O bay: the frame of open space round each of the Pi's port jacks, plus the USB-C slot.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Opening</th><th class="num">Area mm²</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Gap under the foot ring</td><td class="num">496</td><td class="muted">2.0 mm × perimeter</td></tr>
+        <tr><td>Plinth plate slots (4 × 3 × 40)</td><td class="num">472</td><td class="muted"></td></tr>
+        <tr><td>Floor slots (5 × 3 × 40)</td><td class="num">590</td><td class="muted">offset 7 mm from the plate slots: the light trap</td></tr>
+        <tr><td>Intake, effective (in series)</td><td class="num">264</td><td class="muted"></td></tr>
+        <tr><td>Exhaust: free area round the jacks + USB-C</td><td class="num">226</td><td class="muted">the jacks fill most of each window, plugged or not, so this is the limit</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Case (25 °C room)</th><th class="num">Heat</th><th class="num">Inside air rise</th><th class="num">Inside air</th></tr></thead>
+      <tbody>
+        <tr><td>Idle, fan off</td><td class="num">3.3 W</td><td class="num">+39 K</td><td class="num">≈ 64 °C</td></tr>
+        <tr><td>Idle, fan stirring (0.5–3 Pa)</td><td class="num">3.3 W</td><td class="num">+13 K (10–19)</td><td class="num">≈ 38 °C</td></tr>
+        <tr><td>Busy, fan off</td><td class="num">6.3 W</td><td class="num">+67 K</td><td class="num">≈ 92 °C</td></tr>
+        <tr><td>Busy, fan on</td><td class="num">6.3 W</td><td class="num">+24 K (19–36)</td><td class="num">≈ 49 °C</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout">
+      <h3>What this means</h3>
+      <p>The hub is only 42 mm tall, so warm air rising on its own (17 mm of height) moves very little. The Active Cooler's fan does the real work. The Pi switches it on at 50 °C on the chip, so in practice it will tick over at low speed most of the time. With the fan running, the inside sits about 38–49 °C, which is under PLA's 57 °C softening point but closer than I'd like when busy. This is a lumped estimate, not a simulation. A 10-minute <code>stress-ng</code> run logging <code>vcgencmd measure_temp</code> and <code>get_throttled</code> decides it. If it runs hot, the first fix is to print the shell in PETG or open the bay further.</p>
+    </div>
+  </section>
+
+  <section id="parts">
+    <div class="sec-head"><span class="label">Printed parts</span><h2>Six parts, one colour each</h2></div>
+
+    <article class="part">
+      <figure><img src="renders/d_iobay.jpg" alt="The I/O bay: a recessed panel with three port windows" loading="lazy"><figcaption>I/O bay: one 0.8 mm recess round three full-height port windows.</figcaption></figure>
+      <div style="display:grid;gap:12px;min-width:0">
+        <h3><span class="swatch sw-white"></span>1 · Shell</h3>
+        <dl>
+          <dt>Material</dt><dd>White PLA</dd>
+          <dt>Size</dt><dd class="mono">106 × 80 × 37 mm (z 5 → 42)</dd>
+          <dt>Print</dt><dd>Upside down, roof on the bed · 0.08 mm Extra Fine · outer wall 60 mm/s at 2000 mm/s² · 4 walls · 1 mm top/bottom · seam at the back</dd>
+          <dt>Time · filament</dt><dd class="mono">3 h 26 min · 55 g</dd>
+        </dl>
+        <ul>
+          <li>Plan corners R12, top edge fillet R1.2, walls and roof 2.0 mm.</li>
+          <li>4 bosses Ø9.6 at (±42, ±33.2), fused into the walls; Ø4.0 × 8 holes for M3 × 5.7 heat-set inserts.</li>
+          <li>I/O bay: windows 17.9 / 15.1 / 15.1 wide × 16.8 tall, sills at z 19.9, inside a 0.8 mm recess.</li>
+          <li>USB-C slot 14 × 8 mm on the +Y side, centred at x 25.8, z 21.7.</li>
+          <li>Label <span class="mono">HOME · 01</span>: 6 mm bold mono, letters 0.6 mm deep, house dot Ø1.3 cut 1.2 mm deep, ≥ 8.8 mm from the fillet.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="part">
+      <figure><img src="renders/d_float.jpg" alt="Close-up of the floating edge with the black hang" loading="lazy"><figcaption>The float: white edge, 1.5 mm black hang, dark gap, glow.</figcaption></figure>
+      <div style="display:grid;gap:12px;min-width:0">
+        <h3><span class="swatch sw-black"></span>2 · Plinth</h3>
+        <dl>
+          <dt>Material</dt><dd>Black PLA</dd>
+          <dt>Size</dt><dd class="mono">101.6 × 75.6 × 10.0 mm</dd>
+          <dt>Print</dt><dd>Upside down, top plate on the bed · 0.20 mm Standard · no supports (plate black A, with the frame)</dd>
+          <dt>Time · filament</dt><dd class="mono">plate A: 41 min · 22 g</dd>
+        </dl>
+        <ul>
+          <li>Top plate 1.4 mm at z 8.6–10.0; 0.2 mm fit to the shell's inner wall.</li>
+          <li>Black lining 1.0 mm, from the plate down to z 3.5: 1.5 mm below the shell's edge.</li>
+          <li>LED channel 12.3 mm wide; strip lips 0.8 × 0.6 mm with 0.6 mm above them for PCB + tape; LED faces at z 6.4, 1.4 mm above the shell edge (hidden from the side).</li>
+          <li>Foot ring 1.6 mm wall, inset 15.5 mm, ending 2.0 mm above the table; 4 pads Ø10 at (±30, ±17) with Ø8.6 × 1.8 recesses for Bumpons.</li>
+          <li>Diffuser stop rings 0.8 × 0.6 mm and 8 crush ribs; 4 intake slots 3 × 40 at x −21, −7, 7, 21.</li>
+          <li>Head pockets Ø6.4 at the screw positions, flush with the plate; wire hole Ø4 at (47.3, 31).</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="part">
+      <figure><img src="renders/hub_ports.jpg" alt="The ports end with the Pi in place" loading="lazy"><figcaption>Ports end with the Pi fitted.</figcaption></figure>
+      <div style="display:grid;gap:12px;min-width:0">
+        <h3><span class="swatch sw-black"></span>3 · Frame · 4 · Floor</h3>
+        <dl>
+          <dt>Material</dt><dd>Black PLA</dd>
+          <dt>Frame</dt><dd class="mono">101.6 × 75.6 × 2.0 mm, flat (plate A)</dd>
+          <dt>Floor</dt><dd class="mono">101.6 × 75.6 × 6.5 mm, flat (plate B: 30 min · 17 g)</dd>
+        </dl>
+        <ul>
+          <li>Frame: 2.5 mm rim plus 4 spacers Ø7 at the screws. It holds the 2 mm plenum and is its own part so nothing has to bridge it.</li>
+          <li>Floor: 2.5 mm plate at z 12.0–14.5; 4 Pi standoffs Ø6 × 4 with Ø2.2 pilot holes (M2.5 from the top).</li>
+          <li>ESP32 card slot 1.3 × 18.4 × 1.5 deep at x 45.5, gripping only the board's corners.</li>
+          <li>Saddle for a 470 µF 6.3 × 11 capacitor at y 24.8; 5 intake slots at x −28, −14, 0, 14, 28; wire hole Ø4 at (47.3, 19).</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="part">
+      <figure><img src="renders/d_label.jpg" alt="Close-up of the HOME · 01 label" loading="lazy"><figcaption>The label with the house dot.</figcaption></figure>
+      <div style="display:grid;gap:12px;min-width:0">
+        <h3><span class="swatch sw-white"></span>5 · Diffuser ring · 6 · Fit-test piece</h3>
+        <dl>
+          <dt>Diffuser</dt><dd class="mono">99.0 × 73.0 × 0.6 mm, white PLA</dd>
+          <dt>Print</dt><dd>Flat, visible face up · 0.20 mm (3 solid layers) · 6 min · 3 g</dd>
+          <dt>Fit test</dt><dd>Last 16 mm of the shell's ports end, to check the I/O bay against your Pi before the full shell</dd>
+        </dl>
+        <ul>
+          <li>Pushed up into the channel until it meets the stops, 1.9 mm under the LED faces; 0.3 mm side clearance taken up by the crush ribs.</li>
+          <li>Inner corners follow the foot ring (R4.3), so no unscattered light gets past.</li>
+          <li>Pops out with a fingernail at a corner to reach the four screws.</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <section id="drawings">
+    <div class="sec-head"><span class="label">Drawings</span><h2>Dimensioned drawings</h2></div>
+    <p class="muted">Every number comes straight from the model. Click a drawing to open it full size, and click again for 1:1.</p>
+    <figure class="drawing"><img src="renders/dwg_front.svg" alt="Front view with overall width, height, float and foot inset" loading="lazy"></figure>
+    <figure class="drawing"><img src="renders/dwg_section_channel.svg" alt="Section through the light channel" loading="lazy"></figure>
+    <figure class="drawing"><img src="renders/dwg_bottom.svg" alt="Underside view with screw pattern, foot and feet" loading="lazy"></figure>
+    <figure class="drawing"><img src="renders/dwg_top.svg" alt="Top view with footprint, corner radius and label" loading="lazy"></figure>
+    <figure class="drawing"><img src="renders/dwg_left.svg" alt="I/O bay end view with window dimensions" loading="lazy"></figure>
+    <figure class="drawing"><img src="renders/dwg_back.svg" alt="USB-C side view with slot dimensions" loading="lazy"></figure>
+  </section>
+
+  <section id="assembly">
+    <div class="sec-head"><span class="label">Assembly</span><h2>Assembly sequence</h2></div>
+    <ol class="steps">
+      <li>Flash Home Assistant OS onto the microSD card, and ESPHome onto the ESP32 over USB, before anything is wired to the Pi.</li>
+      <li>With the shell upside down, press the four M3 heat-set inserts into the bosses with the insert tip, flush and square.</li>
+      <li>Cut the strip at its cut marks into two runs of 11 and two of 7. Join them in chain order (+X run, −Y, −X, +Y) with three short 26 AWG jumpers at each corner: 5 V, GND and data (DO to DI, following the arrows).</li>
+      <li>Snap the runs into the plinth's channel, LEDs facing down, bowing each slightly to get it past the lips.</li>
+      <li>Take the chain's input wires (5 V, GND, DIN) up through the plinth's wire hole, the frame and the floor's wire hole, then seal the plinth hole round them with black hot glue.</li>
+      <li>On the floor: seat the 470 µF capacitor in its saddle across 5 V / GND, and wire the 74AHCT1G125 (on its adapter, under heat-shrink) and the 330 Ω resistor in the data line. Stand the ESP32 in its card slot, antenna end down, with a dab of hot glue on the corners.</li>
+      <li>Fit the Active Cooler to the Pi, screw the Pi to the floor's standoffs with 4 × M2.5 × 6 from the top, and push the 1 × 2 header onto pins 4 and 6.</li>
+      <li>Lower the floor into the upside-down shell, Pi first, so the ports line up with the I/O bay. Then lay the frame on it, then the plinth.</li>
+      <li>Drive the four M3 × 10 button heads up through the plinth's pockets into the inserts. Don't overtighten into PLA.</li>
+      <li>Push the diffuser ring up into the channel until it meets the stops, and stick the four Bumpons into the pad recesses.</li>
+      <li>Test: run the LEDs at the cap for an hour and feel the plinth; run a 10-minute stress test and log the Pi's temperature.</li>
+    </ol>
+  </section>
+
+  <section id="wiring">
+    <div class="sec-head"><span class="label">Wiring</span><h2>Wiring</h2></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>From</th><th>To</th><th>Wire</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Pi header pin 4 (5 V)</td><td>ESP32 5V, strip 5 V, capacitor +, 74AHCT1G125 pin 5</td><td>22–24 AWG red</td><td class="muted">1 × 2 female header on pins 4 + 6</td></tr>
+        <tr><td>Pi header pin 6 (GND)</td><td>ESP32 GND, strip GND, capacitor −, 74AHCT1G125 pins 3 and 1 (/OE)</td><td>22–24 AWG black</td><td class="muted">common ground</td></tr>
+        <tr><td>ESP32 GPIO4</td><td>74AHCT1G125 pin 2 (A)</td><td>26 AWG</td><td class="muted">GPIO2 is a boot pin, so not that one</td></tr>
+        <tr><td>74AHCT1G125 pin 4 (Y)</td><td>330 Ω → strip DIN</td><td>26 AWG</td><td class="muted">resistor at the strip end; 0.1 µF across pins 5 and 3</td></tr>
+        <tr><td>Strip DO (end of each run)</td><td>DI of the next run</td><td>26 AWG × 3 per corner</td><td class="muted">5 V and GND jumpers alongside</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">Power cap: set <code>max_brightness</code> and <code>color_correct</code> in ESPHome so the strip stays near 0.5 A. Full RGBW on 36 LEDs would draw about 2.6 A. Never plug USB into the ESP32 while the Pi is powered.</p>
+  </section>
+
+  <section id="review">
+    <div class="sec-head"><span class="label">Design review</span><h2>What the review found, and what changed</h2></div>
+    <p>The design-review agent went through the model, meshes, slices and renders. Every fix below is in the model. The mesh, interference and slice checks were re-run after the fixes; there hasn't been a second full review pass yet.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Finding</th><th>Severity</th><th>Resolution</th></tr></thead>
+      <tbody>
+        <tr><td>The diffuser couldn't be fitted, and it would have hidden the screws</td><td><span class="pill blocker">Blocker</span></td><td>Inward floor and ledge removed. The diffuser is now a press fit against stop rings with crush ribs, and comes out to reach the screws. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Plinth print would bridge its whole 72 mm plate 2 mm off the bed</td><td><span class="pill blocker">Blocker</span></td><td>Plenum rim and spacers moved to a separate flat-printed frame. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Strip ends overlapped at the corners (11 + 8)</td><td><span class="pill open">Should fix</span></td><td>11 + 7 a side, 36 LEDs. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Inner lip didn't reach the strip ends</td><td><span class="pill open">Should fix</span></td><td>Lip corners squared. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Screw head pockets too tight (Ø5.8 for a 5.7 head)</td><td><span class="pill open">Should fix</span></td><td>Ø6.4; bosses Ø9.6 at y ±33.2 so the pockets clear the lining by 0.3 mm. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Light leak at the diffuser's inner corners</td><td><span class="pill open">Should fix</span></td><td>Inner corners now follow the foot ring. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Airflow model overstated the exhaust 2–3×</td><td><span class="pill open">Should fix</span></td><td>Uses the real free area round the jacks (226 mm²); conclusions restated. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Boss touched the capacitor saddle</td><td><span class="pill open">Should fix</span></td><td>Saddle moved; no part-to-part overlaps except the intended crush ribs. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Insert bosses printed with only 2 walls</td><td><span class="pill open">Should fix</span></td><td>Shell sliced with 4 wall loops. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Wire hole: one grazing light path into the plenum</td><td><span class="pill open">Nit</span></td><td>Sealed round the wires with black hot glue (in the BOM). <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>USB-C slot is a visible unlit opening</td><td><span class="pill open">Nit</span></td><td>A functional port, like the I/O bay. Needs your sign-off as an exception. <span class="pill open">Your call</span></td></tr>
+        <tr><td>Light hub: plugging in an Ethernet cable can slide it</td><td><span class="pill open">Nit</span></td><td>Hold it while plugging in; the Bumpons help. <span class="pill open">Noted</span></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="risks">
+    <div class="sec-head"><span class="label">Open items</span><h2>To verify before the full print</h2></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Item</th><th>Why</th><th>How to close it</th></tr></thead>
+      <tbody>
+        <tr><td>Cooling</td><td>The estimate shows the fan is essential.</td><td>10-minute stress test logging temperature and throttling, after the first build.</td></tr>
+        <tr><td>Pi 5 port and hole positions</td><td>Still from memory, not the official drawing (RP-008347).</td><td>Check against RP-008347, then print the 16 mm fit-test piece and try it on your Pi.</td></tr>
+        <tr><td>Your USB-C plug</td><td>The socket sits 10.8 mm in, so the moulded end must fit a 14 × 8 mm slot.</td><td>Measure the plug end with calipers.</td></tr>
+        <tr><td>ESP32 edge clearance</td><td>The slot assumes 1.5 mm of bare board at the antenna end.</td><td>Measure your board; widen the relief if needed.</td></tr>
+        <tr><td>Diffuser thickness</td><td>0.6 mm is a starting point.</td><td>Hold a strip behind your 0.6 mm skin coupon; go to 0.4 or 0.8 if the band looks spotty or dim.</td></tr>
+        <tr><td>Strip temperature</td><td>PLA softens around 57 °C.</td><td>One hour at the 0.5 A cap; print the plinth in PETG if it gets warm.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="bom">
+    <div class="sec-head"><span class="label">Bill of materials</span><h2>Everything to order</h2></div>
+    <p class="muted">Rough US prices from late 2026, not checked against live listings. The same list is in <code>home-devices/hub/BOM.md</code>.</p>
+    <h3>Electronics</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Part</th><th>Spec</th><th class="num">Qty</th><th class="num">≈</th></tr></thead>
+      <tbody>
+        <tr><td>Raspberry Pi 5</td><td class="muted">4 GB is plenty for Home Assistant</td><td class="num">1</td><td class="num">$60</td></tr>
+        <tr><td>Pi 5 Active Cooler</td><td class="muted">official; the case is built round it</td><td class="num">1</td><td class="num">$5</td></tr>
+        <tr><td>Official 27 W USB-C supply</td><td class="muted">5.1 V 5 A: LEDs and ESP32 run off the Pi's 5 V</td><td class="num">1</td><td class="num">$12</td></tr>
+        <tr><td>microSD 64 GB, high endurance</td><td class="muted">SanDisk High Endurance / Samsung PRO Endurance</td><td class="num">1</td><td class="num">$12</td></tr>
+        <tr><td>Ethernet cable 0.5–1 m</td><td class="muted"></td><td class="num">1</td><td class="num">$5</td></tr>
+        <tr><td>LED strip</td><td class="muted">SK6812 RGBW, 5 V, 144/m, 12 mm, white PCB, IP30; warm or natural white. 36 LEDs used</td><td class="num">1 m</td><td class="num">$15–25</td></tr>
+        <tr><td>ESP32-C3 SuperMini</td><td class="muted">22.5 × 18 mm; usually a 2–3 pack</td><td class="num">1</td><td class="num">$8</td></tr>
+        <tr><td>74AHCT1G125 level shifter</td><td class="muted">SOT-23-5, plus SOT-23 to DIP adapters and a 0.1 µF capacitor</td><td class="num">2</td><td class="num">$8</td></tr>
+        <tr><td>Electrolytic capacitor</td><td class="muted">470 µF, 10 V, 6.3 × 11 mm</td><td class="num">1</td><td class="num">$1</td></tr>
+        <tr><td>Resistor 330 Ω</td><td class="muted">¼ W</td><td class="num">1</td><td class="num">$1</td></tr>
+        <tr><td>Female pin header 1 × 40, 2.54 mm</td><td class="muted">cut a 1 × 2 for pins 4 + 6</td><td class="num">1</td><td class="num">$2</td></tr>
+        <tr><td>Silicone wire</td><td class="muted">26 AWG, 3 colours; 22–24 AWG red + black</td><td class="num">1 set</td><td class="num">$10</td></tr>
+        <tr><td>Heat-shrink assortment</td><td class="muted">1.5–3 mm</td><td class="num">1</td><td class="num">$6</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Hardware and filament</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Part</th><th>Spec</th><th class="num">Qty</th><th class="num">≈</th></tr></thead>
+      <tbody>
+        <tr><td>Heat-set inserts</td><td class="muted">M3 × 5.7, OD 4.6 (Ruthex / CNC Kitchen standard)</td><td class="num">4</td><td class="num">$8</td></tr>
+        <tr><td>Button-head screws</td><td class="muted">M3 × 10, ISO 7380, black</td><td class="num">4</td><td class="num">$6</td></tr>
+        <tr><td>Pi screws</td><td class="muted">M2.5 × 6 socket or pan head</td><td class="num">4</td><td class="num">$6</td></tr>
+        <tr><td>Rubber feet</td><td class="muted">3M Bumpon SJ5302, 7.9 × 2.2 mm</td><td class="num">4</td><td class="num">$5</td></tr>
+        <tr><td>Black hot-glue sticks</td><td class="muted">seal the wire hole</td><td class="num">few</td><td class="num">$5</td></tr>
+        <tr><td>White PLA</td><td class="muted">shell 55 g + diffuser 3 g</td><td class="num">1 kg</td><td class="num">$20</td></tr>
+        <tr><td>Black PLA</td><td class="muted">plinth + frame 22 g, floor 17 g</td><td class="num">1 kg</td><td class="num">$20</td></tr>
+      </tbody>
+      <tfoot><tr><td>Parts total</td><td class="muted">without filament</td><td></td><td class="num">≈ $170–185</td></tr></tfoot>
+    </table></div>
+    <h3>Tools (skip what you have)</h3>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Tool</th><th>Why</th><th class="num">≈</th></tr></thead>
+      <tbody>
+        <tr><td>Temperature-controlled iron (e.g. Pinecil V2 + 65 W USB-C PD charger)</td><td class="muted">strip corners, ESP32, header</td><td class="num">$46</td></tr>
+        <tr><td>M3 heat-set insert tip</td><td class="muted">inserts straight and to depth</td><td class="num">$10–15</td></tr>
+        <tr><td>Solder 0.6–0.8 mm, flux pen, tip cleaner</td><td class="muted">small pads</td><td class="num">$15</td></tr>
+        <tr><td>Wire strippers + flush cutters</td><td class="muted">wires, strip cut marks</td><td class="num">$15</td></tr>
+        <tr><td>Tweezers + helping hands</td><td class="muted"></td><td class="num">$10</td></tr>
+        <tr><td>Small heat gun</td><td class="muted">heat-shrink</td><td class="num">$15</td></tr>
+        <tr><td>2 mm hex driver</td><td class="muted">M3 button heads, M2.5 socket heads</td><td class="num">$5</td></tr>
+        <tr><td>Multimeter</td><td class="muted">polarity before power-on</td><td class="num">$20</td></tr>
+        <tr><td>Mini hot-glue gun</td><td class="muted">ESP32 corners, wire-hole seal</td><td class="num">$10</td></tr>
+        <tr><td>microSD reader + USB-C data cable</td><td class="muted">flashing</td><td class="num">$13</td></tr>
+        <tr><td>Digital calipers, hobby knife</td><td class="muted">fits, clean-up</td><td class="num">$28</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-label="Image viewer">
+  <button class="close" id="lb-close" type="button">Close</button>
+  <img id="lb-img" alt="">
+  <div class="hint" id="lb-hint">Click the image for 1:1 · Esc to close</div>
+</div>
+<script>
+(function () {
+  var lb = document.getElementById("lightbox"), img = document.getElementById("lb-img");
+  function open(src, alt) { img.src = src; img.alt = alt || ""; lb.classList.remove("actual"); lb.hidden = false; }
+  function close() { lb.hidden = true; img.src = ""; }
+  document.querySelectorAll("figure img").forEach(function (el) {
+    el.tabIndex = 0;
+    el.addEventListener("click", function () { open(el.currentSrc || el.src, el.alt); });
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter") open(el.currentSrc || el.src, el.alt); });
+  });
+  img.addEventListener("click", function (e) { e.stopPropagation(); lb.classList.toggle("actual"); });
+  lb.addEventListener("click", close);
+  document.getElementById("lb-close").addEventListener("click", function (e) { e.stopPropagation(); close(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !lb.hidden) close(); });
+})();
+</script>
