@@ -8,3 +8,4 @@ _frames/
 _preview/
 home-devices/*/renders/dwg_*.png
 */renders/_halo_frames/
+*.gcode.3mf
