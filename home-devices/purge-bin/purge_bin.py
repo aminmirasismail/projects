@@ -65,10 +65,11 @@ PIN_XY = [(sx * (W / 2 - 14), sy * (D / 2 - 22)) for sx in (-1, 1) for sy in (-1
 
 # label on the front end
 LABEL = ("PURGE", "A1M")    # engraved as PURGE · A1M
-SEP = "dot"                 # house separator, see S.product_label
+SEP = "dot"                 # house separator: Ø1.3 dot, 1.2 deep (S.product_label)
 LABEL_SIZE = 6.0            # bold mono at 6 mm: strokes ~0.65 mm, wider than the nozzle
 ENGRAVE = 0.6
 LABEL_Z = TOP - 9.0         # centre height of the text
+SEPS = []                   # separator centres on the front face (x, z), set by build()
 CLEAR = 1.0                 # min gap from text to any fillet tangent line
 
 
@@ -163,6 +164,7 @@ def build():
     holes = [S.cylinder("hole", HOLE_D, 2 * HOLE_H, loc=(x, y, BASE_T)) for x, y in PIN_XY]
     S.cut(shell, [cav, lip] + holes)
     lab, box, seps = front_label()
+    SEPS[:] = seps
     v0 = S.volume(shell)
     S.cut(shell, [lab])
     assert S.volume(shell) < v0 - 5, "label cut removed no material"
@@ -203,7 +205,8 @@ def write_dims_json(out, box):
     data = {"rev": REV, "W": W, "D": D, "TOP": TOP, "BASE_T": BASE_T, "SHELL_H": SHELL_H,
             "WALL": WALL, "FLOOR": FLOOR, "FLOOR_R": FLOOR_R, "R": R, "EDGE": EDGE, "GAP": GAP,
             "pins": PIN_XY, "pin_d": PIN_D, "pin_h": PIN_H, "hole_d": HOLE_D, "hole_h": HOLE_H,
-            "label": " · ".join(LABEL), "sep": SEP, "label_box": box, "label_size": LABEL_SIZE, "engrave": ENGRAVE}
+            "label": " · ".join(LABEL), "sep": SEP, "seps": SEPS, "dot_d": 0.22 * LABEL_SIZE, "dot_depth": S.DOT_DEPTH,
+            "label_box": box, "label_size": LABEL_SIZE, "engrave": ENGRAVE}
     with open(os.path.join(out, "dims.json"), "w") as f:
         json.dump(data, f, indent=1)
 

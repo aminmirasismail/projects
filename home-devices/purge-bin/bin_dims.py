@@ -84,6 +84,9 @@ def main():
     s.dim_v(lb[3], T, lb[0], lb[0] - 5, fmt(T - lb[3]), color=ACCENT)
     s.leader(lb[0] + 2, lb[1] + 0.5, -W / 2 + 4, 30,
              f"label {d['label_size']:g} mm bold mono, {fmt(d['engrave'])} deep", color=ACCENT)
+    for sx, sz in d["seps"]:
+        s.leader(sx + d["dot_d"] / 2 * 0.7, sz - d["dot_d"] / 2 * 0.7, sx + 3, 22,
+                 f"dot Ø{fmt(d['dot_d'])}, {fmt(d['dot_depth'])} deep", color=ACCENT)
     out["front"] = s.svg(f"FRONT  ·  REV {rev}  ·  mm")
 
     # LEFT (looks +X; right = -Y, up = +Z): the long side away from the printer

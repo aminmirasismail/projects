@@ -37,11 +37,12 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
 - Rounded-rectangle plan, 10–12 mm corners, 1.2 mm top edge fillet.
 - Black base inset 0.6 mm under the shell, so it reads as a shadow line.
 - Small engraved mono labels, e.g. `HOME · 01`. No logos. Screws only on the underside.
-- Label words are split by a modelled dot centred on the cap height, like a dot-product dot,
-  never a `/` or a font glyph. Build labels with `S.product_label()` in `tools/studio.py`
-  (separators: `dot` default, `deepdot`, `ring`, `pair`, `inlay`). `inlay` is the signature
-  option: a hole for a stub of red 1.75 mm filament, pressed in and trimmed flush. It is the
-  one accent, and needs no AMS. In text (pages, captions) write the separator as `·`.
+- Label words are split by the house dot: a modelled round dot (0.22 × text size, Ø1.3 at
+  6 mm) centred on the cap height like a dot-product dot, cut 1.2 mm deep (twice the letters)
+  so it reads a shade darker. Never a `/` or a font glyph. Build labels with
+  `S.product_label()` in `tools/studio.py`; `dot` is the default. (`ring`, `pair` and a red
+  filament `inlay` exist, but the owner chose the plain dot.) In text (pages, captions)
+  write the separator as `·`.
 - Inspiration: Apple, Teenage Engineering. Clean, quiet, deliberate.
 
 ## Render style (keep every render consistent)

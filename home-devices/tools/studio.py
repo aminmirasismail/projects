@@ -149,7 +149,8 @@ def text(name, body, size, depth, loc, align="LEFT", font=None):
     return ob
 
 
-SEPARATORS = ("dot", "deepdot", "ring", "pair", "inlay")
+SEPARATORS = ("dot", "ring", "pair", "inlay")
+DOT_DEPTH = 1.2     # house dot: cut 1.2 mm deep, twice the letters, so it reads darker
 INLAY_HOLE = 1.85    # for a stub of 1.75 mm filament, pressed in and trimmed flush
 
 
@@ -158,13 +159,14 @@ def product_label(name, parts, size, depth, sep="dot", font=None):
     modelled mark, never a font slash).
 
     The mark is real geometry, not a glyph, so its size, depth and position are ours:
-      dot     - round dot, 0.22 x size, centred on the cap height like a dot-product dot
-      deepdot - the same dot cut twice as deep, so it holds a darker shadow than the letters
+      dot     - the house standard: round dot, 0.22 x size, centred on the cap height like a
+                dot-product dot, cut DOT_DEPTH (1.2 mm) deep whatever the letter depth
       ring    - open ring, 0.36 x size across with a 0.1 x size stroke (min 0.6 mm)
       pair    - two small dots stacked on the cap height, like a ratio colon
       inlay   - a hole for a stub of red 1.75 mm filament (the one accent, no AMS needed),
                 cut twice as deep so the stub holds; glue and trim flush
     Lies in XY with letters extruded +-depth/2 about z = 0, baseline at y = 0, centred on x.
+    Place it centred on the surface it cuts (letters then go depth/2 deep, the dot DOT_DEPTH).
     Expects capital letters and digits (no descenders). The separator centres are stored on
     the result as ob["seps"] (x, y pairs), e.g. to place inlays."""
     font = font or label_font()
@@ -187,8 +189,8 @@ def product_label(name, parts, size, depth, sep="dot", font=None):
     for (_, xe), _ in zip(words[:-1], parts[1:]):
         cx, cy = xe + gap + 0.18 * size, cap / 2
         seps.append((cx, cy))
-        sd = 2 * depth if sep in ("deepdot", "inlay") else depth
-        if sep in ("dot", "deepdot"):
+        sd = {"dot": 2 * DOT_DEPTH, "inlay": 2 * depth}.get(sep, depth)
+        if sep == "dot":
             objs.append(bake(cylinder(f"{name}_sep", 0.22 * size, sd, loc=(cx, cy, 0), seg=40)))
         elif sep == "ring":
             od = 0.36 * size
