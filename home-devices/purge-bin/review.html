@@ -46,6 +46,7 @@ figure.paper img { background: var(--paper); }
 figcaption { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--ink-2); }
 figcaption b { color: var(--ink); font-weight: 600; }
 figcaption .n { font-family: var(--f-mono); flex: none; }
+.grid3 { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
 .grid2 { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
 
 section { display: grid; gap: 24px; }
@@ -104,7 +105,7 @@ dialog.lb::backdrop { background: var(--bg); }
   </header>
 
   <figure>
-    <img src="renders/bin_hero.jpg" alt="White purge bin with a thin black base line and a small engraved PURGE / A1M label on its front end" width="1600" height="1200">
+    <img src="renders/bin_hero.jpg" alt="White purge bin with a thin black base line and a small engraved PURGE · A1M label on its front end" width="1600" height="1200">
     <figcaption><span><b>Hero.</b> The black base sits 0.6 mm inside the shell, so from the desk it reads as a shadow, like the hub.</span><span class="n">01</span></figcaption>
   </figure>
 
@@ -131,9 +132,23 @@ dialog.lb::backdrop { background: var(--bg); }
   <section>
     <div class="sec-head"><span class="tag">Details</span><h2>Close-ups</h2></div>
     <div class="grid2">
-      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved PURGE / A1M label" width="1400" height="1050" loading="lazy"><figcaption><span><b>Label.</b> 6 mm bold mono, 0.6 mm deep, 5.9 mm below the rim fillet.</span><span class="n">08</span></figcaption></figure>
+      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved PURGE · A1M label" width="1400" height="1050" loading="lazy"><figcaption><span><b>Label.</b> 6 mm bold mono, 0.6 mm deep. The dot is modelled, centred on the cap height.</span><span class="n">08</span></figcaption></figure>
       <figure><img src="renders/d_corner.jpg" alt="Close-up of the top corner" width="1400" height="1050" loading="lazy"><figcaption><span><b>Corner.</b> R10 plan corner running into the R1.2 top edge.</span><span class="n">09</span></figcaption></figure>
       <figure><img src="renders/d_shadowline.jpg" alt="Close-up of the black base line at the bottom corner" width="1400" height="1050" loading="lazy"><figcaption><span><b>Shadow line.</b> 0.6 mm inset, concentric R9.4 corners.</span><span class="n">10</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">House mark</span><h2>The separator, five ways</h2>
+      <p class="muted">Every product label splits its words with a modelled mark instead of a slash. It's geometry, not a font glyph, so we set its size, depth and centring. The bin is built with the plain dot for now. The red inlay is my pick for a signature: one tiny red point on every product.</p></div>
+    <div class="grid2">
+      <figure><img src="renders/sep_dot.jpg" alt="Label PURGE · A1M with a round engraved dot centred on the letters" width="1400" height="1050" loading="lazy"><figcaption><span><b>Dot.</b> Ø1.3 mm, 0.6 mm deep, centred on the cap height. Current default.</span><span class="n">S1</span></figcaption></figure>
+      <figure><img src="renders/sep_inlay.jpg" alt="Label with a red filament dot inlaid between the words" width="1400" height="1050" loading="lazy"><figcaption><span><b>Red inlay.</b> A 3 mm stub of red 1.75 mm filament, glued and trimmed flush. Recommended.</span><span class="n">S2</span></figcaption></figure>
+    </div>
+    <div class="grid3">
+      <figure><img src="renders/sep_deepdot.jpg" alt="Label with a dot cut deeper than the letters" width="1400" height="1050" loading="lazy"><figcaption><span><b>Deep dot.</b> Cut 1.2 mm deep, so it holds a darker shadow than the letters.</span><span class="n">S3</span></figcaption></figure>
+      <figure><img src="renders/sep_ring.jpg" alt="Label with a small open ring between the words" width="1400" height="1050" loading="lazy"><figcaption><span><b>Ring.</b> Ø2.2 mm open ring with a 0.6 mm stroke.</span><span class="n">S4</span></figcaption></figure>
+      <figure><img src="renders/sep_pair.jpg" alt="Label with two stacked dots between the words" width="1400" height="1050" loading="lazy"><figcaption><span><b>Pair.</b> Two stacked dots, like a ratio colon.</span><span class="n">S5</span></figcaption></figure>
     </div>
   </section>
 
@@ -157,7 +172,7 @@ dialog.lb::backdrop { background: var(--bg); }
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Pins too tight to drop the shell on blind</h3><p class="muted">Holes are now Ø3.4 and pins Ø3.0 × 1.8 with a 0.4 mm lead-in, leaving 0.6 mm of clearance at the tips. You can glue it with CA or leave it loose.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Floor would pillow</h3><p class="muted">Eight top layers instead of five.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Sharp inside rim, elephant's foot at the shadow line</h3><p class="muted">Added a 0.6 mm chamfer inside the rim and 0.15 mm elephant-foot compensation.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Label said A1, not A1 Mini</h3><p class="muted">Now <code>PURGE / A1M</code>. Every letter survives on all 31 layers it spans.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Label said A1, not A1 Mini</h3><p class="muted">Now <code>PURGE · A1M</code>. Every letter survives on all 31 layers it spans.</p></div></div>
       <div class="row"><span class="pill kept">Kept</span><div><h3>No feet on the base</h3><p class="muted">Glued, it's one solid part and doesn't slide. Stick-on bumpers work if you want them.</p></div></div>
     </div>
   </section>

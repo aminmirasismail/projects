@@ -36,7 +36,12 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
   A1 Mini (180 × 180 mm bed), one colour per part, no AMS.
 - Rounded-rectangle plan, 10–12 mm corners, 1.2 mm top edge fillet.
 - Black base inset 0.6 mm under the shell, so it reads as a shadow line.
-- Small engraved mono labels, e.g. `HOME / 01`. No logos. Screws only on the underside.
+- Small engraved mono labels, e.g. `HOME · 01`. No logos. Screws only on the underside.
+- Label words are split by a modelled dot centred on the cap height, like a dot-product dot,
+  never a `/` or a font glyph. Build labels with `S.product_label()` in `tools/studio.py`
+  (separators: `dot` default, `deepdot`, `ring`, `pair`, `inlay`). `inlay` is the signature
+  option: a hole for a stub of red 1.75 mm filament, pressed in and trimmed flush. It is the
+  one accent, and needs no AMS. In text (pages, captions) write the separator as `·`.
 - Inspiration: Apple, Teenage Engineering. Clean, quiet, deliberate.
 
 ## Render style (keep every render consistent)
@@ -70,6 +75,9 @@ building new lighting.
   can't be installed in the cloud. Slice on the owner's PC.
 
 ## Open items
+
+- The hub (`hub/hub.py`, `concepts.py`) still engraves `HOME / 01`; switch it to
+  `S.product_label(("HOME", "01"), ...)` at its next revision.
 
 - Pi 5 port positions in `hub/hub.py` are provisional until checked against RP-008347.
 - Hub lighting direction: concept F (thin-skin reveal line + underglow) recommended, pending

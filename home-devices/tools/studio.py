@@ -149,6 +149,72 @@ def text(name, body, size, depth, loc, align="LEFT", font=None):
     return ob
 
 
+SEPARATORS = ("dot", "deepdot", "ring", "pair", "inlay")
+INLAY_HOLE = 1.85    # for a stub of 1.75 mm filament, pressed in and trimmed flush
+
+
+def product_label(name, parts, size, depth, sep="dot", font=None):
+    """Engraving cutter for a product label such as PURGE · A1M (house style: words split by a
+    modelled mark, never a font slash).
+
+    The mark is real geometry, not a glyph, so its size, depth and position are ours:
+      dot     - round dot, 0.22 x size, centred on the cap height like a dot-product dot
+      deepdot - the same dot cut twice as deep, so it holds a darker shadow than the letters
+      ring    - open ring, 0.36 x size across with a 0.1 x size stroke (min 0.6 mm)
+      pair    - two small dots stacked on the cap height, like a ratio colon
+      inlay   - a hole for a stub of red 1.75 mm filament (the one accent, no AMS needed),
+                cut twice as deep so the stub holds; glue and trim flush
+    Lies in XY with letters extruded +-depth/2 about z = 0, baseline at y = 0, centred on x.
+    Expects capital letters and digits (no descenders). The separator centres are stored on
+    the result as ob["seps"] (x, y pairs), e.g. to place inlays."""
+    font = font or label_font()
+    gap = 0.42 * size
+    words, x = [], 0.0
+    for i, p in enumerate(parts):
+        ob = text(f"{name}_{i}", p, size, depth, loc=(0, 0, 0), font=font)
+        bake(ob)
+        x0 = min(v.co.x for v in ob.data.vertices)
+        for v in ob.data.vertices:
+            v.co.x += x - x0
+        ob.data.update()
+        x = max(v.co.x for v in ob.data.vertices)
+        words.append((ob, x))
+        if i < len(parts) - 1:
+            x += gap * 2 + 0.36 * size           # room for the widest mark
+    cap = max(v.co.y for ob, _ in words for v in ob.data.vertices)
+    objs = [ob for ob, _ in words]
+    seps = []
+    for (_, xe), _ in zip(words[:-1], parts[1:]):
+        cx, cy = xe + gap + 0.18 * size, cap / 2
+        seps.append((cx, cy))
+        sd = 2 * depth if sep in ("deepdot", "inlay") else depth
+        if sep in ("dot", "deepdot"):
+            objs.append(bake(cylinder(f"{name}_sep", 0.22 * size, sd, loc=(cx, cy, 0), seg=40)))
+        elif sep == "ring":
+            od = 0.36 * size
+            stroke = max(0.6, 0.1 * size)
+            ring = bake(cylinder(f"{name}_sep", od, sd, loc=(cx, cy, 0), seg=48))
+            cut(ring, bake(cylinder("hole", od - 2 * stroke, sd + 1, loc=(cx, cy, 0), seg=48)))
+            objs.append(ring)
+        elif sep == "pair":
+            d = 0.17 * size
+            for dy in (-0.26 * cap, 0.26 * cap):
+                objs.append(bake(cylinder(f"{name}_sep", d, sd, loc=(cx, cy + dy, 0), seg=32)))
+        elif sep == "inlay":
+            objs.append(bake(cylinder(f"{name}_sep", INLAY_HOLE, sd, loc=(cx, cy, 0), seg=40)))
+        else:
+            raise ValueError(f"separator {sep!r} not in {SEPARATORS}")
+    ob = join(objs, name)
+    bake(ob)
+    xs = [v.co.x for v in ob.data.vertices]
+    sx = (min(xs) + max(xs)) / 2
+    for v in ob.data.vertices:
+        v.co.x -= sx
+    ob.data.update()
+    ob["seps"] = [(cx - sx, cy) for cx, cy in seps]
+    return ob
+
+
 def bake(ob):
     """Apply transforms and all modifiers in place."""
     dg = bpy.context.evaluated_depsgraph_get()

@@ -64,7 +64,8 @@ HOLE_D, HOLE_H = 3.4, 2.4   # 0.2 mm a side: drops on blind; printed holes come 
 PIN_XY = [(sx * (W / 2 - 14), sy * (D / 2 - 22)) for sx in (-1, 1) for sy in (-1, 1)]
 
 # label on the front end
-LABEL = "PURGE / A1M"
+LABEL = ("PURGE", "A1M")    # engraved as PURGE · A1M
+SEP = "dot"                 # house separator, see S.product_label
 LABEL_SIZE = 6.0            # bold mono at 6 mm: strokes ~0.65 mm, wider than the nozzle
 ENGRAVE = 0.6
 LABEL_Z = TOP - 9.0         # centre height of the text
@@ -79,9 +80,7 @@ def check(ob, size):
 
 def front_label():
     """Engraved text on the front (-Y) face, centred on its real bounding box."""
-    ob = S.text("label", LABEL, LABEL_SIZE, 2 * ENGRAVE, loc=(0, 0, 0), align="CENTER",
-                font=S.label_font())
-    S.bake(ob)
+    ob = S.product_label("label", LABEL, LABEL_SIZE, 2 * ENGRAVE, sep=SEP)
     # text lies in XY, extruded along Z; stand it up on the -Y face with a rotation about X
     # (a plain axis swap would mirror it, turn its normals inside out and the cut does nothing)
     for v in ob.data.vertices:
@@ -95,6 +94,7 @@ def front_label():
         v.co.x += dx
         v.co.z += dz
     ob.data.update()
+    seps = [(cx + dx, cz + dz) for cx, cz in ob["seps"]]     # on the front face, x and z
     box = (bx[0] + dx, bz[0] + dz, bx[1] + dx, bz[1] + dz)
     # flat part of the front face: between the plan-corner tangents, above the base,
     # below the top-edge fillet
@@ -102,7 +102,19 @@ def front_label():
     assert (box[0] >= flat[0] + CLEAR and box[2] <= flat[2] - CLEAR
             and box[1] >= flat[1] + CLEAR and box[3] <= flat[3] - CLEAR), \
         f"label {box} not {CLEAR} mm inside flat face {flat}"
-    return ob, box
+    return ob, box, seps
+
+
+def inlays(seps):
+    """Red filament stubs for the inlay separator: 1.75 mm, flush with the front face."""
+    red = S.pla("red")
+    out = []
+    for x, z in seps:
+        rod = S.cylinder("inlay", 1.75, 2 * ENGRAVE, loc=(x, -D / 2 + ENGRAVE, z),
+                         rot=(math.pi / 2, 0, 0), seg=40)
+        S.bake(rod)
+        out.append(S.assign(rod, red))
+    return out
 
 
 def offset_top(ob, z_top, c):
@@ -150,7 +162,7 @@ def build():
     offset_top(lip, TOP + 1.0, 1.0)
     holes = [S.cylinder("hole", HOLE_D, 2 * HOLE_H, loc=(x, y, BASE_T)) for x, y in PIN_XY]
     S.cut(shell, [cav, lip] + holes)
-    lab, box = front_label()
+    lab, box, seps = front_label()
     v0 = S.volume(shell)
     S.cut(shell, [lab])
     assert S.volume(shell) < v0 - 5, "label cut removed no material"
@@ -167,7 +179,8 @@ def build():
 
     cap_l = (W - 2 * WALL) * (D - 2 * WALL) * (SHELL_H - FLOOR) / 1e6
     print(f"label box {box}; capacity ~{cap_l:.2f} L")
-    return shell, base, box
+    extras = inlays(seps) if SEP == "inlay" else []
+    return shell, base, box, extras
 
 
 def write_3mf(ob, path, bed=(180.0, 180.0), rot_z=0.0):
@@ -190,14 +203,14 @@ def write_dims_json(out, box):
     data = {"rev": REV, "W": W, "D": D, "TOP": TOP, "BASE_T": BASE_T, "SHELL_H": SHELL_H,
             "WALL": WALL, "FLOOR": FLOOR, "FLOOR_R": FLOOR_R, "R": R, "EDGE": EDGE, "GAP": GAP,
             "pins": PIN_XY, "pin_d": PIN_D, "pin_h": PIN_H, "hole_d": HOLE_D, "hole_h": HOLE_H,
-            "label": LABEL, "label_box": box, "label_size": LABEL_SIZE, "engrave": ENGRAVE}
+            "label": " · ".join(LABEL), "sep": SEP, "label_box": box, "label_size": LABEL_SIZE, "engrave": ENGRAVE}
     with open(os.path.join(out, "dims.json"), "w") as f:
         json.dump(data, f, indent=1)
 
 
 def main():
     args = sys.argv[1:]
-    shell, base, box = build()
+    shell, base, box, extras = build()
     os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
     S.export_stl(shell, os.path.join(HERE, "stl", "purge_bin_shell_white.stl"))
     S.export_stl(base, os.path.join(HERE, "stl", "purge_bin_base_black.stl"))
@@ -205,7 +218,7 @@ def main():
     write_3mf(shell, os.path.join(HERE, "purge_bin_shell_white.3mf"), rot_z=math.pi / 2)
     write_3mf(base, os.path.join(HERE, "purge_bin_base_black.3mf"))
 
-    root = S.to_studio([shell, base])
+    root = S.to_studio([shell, base] + extras)
     S.studio()
     out = os.path.join(HERE, "renders")
     sc = bpy.context.scene
