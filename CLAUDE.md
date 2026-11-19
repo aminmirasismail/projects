@@ -83,6 +83,29 @@ building new lighting.
 - Cloud sessions here allow `datasheets.raspberrypi.com` and `pip.raspberrypi.com` (for the
   official Pi 5 drawing, RP-008347), but GitHub release downloads are blocked, so slicers
   can't be installed in the cloud. Slice on the owner's PC.
+- Engraved text goes on flat faces only, >= 1 mm from where a fillet starts. Blender places
+  text by its baseline, so centre it on its real bounding box (see `label()` in
+  `tests/skin_coupons.py`).
+- No fillet that stops dead in a sharp corner where bodies meet: match radii or drop them.
+- Vertical walls are extrusion lines: >= 0.5 mm with a 0.4 nozzle (0.4 mm got dropped).
+  Check thin features on every layer of the slice.
+- Export meshes with Blender's `loop_triangles`; a hand-written fan folds concave faces.
+- Engraved strokes must be wider than the nozzle (aim >= 0.6 mm): use `S.label_font()` (bold
+  mono) at ~6 mm. Don't thicken text with the curve `offset`: it self-intersects and wrecks
+  booleans (it emptied a whole part once; `S.cut` now raises if that happens).
+- Slice with the filament the owner's printer has synced to Bambu Studio, never an assumed
+  "PLA Basic": `printcheck.py slice` reads it from BambuStudio.conf by default (white Bambu
+  PLA Matte as of 2026-11-19). If a part needs a colour the printer hasn't synced (e.g. black),
+  ask the owner to load and sync it, or which preset to use.
+- Never launch Bambu Studio yourself (not even `bambu-studio.exe file.3mf`): a second instance
+  signed in to the same account knocks the printer connection off ("failed to connect to
+  server") until the owner signs out and back in. Slice with the CLI, put the sliced
+  `.gcode.3mf` in `home-devices/<device>/print/` (git-ignored), and let the owner open it with
+  File > Open in their own Studio window.
+- Bambu Studio's CLI does not resolve preset `inherits` chains reliably: it once sliced
+  "Bambu PLA Basic" at 200 C and 2 mm3/s. `printcheck.py` flattens the chains itself; always
+  check temps, volumetric speed and acceleration in the G-code header, and cross-check the
+  estimate against the Studio GUI before sending a print.
 
 ## Open items
 
