@@ -89,7 +89,7 @@ def build():
     s.dim_v(0, L, W / 2, W / 2 + 8, f"{fmt(L)} float", color=ACCENT)
     fi = pl["foot_in"]
     s.dim_h(W / 2 - fi, W / 2, L / 2, T + 9, f"{fmt(fi)} foot inset", color=ACCENT)
-    out["front"] = s.svg(f"FRONT  ·  REV {rev}  ·  mm")
+    out["front"] = s.svg(f"FRONT  ·  {rev}  ·  mm")
 
     # LEFT END: port window
     s = sheet("left")
@@ -99,7 +99,7 @@ def build():
     s.dim_h(a0, a1, pw["z1"], T + 9, f"{fmt(a1 - a0)} window", color=ACCENT)
     s.dim_v(pw["z0"], pw["z1"], a1, a1 + 9, fmt(pw["z1"] - pw["z0"]), color=ACCENT)
     s.dim_v(0, pw["z0"], a0, a0 - 9, fmt(pw["z0"]), color=ACCENT)
-    out["left"] = s.svg(f"PORTS END  ·  REV {rev}  ·  mm",
+    out["left"] = s.svg(f"I/O BAY (EXHAUST)  ·  {rev}  ·  mm",
                         "Window from Pi 5 port data: " + d["pi_source"])
 
     # BACK: USB-C slot
@@ -112,7 +112,7 @@ def build():
             fmt(u["h"]), color=ACCENT)
     s.dim_h(-W / 2, ua, 0, -10, f"{fmt(W / 2 - u['x'])} to centre")
     s.dim_v(0, u["z"], ua - u["w"] / 2, ua - u["w"] / 2 - 9, fmt(u["z"]))
-    out["back"] = s.svg(f"BACK · USB-C  ·  REV {rev}  ·  mm",
+    out["back"] = s.svg(f"BACK · USB-C  ·  {rev}  ·  mm",
                         "Slot clears the plug's moulded grip, not just the metal tip")
 
     # TOP: footprint, corner, vents, label
@@ -121,11 +121,10 @@ def build():
     s.dim_v(-Dp / 2, Dp / 2, -W / 2, -W / 2 - 10, fmt(Dp))
     s.leader(W / 2 - d["R"] * 0.3, Dp / 2 - d["R"] * 0.3, W / 2 - 2, Dp / 2 + 7,
              f"R{fmt(d['R'])}", anchor="end")
-    s.leader(14, 0, 30, 30, "Ø40 vent field, Ø2.2 holes", color=ACCENT)
     lab = d["label"]
     s.leader(W / 2 - lab["right_inset"] - 10, -Dp / 2 + lab["front_inset"] + 2,
-             W / 2 - 18, -Dp / 2 - 6, f"label {fmt(lab['size'])} mono, 0.6 deep", anchor="end")
-    out["top"] = s.svg(f"TOP  ·  REV {rev}  ·  mm")
+             W / 2 - 18, -Dp / 2 - 6, f"HOME · 01, {fmt(lab['size'])} mono, 0.6 deep, dot 1.2", anchor="end")
+    out["top"] = s.svg(f"TOP  ·  {rev}  ·  mm")
 
     # BOTTOM: screws, foot, LED channel (bottom view: screen-up is -Y)
     s = sheet("bottom")
@@ -142,7 +141,7 @@ def build():
     a = W / 2 - pl["ch_mid"]
     s.leader(a, 0, a - 12, -16, f"{st['n_long'] * 2 + st['n_short'] * 2} LEDs, 4 runs",
              color=ACCENT, anchor="end")
-    out["bottom"] = s.svg(f"UNDERSIDE  ·  REV {rev}  ·  mm")
+    out["bottom"] = s.svg(f"UNDERSIDE  ·  {rev}  ·  mm")
 
     # SECTION through the channel, +X end
     s = sheet("section_channel")
@@ -160,7 +159,7 @@ def build():
     s.leader((ch0 + ch1) / 2, zled + 0.8, ch1 - 1.0, 17.0, "SK6812 RGBW, LEDs face down",
              color=ACCENT, anchor="end")
     s.leader(ch1 - 1.5, 1.5, ch1 + 1.0, 0.6, "foot", anchor="start")
-    out["section_channel"] = s.svg(f"SECTION THROUGH THE LIGHT  ·  REV {rev}  ·  mm  ·  enlarged",
+    out["section_channel"] = s.svg(f"SECTION THROUGH THE LIGHT  ·  {rev}  ·  mm  ·  enlarged",
                                    "LED faces sit above the shell's bottom edge: hidden from the side")
 
     for k, v in out.items():

@@ -1,4 +1,4 @@
-"""Underglow study for the hub (v4, no corner LEDs): how the light looks on real surfaces.
+"""Underglow study for the hub (current version): how the light looks on real surfaces.
 
 Run:  python underglow_study.py [--preview] [--gradient] [--nohang] [--only=wood:dim,...]
 Writes renders/glow_<surface>_<room>[_grad][_nohang].png for surface in (wood, quartz) and
@@ -120,13 +120,13 @@ def leds():
     obs = []
     pos = H.led_positions()
     for k, (x, y, _) in enumerate(pos):
-        li = bpy.data.lights.new(f"glow{k:02d}", "POINT")
+        li = bpy.data.lights.new(f"glow{k:02d}", "AREA")     # 5 mm emitter facing down
+        li.shape, li.size = "SQUARE", 0.005
         li.energy = LED_W
         li.color = gradient(k / len(pos)) if GRADIENT else WARM_LED
-        li.shadow_soft_size = 0.002
         ob = bpy.data.objects.new(li.name, li)
         bpy.context.collection.objects.link(ob)
-        ob.location = (x / 1000, y / 1000, (H.Z_LED_FACE - 0.3) / 1000)
+        ob.location = (x / 1000, y / 1000, (H.Z_LED_FACE - 0.05) / 1000)
         obs.append(ob)
     return obs
 
@@ -134,7 +134,7 @@ def leds():
 def room(name):
     k, world, tint = ROOMS[name]
     for ob in bpy.data.objects:
-        if ob.type == "LIGHT" and ob.data.type == "AREA":
+        if ob.type == "LIGHT" and "base" in ob:          # studio lights only, not the LEDs
             ob.data.energy = ob["base"] * k
             ob.data.color = tuple(a * b for a, b in zip(ob["base_col"], tint))
     bg = bpy.context.scene.world.node_tree.nodes["Background"]
@@ -146,7 +146,8 @@ def main():
     if NOHANG:
         H.LINING_Z, H.FLANGE = H.LIFT + 0.3, 0.0
     shell, floor, plinth = H.build()
-    S.to_studio([shell, floor, plinth])
+    diff = S.assign(H.build_diffuser(), H.scattering_white())
+    S.to_studio([shell, floor, plinth, diff])
     S.studio(samples=24 if PREVIEW else 160, res=(800, 600) if PREVIEW else (1400, 1050))
     sc = bpy.context.scene
     sc.cycles.max_bounces = 12

@@ -33,14 +33,14 @@ sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import bpy  # noqa: E402
 import studio as S  # noqa: E402
 
-REV = "D"
+REV = "v5"   # iterations are version numbers; lighting concepts are letters (CLAUDE.md)
 
 # ---------------------------------------------------------------- enclosure (mm)
 W, D = 106.0, 80.0          # outer footprint
 R = 12.0                    # plan corner radius
 LIFT = 5.0                  # gap from the table to the white shell's bottom edge
 SHELL_Z0 = LIFT             # the shell comes all the way down: from the side it floats
-TOP = 40.0                  # overall height (table to roof), as in the concept render
+TOP = 42.0                  # overall height (table to roof); +2 mm over v4 for the intake plenum
 SHELL_H = TOP - SHELL_Z0
 WALL, ROOF = 2.0, 2.0
 ROOF_IN = TOP - ROOF        # underside of the roof
@@ -49,7 +49,8 @@ SKIRT = 5.0                 # the black parts sit this far up inside the shell's
 PLATE_T = 1.4               # plinth top plate; the strip sticks to its underside
 FLOOR_T = 2.5               # black floor plate that carries the Pi and the ESP32
 Z_PLATE_BOT = LIFT + SKIRT - PLATE_T
-FLOOR_Z0 = LIFT + SKIRT
+PLENUM = 2.0                # air gap between plinth plate and floor: the intake's light trap
+FLOOR_Z0 = LIFT + SKIRT + PLENUM
 FLOOR_TOP = FLOOR_Z0 + FLOOR_T
 STANDOFF_H = 4.0
 BOARD_Z = FLOOR_TOP + STANDOFF_H    # underside of the Pi PCB
@@ -104,9 +105,12 @@ DUPONT_TOP = BOARD_TOP + 16.0                  # inverted female header, tails s
 HEADER_USED = {"5v": 4, "gnd": 6}              # adjacent pins: one 1x2 female header
 
 # one window per port (ribs between them keep the printed bridges short)
+# one window per port, all full height (they double as the high exhaust), inside one bay
+_PORT_H = max(p[3] for p in PI["ports"]) + 1.0
 PORT_WINS = [{"name": n, "y0": 28.0 - v - w / 2 - 1.0, "y1": 28.0 - v + w / 2 + 1.0,
-              "z0": BOARD_TOP - 0.2, "z1": BOARD_TOP + h + 1.0}
+              "z0": BOARD_TOP - 0.2, "z1": BOARD_TOP + _PORT_H}
              for n, v, w, h, _, _ in PI["ports"]]
+BAY_DEPTH, BAY_MARGIN = 0.8, 0.6     # recessed I/O bay round all three windows
 PORT_WIN = {"y0": min(p["y0"] for p in PORT_WINS), "y1": max(p["y1"] for p in PORT_WINS),
             "z0": BOARD_TOP - 0.2, "z1": max(p["z1"] for p in PORT_WINS)}
 USBC_SLOT = (14.0, 8.0)       # the plug reaches 10.8 mm in: its overmould must pass
@@ -158,7 +162,16 @@ def configure(posts=True):
 
 
 HEAD_POCKET_D = 5.8                # M3 button head (5.7) sits flush in the plinth plate
-FEET = [(sx * 28.0, sy * 14.0) for sx in (-1, 1) for sy in (-1, 1)]
+configure(False)                   # v5: no posts, runs reach the corners
+FEET = [(sx * 30.0, sy * 17.0) for sx in (-1, 1) for sy in (-1, 1)]   # on 4 pads
+PAD_D = 10.0
+FOOT_WALL = 1.6             # the inner channel wall is now a ring, not a solid foot
+FOOT_GAP = 2.0              # ... ending 2 mm above the table: air passes under it
+INTAKE_W, INTAKE_L = 3.0, 40.0
+INTAKE_PLATE_X = (-21.0, -7.0, 7.0, 21.0)      # slots in the plinth plate
+INTAKE_FLOOR_X = (-28.0, -14.0, 0.0, 14.0, 28.0)  # floor slots, offset (+-28 sit over the pads)
+RIM_W = 2.5                 # plenum rim round the plinth plate's top edge
+DIFF_T = 0.6                # white PLA diffuser ring across the channel opening
 # 3M Bumpon SJ5302 (7.9 mm x 2.2 mm): 1.8 mm recess leaves 0.4 mm proud
 FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.8
 
@@ -223,7 +236,8 @@ def label_cutter(body, size, right_x, front_y, top_z, depth=0.6):
 
 
 # The separator is a placeholder: the owner is choosing a new one (CLAUDE.md, open items).
-LABEL = {"text": "HOME / 01", "size": 6.0, "right_inset": 14.0, "front_inset": 10.0}
+LABEL = {"parts": ("HOME", "01"), "size": 6.0, "depth": 0.6, "right_inset": 14.0,
+         "front_inset": 10.0}          # HOME · 01, house dot (S.product_label)
 
 
 def build():
@@ -246,30 +260,32 @@ def build():
     for x, y in BOSS:
         cutters.append(S.cylinder("insert", INSERT_HOLE_D, INSERT_HOLE_DEPTH + 1,
                                   loc=(x, y, FLOOR_TOP + (INSERT_HOLE_DEPTH - 1) / 2)))
+    pb = PORT_WIN
+    bay = S.slot("io_bay", pb["y1"] - pb["y0"] + 2 * BAY_MARGIN, pb["z1"] - pb["z0"] + 2 * BAY_MARGIN,
+                 2 * BAY_DEPTH, loc=(-W / 2, (pb["y0"] + pb["y1"]) / 2, (pb["z0"] + pb["z1"]) / 2),
+                 axis="X", r=2.6)
+    wins = []
     for pw in PORT_WINS:
         yc, zc = (pw["y0"] + pw["y1"]) / 2, (pw["z0"] + pw["z1"]) / 2
-        w, h = pw["y1"] - pw["y0"], pw["z1"] - pw["z0"]
-        win = S.slot("port_" + pw["name"], w, h, 10, loc=(-W / 2, yc, zc), axis="X", r=2.0)
-        # 0.8 mm outer recess, 0.6 mm wider each side: wide plug overmoulds seat closer
-        rec = S.slot("port_rec_" + pw["name"], w + 1.2, h + 1.2, 2.0, loc=(-W / 2 - 0.2, yc, zc),
-                     axis="X", r=2.6)
-        S.union(win, [rec])            # one cutter per port: no edges where the two meet
-        cutters.append(win)
+        wins.append(S.slot("port_" + pw["name"], pw["y1"] - pw["y0"], pw["z1"] - pw["z0"], 10,
+                           loc=(-W / 2, yc, zc), axis="X", r=2.0))
+    S.union(bay, wins)                 # one cutter: no edges where bay and windows meet
+    cutters.append(bay)
     cutters.append(S.slot("usbc", *USBC_SLOT, 10, loc=(USBC[0], D / 2, BOARD_TOP + 1.6),
                           axis="Y"))
     S.cut(shell, cutters)
-    vents = []
-    rows = int(20.0 / (3.9 * 0.866)) + 1
-    for j in range(-rows, rows + 1):
-        y = j * 3.9 * 0.866
-        off = 3.9 / 2 if j % 2 else 0
-        for i in range(-8, 9):
-            x = i * 3.9 + off
-            if math.hypot(x, y) <= 20.0 - 1.1:
-                vents.append(S.cylinder("vent", 2.2, 6, loc=(x, y, TOP), seg=20))
-    S.cut(shell, [S.join(vents, "vents")])
-    lab, box = label_cutter(LABEL["text"], LABEL["size"], W / 2 - LABEL["right_inset"],
-                            -D / 2 + LABEL["front_inset"], TOP)
+    # no roof vents in v5: air enters underneath and leaves through the I/O bay (CLAUDE.md)
+    lab = S.product_label("label", LABEL["parts"], LABEL["size"], 2 * LABEL["depth"])
+    vs = [v.co for v in lab.data.vertices]
+    dx = W / 2 - LABEL["right_inset"] - max(v.x for v in vs)
+    dy = -D / 2 + LABEL["front_inset"] - min(v.y for v in vs)
+    for v in lab.data.vertices:
+        v.co.x += dx
+        v.co.y += dy
+        v.co.z += TOP
+    lab.data.update()
+    vs = [v.co for v in lab.data.vertices]
+    box = (min(v.x for v in vs), min(v.y for v in vs), max(v.x for v in vs), max(v.y for v in vs))
     flat = (-W / 2 + S.EDGE_R, -D / 2 + S.EDGE_R, W / 2 - S.EDGE_R, D / 2 - S.EDGE_R)
     assert box[2] <= flat[2] - 1 and box[1] >= flat[1] + 1, f"label {box} too near the fillet"
     S.cut(shell, [lab])
@@ -295,8 +311,7 @@ def build():
         holes.append(S.cylinder("m25", 2.2, 6.0, loc=(x, y, z1 + STANDOFF_H - 2.5)))
     for x, y in BOSS:
         holes.append(S.cylinder("m3", 3.4, 10, loc=(x, y, FLOOR_Z0)))
-        if not POSTS:   # the head's last 0.25 mm sits in the floor
-            holes.append(S.cylinder("head", HEAD_POCKET_D, 1.25, loc=(x, y, FLOOR_Z0 - 0.375)))
+
     zs = z1 + 2.0 - ESP_SLOT_D + (ESP_SLOT_D + 1) / 2
     holes.append(S.box("esp_slot", ESP_SLOT_W, ESP_W + 0.4, ESP_SLOT_D + 1, loc=(ESP_X, 0, zs)))
     # relief in the middle: only the board's bare corners are gripped (antenna, end pads clear)
@@ -308,6 +323,9 @@ def build():
     holes.append(S.cylinder("wire", wd, 10, loc=(fx, fy, FLOOR_Z0)))
     groove = S.box("wire_groove", wd, wy - fy, 2.4, loc=(wx, (wy + fy) / 2, FLOOR_Z0))
     holes += [groove, S.cylinder("wire_end", wd, 2.4, loc=(wx, wy, FLOOR_Z0))]
+    for x in INTAKE_FLOOR_X:
+        holes.append(S.slot("intake", INTAKE_W, INTAKE_L, 10, loc=(x, 0, FLOOR_Z0), axis="Z",
+                            r=INTAKE_W / 2 - 0.01))
     S.cut(floor, holes)
     check(floor, (fw, fd, FLOOR_T + STANDOFF_H))
     S.assign(floor, black)
@@ -330,8 +348,25 @@ def build_plinth():
     if FLANGE > 0:
         S.union(lining, [_ring_rect("flange", IN_IN + 0.5, CH_IN0 + FLANGE, LINING_Z + 0.05,
                                     LINING_Z + FLANGE_T, R)])
-    foot = S.rounded_box("foot", W - 2 * FOOT_IN, D - 2 * FOOT_IN, Z_PLATE_BOT + 0.01,
-                         r=FOOT_R, loc=(0, 0, 0))
+    foot = S.rounded_box("foot", W - 2 * FOOT_IN, D - 2 * FOOT_IN, Z_PLATE_BOT + 0.01 - FOOT_GAP,
+                         r=FOOT_R, loc=(0, 0, FOOT_GAP))
+    S.bake(foot)
+    S.cut(foot, [S.rounded_box("foot_in", W - 2 * (FOOT_IN + FOOT_WALL),
+                               D - 2 * (FOOT_IN + FOOT_WALL), Z_PLATE_BOT + 2,
+                               r=FOOT_R - 1.0, loc=(0, 0, -1))])
+    pads = [S.cylinder("pad", PAD_D, Z_PLATE_BOT + 0.01, loc=(x, y, Z_PLATE_BOT / 2))
+            for x, y in FEET]
+    zt = LIFT + SKIRT
+    rim = _ring_rect("rim", IN_IN, IN_IN + RIM_W, zt - 0.01, zt + PLENUM, R)
+    spacers = [S.cylinder("spacer", SCREW_POST_D, PLENUM + 0.01, loc=(x, y, zt + PLENUM / 2))
+               for x, y in BOSS]
+    # inner ledge for the diffuser, on the foot ring's outer face
+    zd = LINING_Z + FLANGE_T
+    dled = S.rounded_box("diff_ledge", W - 2 * (FOOT_IN - 1.0), D - 2 * (FOOT_IN - 1.0),
+                         zd - LINING_Z - 0.05, r=FOOT_R + 1.0, loc=(0, 0, LINING_Z + 0.05))
+    S.bake(dled)
+    S.cut(dled, [S.rounded_box("diff_ledge_in", W - 2 * FOOT_IN - 0.4, D - 2 * FOOT_IN - 0.4,
+                               10, r=FOOT_R - 0.2, loc=(0, 0, -1))])
     posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
                         loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS] \
         if POSTS else []
@@ -344,22 +379,35 @@ def build_plinth():
                                    loc=(0, 0, zl - LEDGE_T - 1))])
     ledges = [_ring_rect("ledge_out", CH_IN0 - 0.4, CH_IN0 + LEDGE, zl - LEDGE_T, zl, R),
               ledge_in]
-    S.union(plate, [lining, foot] + posts + ledges)
+    S.union(plate, [lining, foot, rim, dled] + pads + spacers + posts + ledges)
     cuts = []
     for x, y in BOSS:
         cuts.append(S.cylinder("m3", 3.4, 2 * (LIFT + SKIRT), loc=(x, y, LIFT)))
-        if not POSTS:   # flush head pocket through the plate, the lip and the flange below
-            z0 = LINING_Z - 0.5
-            cuts.append(S.cylinder("head", HEAD_POCKET_D, LIFT + SKIRT + 0.01 - z0,
-                                   loc=(x, y, (z0 + LIFT + SKIRT + 0.01) / 2)))
+        if not POSTS:   # head pocket through the plate (and lip and flange below it);
+            z0, z1 = LINING_Z - 0.5, Z_PLATE_BOT + 1.7     # head top 0.3 mm into the spacer
+            cuts.append(S.cylinder("head", HEAD_POCKET_D, z1 - z0, loc=(x, y, (z0 + z1) / 2)))
+    for x in INTAKE_PLATE_X:
+        cuts.append(S.slot("intake", INTAKE_W, INTAKE_L, 20, loc=(x, 0, Z_PLATE_BOT), axis="Z",
+                           r=INTAKE_W / 2 - 0.01))
     for x, y in FEET:
         cuts.append(S.cylinder("foot_recess", FOOT_RECESS_D, 2 * FOOT_RECESS, loc=(x, y, 0)))
     wx, wy, wd = WIRE_HOLE
     cuts.append(S.cylinder("wire", wd, 10, loc=(wx, wy, LIFT + SKIRT)))
     S.cut(plate, cuts)
-    check(plate, (pw, pd, LIFT + SKIRT))
+    check(plate, (pw, pd, LIFT + SKIRT + PLENUM))
     S.smooth(plate)
     return plate
+
+
+def build_diffuser():
+    """White PLA ring across the channel opening: blends the LEDs into one band (corners too)
+    and hides their reflections. Rests on the lining's flange and the foot ring's ledge.
+    Printed flat, 0.6 mm (3 layers at 0.2)."""
+    z0 = LINING_Z + FLANGE_T
+    d = _ring_rect("Diffuser", CH_IN0 + 0.15, FOOT_IN - 0.15, z0, z0 + DIFF_T, R)
+    check(d, (W - 2 * (CH_IN0 + 0.15), D - 2 * (CH_IN0 + 0.15), DIFF_T))
+    S.smooth(d)
+    return d
 
 
 def check(ob, size):
@@ -495,8 +543,18 @@ def pi_mock():
 
 # ---------------------------------------------------------------- light
 BLUE, ORANGE = (0.08, 0.32, 1.0), (1.0, 0.42, 0.03)
-LED_W_NIGHT = 0.02 * 52 / (2 * N_LONG + 2 * N_SHORT)   # same total light as concept D's render
+LED_W_NIGHT = 0.015          # ~4.5 lm per LED at the 0.5 A cap (as in underglow_study.py)
 LED_W_DAY = LED_W_NIGHT
+
+
+def scattering_white():
+    """White PLA with subsurface scattering (1.2 mm), for parts light passes through."""
+    m = S.material("PLA white (scattering)", S.PLA["white"], rough=0.5)
+    b = m.node_tree.nodes["Principled BSDF"]
+    b.inputs["Subsurface Weight"].default_value = 1.0
+    b.inputs["Subsurface Radius"].default_value = (1.0, 1.0, 1.0)
+    b.inputs["Subsurface Scale"].default_value = 0.0012
+    return m
 
 
 def gradient(t):
@@ -508,21 +566,21 @@ def led_lights():
     obs = []
     pos = led_positions()
     for k, (x, y, _) in enumerate(pos):
-        li = bpy.data.lights.new(f"glow{k:02d}", "POINT")
+        li = bpy.data.lights.new(f"glow{k:02d}", "AREA")     # 5 mm emitter facing down
+        li.shape, li.size = "SQUARE", 0.005
         li.energy = LED_W_NIGHT
         li.color = gradient(k / len(pos))
-        li.shadow_soft_size = 0.002
         ob = bpy.data.objects.new(li.name, li)
         bpy.context.collection.objects.link(ob)
-        ob.location = (x / 1000, y / 1000, (Z_LED_FACE - 0.3) / 1000)
+        ob.location = (x / 1000, y / 1000, (Z_LED_FACE - 0.05) / 1000)
         obs.append(ob)
     return obs
 
 
 def room(dim):
     k = 0.03 if dim else 1.0
-    for ob in bpy.data.objects:
-        if ob.type == "LIGHT" and ob.data.type == "AREA":
+    for ob in bpy.data.objects:     # studio lights only; the LED emitters keep their output
+        if ob.type == "LIGHT" and ob.data.type == "AREA" and not ob.name.startswith("glow"):
             ob.data.energy = ob["base"] * k
     bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = (
         0.08 * k)
@@ -562,6 +620,9 @@ def main():
             os.remove(p)
     S.export_stl(shell, os.path.join(HERE, "stl", "hub_shell_white.stl"))
     S.export_stl(floor, os.path.join(HERE, "stl", "hub_floor_black.stl"))
+    diff = build_diffuser()
+    S.assign(diff, scattering_white())
+    S.export_stl(diff, os.path.join(HERE, "stl", "hub_diffuser_white.stl"))
     S.export_stl(plinth, os.path.join(HERE, "stl", "hub_plinth_black.stl"))
     # Fit test: the last 15 mm of the shell at the ports end (~20 min print).
     test = shell.copy()
@@ -580,7 +641,7 @@ def main():
     esp = esp_mock()
     hparts, wires = harness()
     strip = pcbs + leds
-    root = S.to_studio([shell, floor, plinth, pi, esp] + strip + hparts + wires)
+    root = S.to_studio([shell, floor, plinth, diff, pi, esp] + strip + hparts + wires)
     S.studio()
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, "hub.blend"))
     out = os.path.join(HERE, "renders")
@@ -629,7 +690,7 @@ def main():
         gone = [o for o in strip if max(v.co.y for v in o.data.vertices) > 2]
         gone += [w for w in wires if w.name.startswith("wire_strip")]
         show(gone + [pi], False)
-        for o in (shell, floor, plinth):   # (the Pi and ESP32 stand-ins are too crude to cut;
+        for o in (shell, floor, plinth, diff):   # (the Pi and ESP32 stand-ins are too crude to cut;
                                            #  the Pi stays out of this view)
             c = o.copy()
             c.data = o.data.copy()
@@ -639,12 +700,12 @@ def main():
             S.cut(c, [cut])
             c.hide_render = False
             halves.append(c)
-        show([shell, floor, plinth], False)
+        show([shell, floor, plinth, diff], False)
         S.camera((0.20, 0.30, 0.17), target=(0.004, 0.0, 0.016), lens=60)
         S.render(os.path.join(out, "hub_cutaway.png"))
         for c in halves:
             bpy.data.objects.remove(c, do_unlink=True)
-        show([shell, floor, plinth] + gone, True)
+        show([shell, floor, plinth, diff] + gone, True)
         show(inside, False)
         root.rotation_euler = (math.pi, 0, 0)
         root.location = (0, 0, TOP * m)
@@ -661,8 +722,9 @@ def main():
         lx, ly = (W / 2 - LABEL["right_inset"] - 15) * m, (-D / 2 + LABEL["front_inset"] + 2) * m
         S.camera((lx + 0.02, ly - 0.075, 0.11), target=(lx, ly, TOP * m), lens=100)
         S.render(os.path.join(out, "d_label.png"))
-        S.camera((0.02, -0.09, 0.13), target=(0, 0, TOP * m), lens=90)
-        S.render(os.path.join(out, "d_vents.png"))
+        # the I/O bay on its own (no Pi): the recessed panel that is also the exhaust
+        S.camera((-0.15, -0.07, 0.05), target=(-W / 2 * m, 0, 0.026), lens=85)
+        S.render(os.path.join(out, "d_iobay.png"))
         # the float: low view of the corner, shadow line, gap and plinth
         S.camera((0.150, -0.150, 0.012), target=(W / 2 * m - 0.012, -D / 2 * m + 0.012, 0.006),
                  lens=85)
