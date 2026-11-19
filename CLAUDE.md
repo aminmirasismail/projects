@@ -97,3 +97,8 @@ building new lighting.
   2026-11-18) plus a jig with pin-located LED carriers on interchangeable spacer pins and
   black walls. See the "Light diffusion test rig" idea on the Idea Bench.
 - `README.md` links to `dexter_handheld_mobile_agent/`, but the folder is `dexter/`.
+- Product-name label style: the owner wants the "/" in names like `HOME / 01` replaced with
+  a distinctive separator (first idea: a vertically centred dot, like a dot-product dot).
+  It's being designed in the purge-bin session as a shared `studio.py` helper (branch
+  `claude/a1-filament-disposal-design-f7589b`). Once agreed, apply it to the hub label
+  (`hub/hub.py`, the "HOME / 01" text) using `S.label_font()` and bounding-box centring.
