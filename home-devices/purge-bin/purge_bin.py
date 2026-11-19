@@ -16,9 +16,10 @@ Printed parts (one colour each, no AMS):
 Join: a drop of CA glue on each pin, or leave loose (the pins are a snug fit).
 
 Coordinates: X across (printer on the +X side), Y front-to-back (front is -Y), Z up.
-Print settings (on top of 0.12mm Fine @BBL A1M): PRINT_SETS below. Three wall loops fill the
-2.5 mm wall solid (two left a sparse-infill core that ghosts through white PLA), eight top
-layers keep the floor from pillowing, and elephant-foot compensation keeps the shadow line crisp.
+Print settings: PRINT_PROCESS (0.08 mm) plus PRINT_SETS, which slows only the outer wall.
+Three wall loops fill the 2.5 mm wall solid (two left a sparse-infill core that ghosts
+through white PLA), twelve top layers (~1 mm) keep the floor from pillowing, and
+elephant-foot compensation keeps the shadow line crisp.
 The shell is turned 90 degrees on the plate so its printer side faces the back of the bed,
 where seam_position=back puts the seam: out of sight against the printer.
 
@@ -37,8 +38,10 @@ import studio as S  # noqa: E402
 REV = "B"
 
 # slicer settings on top of "0.12mm Fine @BBL A1M" (see docstring)
-PRINT_SETS = {"wall_loops": "3", "top_shell_layers": "8", "elefant_foot_compensation": "0.15",
-              "seam_position": "back"}
+PRINT_PROCESS = "0.08mm Extra Fine @BBL A1M"     # High Quality slows everything: 6.5 h vs 4.3 h
+PRINT_SETS = {"wall_loops": "3", "top_shell_layers": "12", "elefant_foot_compensation": "0.15",
+              "seam_position": "back",
+              "outer_wall_speed": "60", "outer_wall_acceleration": "2000"}   # only what shows
 
 # ---------------------------------------------------------------- size (mm)
 W, D = 72.0, 150.0          # footprint: narrow across, long along the printer's side
@@ -112,7 +115,7 @@ def inlays(seps):
     out = []
     for x, z in seps:
         rod = S.cylinder("inlay", 1.75, 2 * ENGRAVE, loc=(x, -D / 2 + ENGRAVE, z),
-                         rot=(math.pi / 2, 0, 0), seg=40)
+                         rot=(math.pi / 2, 0, 0))
         S.bake(rod)
         out.append(S.assign(rod, red))
     return out
@@ -137,8 +140,8 @@ def offset_top(ob, z_top, c):
 
 def pin(x, y):
     p = S.cylinder("pin", PIN_D, PIN_H - PIN_CH, loc=(x, y, BASE_T + (PIN_H - PIN_CH) / 2))
-    bpy.ops.mesh.primitive_cone_add(vertices=48, radius1=PIN_D / 2, radius2=PIN_D / 2 - PIN_CH,
-                                    depth=PIN_CH, location=(x, y, BASE_T + PIN_H - PIN_CH / 2))
+    bpy.ops.mesh.primitive_cone_add(vertices=S.arc_segments(PIN_D / 2, 360, minimum=32),
+                                    radius1=PIN_D / 2, radius2=PIN_D / 2 - PIN_CH, depth=PIN_CH, location=(x, y, BASE_T + PIN_H - PIN_CH / 2))
     S.union(p, [bpy.context.active_object])
     return p
 

@@ -65,6 +65,12 @@ building new lighting.
 
 ## Lessons learned
 
+- Product parts print for surface finish: `0.08mm Extra Fine @BBL A1M` with only the outer
+  wall slowed (60 mm/s, 2000 mm/s² acceleration), the seam on a hidden face, solid walls.
+  (`0.08mm High Quality` slows everything: 6.5 h vs 4.3 h for the purge bin, same look.)
+- Tessellate curves by radius, never a fixed count: `S.arc_segments()` keeps facets within
+  0.005 mm of the true arc. Six segments on a 6 mm fillet showed as bands in the slicer.
+
 - LED strips bend through their thickness, not sideways: mount them on edge around a channel.
 - Light behind 2 mm white PLA makes the whole shell glow. Box every LED in a black channel
   with an opening only where light should exit.

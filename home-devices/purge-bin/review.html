@@ -99,8 +99,8 @@ dialog.lb::backdrop { background: var(--bg); }
     <div class="facts">
       <div><span class="tag">Size</span><b>72 × 150 × 52.2</b><span class="muted">mm</span></div>
       <div><span class="tag">Holds</span><b>~0.44 L</b><span class="muted">months of purge</span></div>
-      <div><span class="tag">Shell · white</span><b>1 h 51 m</b><span class="muted">88 g · 0.12 mm</span></div>
-      <div><span class="tag">Base · black</span><b>38 m</b><span class="muted">27 g · 0.12 mm</span></div>
+      <div><span class="tag">Shell · white</span><b>4 h 19 m</b><span class="muted">90 g · 0.08 mm</span></div>
+      <div><span class="tag">Base · black</span><b>34 m</b><span class="muted">23 g · 0.12 mm</span></div>
     </div>
   </header>
 
@@ -168,9 +168,10 @@ dialog.lb::backdrop { background: var(--bg); }
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Wall printed as two shells around sparse infill</h3><p class="muted">The infill grid would ghost through white PLA. Now three wall loops: six solid lines across the 2.5 mm wall (checked at z = 20).</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Seam ran down the outward-facing side</h3><p class="muted">The shell is now turned 90° on the plate with the seam set to the back. 741 of 770 outer-wall starts now land on the printer-facing side, out of sight.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Pins too tight to drop the shell on blind</h3><p class="muted">Holes are now Ø3.4 and pins Ø3.0 × 1.8 with a 0.4 mm lead-in, leaving 0.6 mm of clearance at the tips. You can glue it with CA or leave it loose.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Floor would pillow</h3><p class="muted">Eight top layers instead of five.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Floor would pillow</h3><p class="muted">Twelve top layers (about 1 mm of skin) instead of five.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Sharp inside rim, elephant's foot at the shadow line</h3><p class="muted">Added a 0.6 mm chamfer inside the rim and 0.15 mm elephant-foot compensation.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Label said A1, not A1 Mini</h3><p class="muted">Now <code>PURGE · A1M</code>. Every letter survives on all 31 layers it spans.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fillets looked low-poly</h3><p class="muted">Edge fillets used a fixed 6 facets, so the 6 mm inside-floor fillet had 1.6 mm flats that showed as bands. Every curve is now faceted by its radius, within 0.005 mm of the true arc, and the shell prints at 0.08 mm layers.</p></div></div>
       <div class="row"><span class="pill kept">Kept</span><div><h3>No feet on the base</h3><p class="muted">Glued, it's one solid part and doesn't slide. Stick-on bumpers work if you want them.</p></div></div>
     </div>
   </section>
@@ -183,8 +184,8 @@ dialog.lb::backdrop { background: var(--bg); }
         <dl>
           <dt>File</dt><dd><code>print_shell_white.gcode.3mf</code></dd>
           <dt>Orientation</dt><dd>Upright, open top up, no supports</dd>
-          <dt>Time</dt><dd>1 h 51 m</dd>
-          <dt>Filament</dt><dd>~88 g</dd>
+          <dt>Time</dt><dd>4 h 19 m</dd>
+          <dt>Filament</dt><dd>~90 g</dd>
         </dl>
       </div>
       <div class="plate">
@@ -192,13 +193,14 @@ dialog.lb::backdrop { background: var(--bg); }
         <dl>
           <dt>File</dt><dd><code>print_base_black.gcode.3mf</code></dd>
           <dt>Orientation</dt><dd>Flat, pins up</dd>
-          <dt>Time</dt><dd>38 m</dd>
-          <dt>Filament</dt><dd>~27 g</dd>
+          <dt>Time</dt><dd>34 m</dd>
+          <dt>Filament</dt><dd>~23 g</dd>
         </dl>
       </div>
     </div>
     <ul class="plain muted">
-      <li>Settings: 0.12mm Fine @BBL A1M, Bambu PLA Basic, Textured PEI. Changes from the preset: 3 walls, 8 top layers, seam at back, elephant-foot compensation 0.15.</li>
+      <li>Shell, for surface finish: 0.08mm Extra Fine @BBL A1M, Bambu PLA Basic, Textured PEI. Changes from the preset: outer wall slowed to 60 mm/s at 2000 mm/s², 3 walls, 12 top layers, seam at back, elephant-foot compensation 0.15. Only the visible wall is slowed; the 0.08 High Quality preset slows everything and takes 6 h 30 m for the same look.</li>
+      <li>Base: 0.12mm Fine, 3 walls. Only its 3 mm edge shows, as the shadow line.</li>
       <li>The times are Bambu Studio CLI estimates. Check them in the Studio GUI before sending.</li>
       <li>Nothing has been sent to the printer.</li>
     </ul>
