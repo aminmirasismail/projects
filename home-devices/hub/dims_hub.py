@@ -140,7 +140,7 @@ def build():
     fx0, fy0 = d["feet"][0]
     s.leader(fx0, -fy0, fx0 + 10, -fy0 - 10, f"4× Ø8.6 rubber feet", anchor="start")
     a = W / 2 - pl["ch_mid"]
-    s.leader(a, 0, a - 22, 6, f"{st['n_long'] * 2 + st['n_short'] * 2} LEDs, 4 runs",
+    s.leader(a, 0, a - 12, -16, f"{st['n_long'] * 2 + st['n_short'] * 2} LEDs, 4 runs",
              color=ACCENT, anchor="end")
     out["bottom"] = s.svg(f"UNDERSIDE  ·  REV {rev}  ·  mm")
 

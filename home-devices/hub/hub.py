@@ -13,8 +13,9 @@ Printed parts (one colour each, no AMS needed):
   floor   - black PLA, printed flat: closes the shell, carries the Pi and the ESP32
   plinth  - black PLA, printed upside-down: the foot under the floor plus the downward
             LED channel round its edge
-Bought parts: Pi 5 + Active Cooler, SK6812 RGBW 5 V 60/m strip (14 LEDs used),
-ESP32-C3 SuperMini, 4x M3 heat-set inserts, 4x M3x12 button-head screws,
+Bought parts (full list with tools in BOM.md): Pi 5 + Active Cooler, SK6812 RGBW 5 V 144/m
+12 mm strip (32 LEDs used), ESP32-C3 SuperMini, 74AHCT1G125 level shifter, 4x M3 heat-set
+inserts, 4x M3x12 button-head screws,
 4x M2.5x6 screws, 330 ohm resistor, 1000 uF capacitor, jumper wires, 4 small rubber feet.
 
 Why an ESP32: Home Assistant OS on a Pi 5 can't drive addressable LEDs from the GPIO
@@ -80,7 +81,7 @@ PI = {
 }
 
 
-PI_X0 = 36.6   # board's u = 0 edge: ports end 0.2 mm inside the wall, so the floor drops in
+PI_X0 = 37.0   # board's u = 0 edge: ports end 0.6 mm inside the wall, so the floor drops in
 
 
 def pi_xy(u, v):
@@ -99,8 +100,8 @@ def header_pin_xy(n):
 PI_HOLES = [pi_xy(u, v) for u in PI["holes_u"] for v in PI["holes_v"]]
 FAN_C = pi_xy(30.0, 27.0)
 USBC = pi_xy(PI["usbc_u"], 0)
-DUPONT_TOP = BOARD_TOP + 2.5 + 8.0             # right-angle female jumper on a header pin
-HEADER_USED = {"5v": 2, "gnd": 6}              # ESP32 power from the Pi header
+DUPONT_TOP = BOARD_TOP + 16.0                  # inverted female header, tails soldered
+HEADER_USED = {"5v": 4, "gnd": 6}              # adjacent pins: one 1x2 female header
 
 # one window per port (ribs between them keep the printed bridges short)
 PORT_WINS = [{"name": n, "y0": 28.0 - v - w / 2 - 1.0, "y1": 28.0 - v + w / 2 + 1.0,
@@ -108,7 +109,7 @@ PORT_WINS = [{"name": n, "y0": 28.0 - v - w / 2 - 1.0, "y1": 28.0 - v + w / 2 + 
              for n, v, w, h, _, _ in PI["ports"]]
 PORT_WIN = {"y0": min(p["y0"] for p in PORT_WINS), "y1": max(p["y1"] for p in PORT_WINS),
             "z0": BOARD_TOP - 0.2, "z1": max(p["z1"] for p in PORT_WINS)}
-USBC_SLOT = (13.0, 7.5)
+USBC_SLOT = (14.0, 8.0)       # the plug reaches 10.8 mm in: its overmould must pass
 
 # ---------------------------------------------------------------- underglow plinth
 # SK6812 RGBW 5 V, 144 LEDs/m, 12 mm wide, bare (IP30). Cut points every 6.94 mm.
@@ -117,8 +118,9 @@ USBC_SLOT = (13.0, 7.5)
 # four sides; short jumper wires carry 5 V / GND / data round each corner.
 STRIP_W, STRIP_PCB_T, LED_SIZE, LED_H = 12.0, 0.25, 5.0, 1.6
 PITCH = 1000.0 / 144
-CH_W = STRIP_W + 0.4        # channel width
-LEDGE, LEDGE_T = 0.5, 0.6   # lips either side that hold the strip up (no reliance on tape)
+CH_W = STRIP_W + 0.3        # channel width
+LEDGE, LEDGE_T = 0.8, 0.6   # lips either side that hold the strip up (no reliance on tape)
+LEDGE_GAP = 0.6             # lip top to plate: strip PCB (0.25) + its adhesive tape
 IN_IN = WALL + FIT           # black parts' outline, inset from the shell outline
 LINING_T = 1.0              # black lining inside the skirt: no light reaches the white wall
 LINING_Z = LIFT + 0.3       # bottom of the lining, just above the shell's bottom edge
@@ -126,7 +128,7 @@ FOOT_IN = WALL + FIT + 1.0 + CH_W   # the foot (inner channel wall) inset from t
 FOOT_R = 4.0
 CH_IN0, CH_IN1 = IN_IN + LINING_T, FOOT_IN             # channel, inset from outline
 CH_MID = (CH_IN0 + CH_IN1) / 2                         # strip centreline inset
-Z_LED_FACE = Z_PLATE_BOT - STRIP_PCB_T - LED_H
+Z_LED_FACE = Z_PLATE_BOT - LEDGE_GAP - LED_H        # strip PCB lies on the lips
 SCREW_POST_D, SCREW_SEAT = 7.0, LIFT + 2.0   # M3 button head seats here, hidden by the skirt
 SCREW_HEAD_D = 5.7
 N_LONG, N_SHORT = 9, 7
@@ -140,6 +142,7 @@ FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.8
 ESP_L, ESP_W, ESP_T = 22.5, 18.0, 1.0           # PCB; parts stand ~3 mm off one face
 ESP_X = 45.5                                    # board plane, standing on edge
 ESP_SLOT_W, ESP_SLOT_D = 1.3, 1.5               # card slot for the antenna-end edge
+CAP_Y = 25.4                                    # 470 uF capacitor saddle, beside the ESP32
 ESP_PINS = {"5v": "5V", "gnd": "GND", "data": "GPIO4"}   # via 74AHCT1G125 + 330 ohm
 
 
@@ -220,9 +223,14 @@ def build():
         cutters.append(S.cylinder("insert", INSERT_HOLE_D, INSERT_HOLE_DEPTH + 1,
                                   loc=(x, y, FLOOR_TOP + (INSERT_HOLE_DEPTH - 1) / 2)))
     for pw in PORT_WINS:
-        cutters.append(S.slot("port_" + pw["name"], pw["y1"] - pw["y0"], pw["z1"] - pw["z0"],
-                              10, loc=(-W / 2, (pw["y0"] + pw["y1"]) / 2,
-                                       (pw["z0"] + pw["z1"]) / 2), axis="X", r=2.0))
+        yc, zc = (pw["y0"] + pw["y1"]) / 2, (pw["z0"] + pw["z1"]) / 2
+        w, h = pw["y1"] - pw["y0"], pw["z1"] - pw["z0"]
+        win = S.slot("port_" + pw["name"], w, h, 10, loc=(-W / 2, yc, zc), axis="X", r=2.0)
+        # 0.8 mm outer recess, 0.6 mm wider each side: wide plug overmoulds seat closer
+        rec = S.slot("port_rec_" + pw["name"], w + 1.2, h + 1.2, 2.0, loc=(-W / 2 - 0.2, yc, zc),
+                     axis="X", r=2.6)
+        S.union(win, [rec])            # one cutter per port: no edges where the two meet
+        cutters.append(win)
     cutters.append(S.slot("usbc", *USBC_SLOT, 10, loc=(USBC[0], D / 2, BOARD_TOP + 1.6),
                           axis="Y"))
     S.cut(shell, cutters)
@@ -255,14 +263,20 @@ def build():
     # ESP32 cradle: a card slot that takes the board's antenna-end edge (pads stay clear);
     # the USB-C end points up for flashing with the shell off. A dab of hot glue holds it.
     cradle = S.box("esp_cradle", 4.0, ESP_W + 4.0, 2.0, loc=(ESP_X, 0, z1 + 0.99))
-    S.union(floor, stand + [cradle])
+    # saddle for the strip's 470 uF capacitor (6.3 x 11 mm), lying along X
+    saddle = [S.box("cap_saddle", 2.0, 8.0, 2.5, loc=(x, CAP_Y, z1 + 1.24)) for x in (39.5, 47.0)]
+    S.union(floor, stand + [cradle] + saddle)
     holes = []
     for x, y in PI_HOLES:   # M2.5 screws from the top, through the Pi into the standoffs
         holes.append(S.cylinder("m25", 2.2, 6.0, loc=(x, y, z1 + STANDOFF_H - 2.5)))
     for x, y in BOSS:
         holes.append(S.cylinder("m3", 3.4, 10, loc=(x, y, FLOOR_Z0)))
-    holes.append(S.box("esp_slot", ESP_SLOT_W, ESP_W + 0.4, ESP_SLOT_D + 1,
-                       loc=(ESP_X, 0, z1 + 2.0 - ESP_SLOT_D + (ESP_SLOT_D + 1) / 2)))
+    zs = z1 + 2.0 - ESP_SLOT_D + (ESP_SLOT_D + 1) / 2
+    holes.append(S.box("esp_slot", ESP_SLOT_W, ESP_W + 0.4, ESP_SLOT_D + 1, loc=(ESP_X, 0, zs)))
+    # relief in the middle: only the board's bare corners are gripped (antenna, end pads clear)
+    holes.append(S.box("esp_relief", 3.6, ESP_W - 6.0, ESP_SLOT_D + 1, loc=(ESP_X, 0, zs)))
+    holes.append(S.cylinder("cap_bed", 6.8, 12.0, loc=(43.25, CAP_Y, z1 + 3.4),
+                            rot=(0, math.pi / 2, 0)))
     wx, wy, wd = WIRE_HOLE
     fx, fy = FLOOR_HOLE
     holes.append(S.cylinder("wire", wd, 10, loc=(fx, fy, FLOOR_Z0)))
@@ -289,9 +303,15 @@ def build_plinth():
                          r=FOOT_R, loc=(0, 0, 0))
     posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
                         loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS]
-    zl = Z_PLATE_BOT - STRIP_PCB_T - 0.1           # strip PCB rests on these lips
-    ledges = [_ring_rect("ledge_out", CH_IN0 - 0.01, CH_IN0 + LEDGE, zl - LEDGE_T, zl, R),
-              _ring_rect("ledge_in", FOOT_IN - LEDGE, FOOT_IN + 0.01, zl - LEDGE_T, zl, R)]
+    zl = Z_PLATE_BOT - LEDGE_GAP                   # strip PCB rests on these lips
+    ledge_in = S.rounded_box("ledge_in", W - 2 * (FOOT_IN - LEDGE), D - 2 * (FOOT_IN - LEDGE),
+                             LEDGE_T, r=FOOT_R + LEDGE, loc=(0, 0, zl - LEDGE_T))
+    S.bake(ledge_in)
+    S.cut(ledge_in, [S.rounded_box("ledge_in_in", W - 2 * FOOT_IN - 0.02,
+                                   D - 2 * FOOT_IN - 0.02, LEDGE_T + 2, r=FOOT_R,
+                                   loc=(0, 0, zl - LEDGE_T - 1))])
+    ledges = [_ring_rect("ledge_out", CH_IN0 - 0.4, CH_IN0 + LEDGE, zl - LEDGE_T, zl, R),
+              ledge_in]
     S.union(plate, [lining, foot] + posts + ledges)
     cuts = []
     for x, y in BOSS:
@@ -334,7 +354,7 @@ def strip_mock():
     pcb_mat = S.material("Strip PCB", (0.75, 0.75, 0.72, 1), rough=0.5)
     led_mat = S.material("5050 LED", (0.92, 0.92, 0.9, 1), rough=0.3)
     pcbs, leds = [], []
-    z_pcb = Z_PLATE_BOT - STRIP_PCB_T / 2
+    z_pcb = Z_PLATE_BOT - LEDGE_GAP + STRIP_PCB_T / 2
     for k, (x0, y0, x1, y1) in enumerate(strip_runs()):
         L = math.dist((x0, y0), (x1, y1))
         b = S.box(f"strip{k}", L if y0 == y1 else STRIP_W, STRIP_W if y0 == y1 else L,
@@ -342,7 +362,7 @@ def strip_mock():
         pcbs.append(S.assign(b, pcb_mat))
     for k, (x, y, _) in enumerate(led_positions()):
         b = S.box(f"led{k:02d}", LED_SIZE, LED_SIZE, LED_H,
-                  loc=(x, y, Z_PLATE_BOT - STRIP_PCB_T - LED_H / 2))
+                  loc=(x, y, Z_LED_FACE + LED_H / 2))
         leds.append(S.assign(b, led_mat))
     return pcbs, leds
 
@@ -511,7 +531,7 @@ def main():
     test = shell.copy()
     test.data = shell.data.copy()
     bpy.context.collection.objects.link(test)
-    keep = S.box("keep", 15, D + 10, TOP + 10, loc=(-W / 2 + 7.5, 0, TOP / 2))
+    keep = S.box("keep", 16, D + 10, TOP + 10, loc=(-W / 2 + 8.0, 0, TOP / 2))   # clear of inserts
     md = test.modifiers.new("keep", "BOOLEAN")
     md.operation, md.solver, md.object = "INTERSECT", "EXACT", keep
     S.bake(test)
@@ -571,6 +591,7 @@ def main():
         # (cut copies with the guarded S.cut: a live EXACT modifier emptied floor and plinth)
         halves = []
         gone = [o for o in strip if max(v.co.y for v in o.data.vertices) > 2]
+        gone += [w for w in wires if w.name.startswith("wire_strip")]
         show(gone + [pi], False)
         for o in (shell, floor, plinth):   # (the Pi and ESP32 stand-ins are too crude to cut;
                                            #  the Pi stays out of this view)

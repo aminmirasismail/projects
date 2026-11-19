@@ -14,10 +14,12 @@ US estimates (late 2026), not checked against live listings; check before orderi
 | 5 | Ethernet cable, 0.5–1 m | hub to router | 1 | $5 |
 | 6 | Addressable RGBW LED strip | **SK6812 RGBW, 5 V, 144 LEDs/m, 12 mm wide, white PCB, IP30 (no silicone)**, white channel warm (~3000 K) or natural (~4000 K). Uses 32 LEDs (0.23 m); 1 m is the usual minimum | 1 m | $15–25 |
 | 7 | ESP32-C3 SuperMini | 22.5 × 18 mm, USB-C; runs ESPHome and drives the strip. Usually sold in 2–3 packs | 1 (pack) | $8 |
-| 8 | Level shifter, 74AHCT125 (DIP-14) | 3.3 V data to the 5 V strip (e.g. Adafruit #1787). One gate used | 1 | $2 |
-| 9 | Electrolytic capacitor, 1000 µF, 10 V or more | across the strip's 5 V / GND, max 8 mm diameter | 1 | $1 |
+| 8 | Level shifter, **74AHCT1G125** (single gate, SOT-23-5) | 3.3 V data to the 5 V strip. Wired in line in the data wire under heat-shrink: pin 1 (/OE) to GND, pin 2 input from the ESP32, pin 4 output, pin 5 to 5 V, pin 3 GND | 2 (spare) | $2 |
+| 8a | SOT-23 to DIP adapter boards | so the tiny chip can be soldered by hand | 1 pack | $5 |
+| 8b | Ceramic capacitor, 0.1 µF | decoupling across the level shifter's 5 V / GND | 1 | $1 (kit) |
+| 9 | Electrolytic capacitor, **470 µF, 10 V, 6.3 × 11 mm** | across the strip's 5 V / GND; sits in the saddle beside the ESP32 | 1 | $1 |
 | 10 | Resistor, 330 Ω, ¼ W | in the data line, at the strip end | 1 | $1 (kit) |
-| 11 | Female pin header, 2.54 mm, 1 × 40 | cut a 1 × 2 piece; slips onto the Pi's pins 2 and 6, wires soldered to its tails (lower than a jumper housing) | 1 strip | $2 |
+| 11 | Female pin header, 2.54 mm, 1 × 40 | cut a 1 × 2 piece; plugs onto the Pi's **pins 4 (5 V) and 6 (GND)**, which sit next to each other; wires soldered to its tails | 1 strip | $2 |
 | 12 | Silicone hook-up wire, 26 AWG, 3 colours | strip corner jumpers and data | 1 set | $10 |
 | 13 | Silicone hook-up wire, 22–24 AWG, red + black | 5 V / GND from the Pi to the ESP32 and strip | 1 set | (in 12 if a mixed kit) |
 | 14 | Heat-shrink tubing assortment, 1.5–3 mm | covers every joint | 1 kit | $6 |
@@ -64,4 +66,15 @@ Parts total (without filament): about $160–180.
   needed between them.
 - Software is free: Raspberry Pi Imager (Home Assistant OS) and ESPHome (inside Home Assistant). Cap the
   LED power in ESPHome (about 1 A); full white on all 32 LEDs would draw about 2 A.
-- Untested: whether the strip reads clean data without the level shifter. Fit it.
+- Fit the level shifter: the strip may misread 3.3 V data at 5 V.
+- **Power cap: about 0.5 A.** ESPHome has no current setting, so set `max_brightness` and
+  `color_correct` on the light (e.g. white channel alone at full, about 0.6 A, scaled to 80 %).
+  Before calling it done, run the light at the cap for an hour and check the strip and the
+  plinth don't get hot (PLA softens around 57 °C; print the plinth in PETG if it does).
+- **Strip:** peel the adhesive backing or keep it; the lips leave room for the tape. Bow the strip
+  slightly across its width to snap it past the lips.
+- **Don't plug USB into the ESP32 while the Pi is powered**: both would feed its 5 V pin.
+- **USB-C plug:** the Pi's socket sits 10.8 mm in from the outside face; the plug's overmould must
+  be smaller than the 14 × 8 mm slot. The official 27 W supply's plug should fit; check yours.
+- **ESP32 slot:** grips only the board's two bottom corners (1.5 mm deep). Measure your board's
+  antenna-end edge first; tidy it with a dab of hot glue on the corners, not on the antenna.
