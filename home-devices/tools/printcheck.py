@@ -1,7 +1,7 @@
 """Print-readiness checks for home-devices parts (plain Python, no Blender needed).
 
   python printcheck.py mesh  part.3mf|part.stl      mesh health per object
-  python printcheck.py slice part.3mf [--out DIR] [--process NAME] [--set key=value ...]
+  python printcheck.py slice part.3mf [--out DIR] [--process NAME] [--filament NAME] [--set k=v ...]
                                                     slice for the A1 Mini with Bambu Studio's CLI
                                                     and print time, filament and per-object extents
   python printcheck.py paths sliced.gcode            dump extrusion paths to paths.json for
@@ -10,7 +10,8 @@
 mesh: counts non-manifold edges and finds folded or overlapping triangles on every flat
 level (signed vs unsigned area). A hand-written fan triangulation of concave faces shows up
 here; slicers often hide it, but Bambu Studio draws it as triangle fans.
-slice: defaults are 0.4 mm nozzle, Bambu PLA Basic, Textured PEI Plate, 0.20 mm Standard @BBL A1M; pass process
+slice: the filament defaults to the one synced from the owner's printer in Bambu Studio
+(--filament NAME to override); 0.4 mm nozzle, Textured PEI Plate, 0.20 mm Standard @BBL A1M; pass process
 overrides with --set (e.g. --set wall_loops=3 --set sparse_infill_density=15%).
 Slicing never prints anything; sending to the printer needs the owner's explicit yes.
 """
@@ -29,7 +30,9 @@ BAMBU = r"C:\Program Files\Bambu Studio\bambu-studio.exe"
 PROFILES = r"C:\Program Files\Bambu Studio\resources\profiles\BBL"
 MACHINE = "Bambu Lab A1 mini 0.4 nozzle"
 PROCESS = "0.20mm Standard @BBL A1M"
-FILAMENT = "Bambu PLA Basic @BBL A1M"
+FILAMENT = None                   # None: whatever filament the owner's printer has synced to
+                                  # Bambu Studio (see synced()); never assume PLA Basic
+CONF = os.path.join(os.environ.get("APPDATA", ""), "BambuStudio", "BambuStudio.conf")
 BED = "Textured PEI Plate"        # the owner's A1 Mini plate; the CLI default is Cool Plate
 
 
@@ -115,24 +118,68 @@ def mesh_report(path):
 
 
 # ------------------------------------------------------------------ slice
+def _conf():
+    t = open(CONF, encoding="utf-8").read()
+    return json.loads(t[:t.rfind("}") + 1])       # the file ends with an MD5 comment line
+
+
+def synced():
+    """The filament(s) Bambu Studio has synced from the owner's printer: [(preset, colour)].
+    Read from BambuStudio.conf (presets/filaments + filament_colors, which Studio fills from
+    the printer's spool on sync), cross-checked against the printer's reported filament id.
+    Reads only preset names and colours, nothing from the account."""
+    c = _conf()
+    pre = c.get("presets", {})
+    names = pre.get("filaments") or []
+    names = names if isinstance(names, list) else [names]
+    cols = str(pre.get("filament_colors", "")).split(";")
+    ids = set((c.get("ams_filament_ids") or {}).values())
+    out = []
+    for i, n in enumerate(names):
+        fid = resolve("filament", n).get("filament_id")
+        fid = fid[0] if isinstance(fid, list) else fid
+        if ids and fid not in ids:
+            print(f"warning: Studio's filament {n!r} ({fid}) is not what the printer last "
+                  f"reported ({', '.join(sorted(ids))}); sync the printer in Studio")
+        out.append((n, cols[i] if i < len(cols) else "?"))
+    if not out:
+        raise SystemExit("no synced filament in Bambu Studio; sync the printer there first")
+    return out
+
+
+def _presets(kind):
+    """System presets, plus the owner's own (user/<id>/<kind>), by name."""
+    folders = [os.path.join(PROFILES, kind)]
+    try:
+        uf = _conf().get("app", {}).get("preset_folder")
+        if uf:
+            folders.append(os.path.join(os.path.dirname(CONF), "user", uf, kind))
+    except (OSError, ValueError):
+        pass
+    by_name = {}
+    for folder in folders:
+        if not os.path.isdir(folder):
+            continue
+        for f in os.listdir(folder):
+            if f.endswith(".json"):
+                try:
+                    d = json.load(open(os.path.join(folder, f), encoding="utf-8"))
+                except ValueError:
+                    continue
+                if "name" in d:
+                    by_name[d["name"]] = d
+    return by_name
+
+
 def resolve(kind, name):
     """A system preset with its whole 'inherits' chain merged in (child wins).
     The CLI does NOT do this reliably: given 'Bambu PLA Basic @BBL A1M' it sliced at 200 C,
     2 mm3/s and 500 mm/s2 (generic fallbacks) instead of 220 C, 21 mm3/s, 6000 mm/s2."""
-    folder = os.path.join(PROFILES, kind)
-    by_name = {}
-    for f in os.listdir(folder):
-        if f.endswith(".json"):
-            try:
-                d = json.load(open(os.path.join(folder, f), encoding="utf-8"))
-            except ValueError:
-                continue
-            if "name" in d:
-                by_name[d["name"]] = d
+    by_name = _presets(kind)
     chain, n = [], name
     while n:
         if n not in by_name:
-            raise SystemExit(f"preset {n!r} not found in {folder}")
+            raise SystemExit(f"{kind} preset {n!r} not found")
         chain.append(by_name[n])
         n = by_name[n].get("inherits")
     merged = {}
@@ -145,12 +192,17 @@ def resolve(kind, name):
     return merged
 
 
-def slice_part(path, out=None, sets=(), process=PROCESS):
+def slice_part(path, out=None, sets=(), process=PROCESS, filament=FILAMENT):
     out = out or tempfile.mkdtemp(prefix="slice_")
     os.makedirs(out, exist_ok=True)
     machine = resolve("machine", MACHINE)
     proc = resolve("process", process)
-    fil = resolve("filament", FILAMENT)
+    if filament is None:
+        filament, colour = synced()[0]
+        print(f"filament: {filament} {colour} (synced from the printer)")
+    else:
+        print(f"filament: {filament} (given with --filament)")
+    fil = resolve("filament", filament)
     proc.update({"name": "printcheck", "print_settings_id": "printcheck",
                  "compatible_printers": [MACHINE], "curr_bed_type": BED})
     for s in sets:
@@ -178,7 +230,9 @@ def slice_part(path, out=None, sets=(), process=PROCESS):
                 break
         vol = next((float(l.split(":")[1]) for l in open(g)
                     if l.startswith("; total filament volume")), 0)
-        print(f"filament weight ~{vol / 1000 * 1.26:.1f} g (PLA 1.26 g/cm3)")
+        dens = fil.get("filament_density", ["1.26"])
+        dens = float(dens[0] if isinstance(dens, list) else dens)
+        print(f"filament weight ~{vol / 1000 * dens:.1f} g (density {dens} g/cm3)")
         for p in res.get("sliced_plates", []):
             for o in p.get("objects", []):
                 b = o["bbox"]
@@ -228,7 +282,8 @@ if __name__ == "__main__":
         out = a[a.index("--out") + 1] if "--out" in a else None
         sets = [a[i + 1] for i, x in enumerate(a) if x == "--set"]
         proc = a[a.index("--process") + 1] if "--process" in a else PROCESS
-        slice_part(path, out, sets, proc)
+        fil = a[a.index("--filament") + 1] if "--filament" in a else FILAMENT
+        slice_part(path, out, sets, proc, fil)
     elif cmd == "paths":
         dump_paths(path)
     else:
