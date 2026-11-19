@@ -1,11 +1,13 @@
 """Underglow study for the hub (v4, no corner LEDs): how the light looks on real surfaces.
 
-Run:  python underglow_study.py [--preview]
-Writes renders/glow_<surface>_<room>.png for surface in (wood, quartz) and room in
-(dark, dim, bright).
+Run:  python underglow_study.py [--preview] [--gradient] [--nohang] [--only=wood:dim,...]
+Writes renders/glow_<surface>_<room>[_grad][_nohang].png for surface in (wood, quartz) and
+room in (dark, dim, bright).
 
-Same LED output in every image: warm white (~3000 K) at the 0.5 A power cap, about
-4.5 lm per LED (~145 lm for 32 LEDs), modelled as 0.015 W of light per LED.
+Same LED output in every image: about 4.5 lm per LED at the 0.5 A power cap, modelled as
+0.015 W of light per LED. Warm white (~3000 K) by default; --gradient programs each LED
+with its own colour, orange -> blue -> orange round the chain, as the firmware would.
+--nohang renders without the lining's hang and inward floor, for comparison.
 Same camera and exposure in every image, so brightness compares honestly between rooms.
 """
 import math
@@ -20,6 +22,10 @@ import hub as H  # noqa: E402
 import studio as S  # noqa: E402
 
 PREVIEW = "--preview" in sys.argv
+GRADIENT = "--gradient" in sys.argv
+NOHANG = "--nohang" in sys.argv
+ONLY = [a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")]
+BLUE, ORANGE = (0.08, 0.32, 1.0), (1.0, 0.42, 0.03)
 LED_W = 0.015
 WARM_LED = (1.0, 0.71, 0.42)            # ~3000 K
 ROOMS = {   # studio light scale, world strength, light tint
@@ -59,9 +65,9 @@ def wood():
     nt.links.new(noise.outputs["Fac"], mix.inputs[2])
     nt.links.new(mix.outputs[0], ramp.inputs["Fac"])
     nt.links.new(ramp.outputs["Color"], b.inputs["Base Color"])
-    b.inputs["Roughness"].default_value = 0.45
-    b.inputs["Coat Weight"].default_value = 0.6
-    b.inputs["Coat Roughness"].default_value = 0.18
+    b.inputs["Roughness"].default_value = 0.6           # satin lacquer, not piano gloss
+    b.inputs["Coat Weight"].default_value = 0.25
+    b.inputs["Coat Roughness"].default_value = 0.45
     return m
 
 
@@ -90,7 +96,7 @@ def quartz():
     nt.links.new(noise.outputs["Fac"], mix.inputs[2])
     nt.links.new(mix.outputs[0], ramp.inputs["Fac"])
     nt.links.new(ramp.outputs["Color"], b.inputs["Base Color"])
-    b.inputs["Roughness"].default_value = 0.12
+    b.inputs["Roughness"].default_value = 0.4           # honed, as most counters age to
     return m
 
 
@@ -104,12 +110,19 @@ def table(mat):
     return t
 
 
+def gradient(t):
+    """Seamless orange -> blue -> orange round the loop: what each LED is programmed to."""
+    k = 0.5 - 0.5 * math.cos(2 * math.pi * t)
+    return tuple(o + (b - o) * k for o, b in zip(ORANGE, BLUE))
+
+
 def leds():
     obs = []
-    for k, (x, y, _) in enumerate(H.led_positions()):
+    pos = H.led_positions()
+    for k, (x, y, _) in enumerate(pos):
         li = bpy.data.lights.new(f"glow{k:02d}", "POINT")
         li.energy = LED_W
-        li.color = WARM_LED
+        li.color = gradient(k / len(pos)) if GRADIENT else WARM_LED
         li.shadow_soft_size = 0.002
         ob = bpy.data.objects.new(li.name, li)
         bpy.context.collection.objects.link(ob)
@@ -130,6 +143,8 @@ def room(name):
 
 
 def main():
+    if NOHANG:
+        H.LINING_Z, H.FLANGE = H.LIFT + 0.3, 0.0
     shell, floor, plinth = H.build()
     S.to_studio([shell, floor, plinth])
     S.studio(samples=24 if PREVIEW else 160, res=(800, 600) if PREVIEW else (1400, 1050))
@@ -145,8 +160,11 @@ def main():
     for surf, mat in (("wood", wood()), ("quartz", quartz())):
         t = table(mat)
         for name in ROOMS:
+            if ONLY and f"{surf}:{name}" not in ONLY[0]:
+                continue
             room(name)
-            S.render(os.path.join(out, f"glow_{surf}_{name}.png"))
+            tag = ("_grad" if GRADIENT else "") + ("_nohang" if NOHANG else "")
+            S.render(os.path.join(out, f"glow_{surf}_{name}{tag}.png"))
         bpy.data.objects.remove(t, do_unlink=True)
 
 

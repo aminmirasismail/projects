@@ -123,7 +123,10 @@ LEDGE, LEDGE_T = 0.8, 0.6   # lips either side that hold the strip up (no relian
 LEDGE_GAP = 0.6             # lip top to plate: strip PCB (0.25) + its adhesive tape
 IN_IN = WALL + FIT           # black parts' outline, inset from the shell outline
 LINING_T = 1.0              # black lining inside the skirt: no light reaches the white wall
-LINING_Z = LIFT + 0.3       # bottom of the lining, just above the shell's bottom edge
+LINING_DROP = 1.5           # the black lining hangs this far below the shell's bottom edge
+LINING_Z = LIFT - LINING_DROP
+FLANGE, FLANGE_T = 1.5, 0.8   # inward floor at the lining's foot (width, thickness): hides the
+                            # LEDs' reflections in a glossy table from normal viewing angles
 FOOT_IN = WALL + FIT + 1.0 + CH_W   # the foot (inner channel wall) inset from the outline
 FOOT_R = 4.0
 CH_IN0, CH_IN1 = IN_IN + LINING_T, FOOT_IN             # channel, inset from outline
@@ -299,6 +302,11 @@ def build_plinth():
     plate = S.rounded_box("Plinth", pw, pd, PLATE_T, r=pr, loc=(0, 0, Z_PLATE_BOT))
     S.bake(plate)
     lining = _ring_rect("lining", IN_IN, CH_IN0, LINING_Z, Z_PLATE_BOT + 0.01, R)
+    # inward floor at the lining's foot; starts inside the lining wall and 0.05 mm above its
+    # bottom face so no faces coincide (coincident faces break the EXACT boolean)
+    if FLANGE > 0:
+        S.union(lining, [_ring_rect("flange", IN_IN + 0.5, CH_IN0 + FLANGE, LINING_Z + 0.05,
+                                    LINING_Z + FLANGE_T, R)])
     foot = S.rounded_box("foot", W - 2 * FOOT_IN, D - 2 * FOOT_IN, Z_PLATE_BOT + 0.01,
                          r=FOOT_R, loc=(0, 0, 0))
     posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
