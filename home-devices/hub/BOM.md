@@ -1,6 +1,6 @@
-# Hub Rev D: bill of materials
+# Hub v5: bill of materials
 
-Everything needed to build the Rev D hub (concept D, underglow) from nothing. Prices are rough
+Everything needed to build the v5 hub (concept D, underglow) from nothing. Prices are rough
 US estimates (late 2026), not checked against live listings; check before ordering.
 
 ## Electronics
@@ -12,7 +12,7 @@ US estimates (late 2026), not checked against live listings; check before orderi
 | 3 | Raspberry Pi 27 W USB-C power supply | **official 27 W (5.1 V 5 A)**: the LEDs and ESP32 run off the Pi's 5 V, so a 3 A supply would brown out | 1 | $12 |
 | 4 | microSD card, 64 GB high endurance | SanDisk High Endurance or Samsung PRO Endurance | 1 | $12 |
 | 5 | Ethernet cable, 0.5–1 m | hub to router | 1 | $5 |
-| 6 | Addressable RGBW LED strip | **SK6812 RGBW, 5 V, 144 LEDs/m, 12 mm wide, white PCB, IP30 (no silicone)**, white channel warm (~3000 K) or natural (~4000 K). Uses 32 LEDs (0.23 m); 1 m is the usual minimum | 1 m | $15–25 |
+| 6 | Addressable RGBW LED strip | **SK6812 RGBW, 5 V, 144 LEDs/m, 12 mm wide, white PCB, IP30 (no silicone)**, white channel warm (~3000 K) or natural (~4000 K). Uses 36 LEDs in 4 runs of 11 + 7 + 11 + 7 (0.26 m); 1 m is the usual minimum | 1 m | $15–25 |
 | 7 | ESP32-C3 SuperMini | 22.5 × 18 mm, USB-C; runs ESPHome and drives the strip. Usually sold in 2–3 packs | 1 (pack) | $8 |
 | 8 | Level shifter, **74AHCT1G125** (single gate, SOT-23-5) | 3.3 V data to the 5 V strip. Wired in line in the data wire under heat-shrink: pin 1 (/OE) to GND, pin 2 input from the ESP32, pin 4 output, pin 5 to 5 V, pin 3 GND | 2 (spare) | $2 |
 | 8a | SOT-23 to DIP adapter boards | so the tiny chip can be soldered by hand | 1 pack | $5 |
@@ -29,16 +29,17 @@ US estimates (late 2026), not checked against live listings; check before orderi
 | # | Part | Spec | Qty | Approx. |
 |---|---|---|---|---|
 | 15 | Heat-set inserts M3 × 5.7 mm, OD 4.6 mm | Ruthex or CNC Kitchen "standard" M3; the holes are sized for these | 4 (kit) | $8 |
-| 16 | M3 × 12 button-head hex screws (ISO 7380), black | plinth + floor into the shell | 4 | $6 (pack) |
+| 16 | **M3 × 10** button-head hex screws (ISO 7380), black | plinth, frame and floor into the shell; heads sit flush in the plinth, under the diffuser | 4 | $6 (pack) |
 | 17 | M2.5 × 6 socket or pan-head screws | Pi into the floor's standoffs | 4 | $6 (pack) |
-| 18 | 3M Bumpon SJ5302 feet (7.9 × 2.2 mm) | sit in the foot recesses | 4 | $5 (pack) |
+| 18 | 3M Bumpon SJ5302 feet (7.9 × 2.2 mm) | sit in the recesses in the 4 pads; raise the hub 0.4 mm | 4 | $5 (pack) |
+| 18a | Black hot-glue sticks (or black silicone) | seals the wire hole round the strip wires (light trap) | a few | $5 |
 
 ## Filament
 
 | # | Part | Spec | Qty | Approx. |
 |---|---|---|---|---|
-| 19 | White PLA (Bambu PLA Basic or similar) | shell, about 50 g | 1 kg | $20 |
-| 20 | Black PLA (Bambu PLA Basic or similar) | floor + plinth, about 42 g | 1 kg | $20 |
+| 19 | White PLA (Bambu PLA Basic or similar) | shell about 55 g + diffuser about 3 g | 1 kg | $20 |
+| 20 | Black PLA (Bambu PLA Basic or similar) | plinth + frame about 22 g, floor about 17 g | 1 kg | $20 |
 
 Parts total (without filament): about $160–180.
 
@@ -64,15 +65,17 @@ Parts total (without filament): about $160–180.
 
 - The plinth and floor come off together with the ESP32 and the strip still wired, so no connector is
   needed between them.
-- Software is free: Raspberry Pi Imager (Home Assistant OS) and ESPHome (inside Home Assistant). Cap the
-  LED power in ESPHome (about 1 A); full white on all 32 LEDs would draw about 2 A.
+- Software is free: Raspberry Pi Imager (Home Assistant OS) and ESPHome (inside Home Assistant).
+  36 LEDs at full RGBW would draw about 2.6 A (white channel alone about 0.7 A), hence the cap below.
 - Fit the level shifter: the strip may misread 3.3 V data at 5 V.
 - **Power cap: about 0.5 A.** ESPHome has no current setting, so set `max_brightness` and
-  `color_correct` on the light (e.g. white channel alone at full, about 0.6 A, scaled to 80 %).
+  `color_correct` on the light (e.g. white channel alone at full, about 0.7 A, scaled to 70 %).
   Before calling it done, run the light at the cap for an hour and check the strip and the
   plinth don't get hot (PLA softens around 57 °C; print the plinth in PETG if it does).
 - **Strip:** peel the adhesive backing or keep it; the lips leave room for the tape. Bow the strip
-  slightly across its width to snap it past the lips.
+  slightly across its width to snap it past the lips. Cut only at the cut marks.
+- **Diffuser:** goes in last, pushed up into the channel until it meets the stops; crush ribs hold
+  it. Pop it out with a fingernail at a corner to reach the four screws.
 - **Don't plug USB into the ESP32 while the Pi is powered**: both would feed its 5 V pin.
 - **USB-C plug:** the Pi's socket sits 10.8 mm in from the outside face; the plug's overmould must
   be smaller than the 14 × 8 mm slot. The official 27 W supply's plug should fit; check yours.

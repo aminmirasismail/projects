@@ -5,9 +5,9 @@
   "plenum": 588,
   "floor_slots": 590,
   "intake_effective": 264,
-  "exhaust: Ethernet + USB-C only (typical)": 695,
-  "exhaust: Ethernet + Zigbee stick": 587,
-  "exhaust: all ports used": 479
+  "exhaust: Ethernet + USB-C only (typical)": 226,
+  "exhaust: Ethernet + Zigbee stick": 226,
+  "exhaust: all ports used": 226
  },
  "shell_UA_W_per_K": 0.059,
  "stack_height_mm": 17.4,
@@ -18,144 +18,144 @@
    "load": "idle",
    "P_W": 3.3,
    "fan": "fan off",
-   "dT_air_K": 34.8,
+   "dT_air_K": 38.7,
    "range_K": [
-    34.8,
-    34.8
+    38.7,
+    38.7
    ],
-   "Q_L_per_s": 0.03
+   "Q_L_per_s": 0.022
   },
   {
    "ports": "Ethernet + USB-C only (typical)",
    "load": "idle",
    "P_W": 3.3,
-   "fan": "fan on (1-3 Pa)",
-   "dT_air_K": 8.6,
+   "fan": "fan on (0.5-3 Pa)",
+   "dT_air_K": 12.9,
    "range_K": [
-    7.2,
-    11.3
+    9.8,
+    18.9
    ],
-   "Q_L_per_s": 0.271
+   "Q_L_per_s": 0.164
   },
   {
    "ports": "Ethernet + USB-C only (typical)",
    "load": "busy",
    "P_W": 6.3,
    "fan": "fan off",
-   "dT_air_K": 59.6,
+   "dT_air_K": 67.3,
    "range_K": [
-    59.6,
-    59.6
+    67.3,
+    67.3
    ],
-   "Q_L_per_s": 0.039
+   "Q_L_per_s": 0.029
   },
   {
    "ports": "Ethernet + USB-C only (typical)",
    "load": "busy",
    "P_W": 6.3,
-   "fan": "fan on (1-3 Pa)",
-   "dT_air_K": 16.3,
+   "fan": "fan on (0.5-3 Pa)",
+   "dT_air_K": 24.5,
    "range_K": [
-    13.7,
-    21.6
+    18.6,
+    35.9
    ],
-   "Q_L_per_s": 0.271
+   "Q_L_per_s": 0.164
   },
   {
    "ports": "Ethernet + Zigbee stick",
    "load": "idle",
    "P_W": 3.3,
    "fan": "fan off",
-   "dT_air_K": 35.1,
+   "dT_air_K": 38.7,
    "range_K": [
-    35.1,
-    35.1
+    38.7,
+    38.7
+   ],
+   "Q_L_per_s": 0.022
+  },
+  {
+   "ports": "Ethernet + Zigbee stick",
+   "load": "idle",
+   "P_W": 3.3,
+   "fan": "fan on (0.5-3 Pa)",
+   "dT_air_K": 12.9,
+   "range_K": [
+    9.8,
+    18.9
+   ],
+   "Q_L_per_s": 0.164
+  },
+  {
+   "ports": "Ethernet + Zigbee stick",
+   "load": "busy",
+   "P_W": 6.3,
+   "fan": "fan off",
+   "dT_air_K": 67.3,
+   "range_K": [
+    67.3,
+    67.3
    ],
    "Q_L_per_s": 0.029
   },
   {
    "ports": "Ethernet + Zigbee stick",
-   "load": "idle",
-   "P_W": 3.3,
-   "fan": "fan on (1-3 Pa)",
-   "dT_air_K": 8.7,
-   "range_K": [
-    7.3,
-    11.6
-   ],
-   "Q_L_per_s": 0.264
-  },
-  {
-   "ports": "Ethernet + Zigbee stick",
    "load": "busy",
    "P_W": 6.3,
-   "fan": "fan off",
-   "dT_air_K": 60.1,
+   "fan": "fan on (0.5-3 Pa)",
+   "dT_air_K": 24.5,
    "range_K": [
-    60.1,
-    60.1
+    18.6,
+    35.9
    ],
-   "Q_L_per_s": 0.038
-  },
-  {
-   "ports": "Ethernet + Zigbee stick",
-   "load": "busy",
-   "P_W": 6.3,
-   "fan": "fan on (1-3 Pa)",
-   "dT_air_K": 16.6,
-   "range_K": [
-    14.0,
-    22.0
-   ],
-   "Q_L_per_s": 0.265
+   "Q_L_per_s": 0.164
   },
   {
    "ports": "all ports used",
    "load": "idle",
    "P_W": 3.3,
    "fan": "fan off",
-   "dT_air_K": 35.5,
+   "dT_air_K": 38.7,
    "range_K": [
-    35.5,
-    35.5
+    38.7,
+    38.7
    ],
-   "Q_L_per_s": 0.028
+   "Q_L_per_s": 0.022
   },
   {
    "ports": "all ports used",
    "load": "idle",
    "P_W": 3.3,
-   "fan": "fan on (1-3 Pa)",
-   "dT_air_K": 9.0,
+   "fan": "fan on (0.5-3 Pa)",
+   "dT_air_K": 12.9,
    "range_K": [
-    7.6,
-    12.0
+    9.8,
+    18.9
    ],
-   "Q_L_per_s": 0.254
+   "Q_L_per_s": 0.164
   },
   {
    "ports": "all ports used",
    "load": "busy",
    "P_W": 6.3,
    "fan": "fan off",
-   "dT_air_K": 61.0,
+   "dT_air_K": 67.3,
    "range_K": [
-    61.0,
-    61.0
+    67.3,
+    67.3
    ],
-   "Q_L_per_s": 0.037
+   "Q_L_per_s": 0.029
   },
   {
    "ports": "all ports used",
    "load": "busy",
    "P_W": 6.3,
-   "fan": "fan on (1-3 Pa)",
-   "dT_air_K": 17.2,
+   "fan": "fan on (0.5-3 Pa)",
+   "dT_air_K": 24.5,
    "range_K": [
-    14.5,
-    22.7
+    18.6,
+    35.9
    ],
-   "Q_L_per_s": 0.254
+   "Q_L_per_s": 0.164
   }
  ]
 }

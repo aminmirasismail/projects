@@ -57,16 +57,19 @@ A_gap = 2 * ((W - 2 * FOOT_IN) + (D - 2 * FOOT_IN)) * FOOT_GAP * mm2           #
 A_plate = N_PLATE * slot * mm2
 A_floor = N_FLOOR * slot * mm2
 A_plen = 2 * (D - 2 * FOOT_IN) * PLENUM * mm2 * 3                              # sideways, ~3 paths
-# I/O bay: windows 15.9+2 / 13.1+2 wide x (15.6+1+0.2) tall; plug faces take most of a used port
+# I/O bay: windows 15.9+2 / 13.1+2 wide x (15.6+1+0.2) tall. The Pi's jack housings sit
+# just behind the windows and fill most of them, plugged or not: the free area is the frame
+# round each jack (design review v5), so the port scenarios differ very little.
 win = {"eth": (17.9, 16.8), "usb3": (15.1, 16.8), "usb2": (15.1, 16.8)}
-plug = {"eth": (11.5, 13.5), "usb3": (12.0, 4.5 * 2), "usb2": (12.0, 4.5 * 2)}   # one / two plugs
+jack = {"eth": (15.9, 13.5), "usb3": (13.1, 15.6), "usb2": (13.1, 15.6)}
+plug = {"eth": (0.0, 0.0), "usb3": (0.0, 0.0), "usb2": (0.0, 0.0)}   # plugs sit inside the jacks
 usbc_gap = (14.0 * 8.0 - 8.9 * 3.2) * mm2 * 0.5                                  # around the cable
 
 
 def exhaust(used):
     a = usbc_gap
     for k, (w, h) in win.items():
-        a += (w * h - (plug[k][0] * plug[k][1] if k in used else 0)) * mm2
+        a += (w * h - jack[k][0] * jack[k][1]) * mm2
     return a
 
 
@@ -105,9 +108,9 @@ def main():
         A_in = series(A_gap, A_plate, A_plen, A_floor)
         A_eff = series(A_in, exhaust(used))
         for load, P in (("idle", 3.3), ("busy", 6.3)):
-            for fan, dp in (("fan off", 0.0), ("fan on (1-3 Pa)", 2.0)):
+            for fan, dp in (("fan off", 0.0), ("fan on (0.5-3 Pa)", 1.5)):
                 dT, Q = solve(P, A_eff, dp)
-                lo = solve(P, A_eff, 1.0)[0] if dp else dT
+                lo = solve(P, A_eff, 0.5)[0] if dp else dT
                 hi = solve(P, A_eff, 3.0)[0] if dp else dT
                 rows.append({"ports": name, "load": load, "P_W": P, "fan": fan,
                              "dT_air_K": round(dT, 1), "range_K": [round(hi, 1), round(lo, 1)],

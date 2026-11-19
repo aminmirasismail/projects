@@ -1,27 +1,29 @@
-"""Home Assistant hub enclosure for a Raspberry Pi 5 + official Active Cooler. Rev D.
+"""Home Assistant hub enclosure for a Raspberry Pi 5 + official Active Cooler. v5.
 
-Rev D is lighting concept D, "underglow": the white shell floats 5 mm above the table on a
-small inset black plinth, and an addressable RGBW strip under the shell's edge washes light
-onto the table. No light goes through the white plastic. Rev C's halo (LED ring under a
-thinned roof) is gone.
+v5 is lighting concept D, "underglow": the white shell floats 5 mm above the table; 36 SK6812
+RGBW LEDs (four straight runs, 11 + 7 a side) face down in a black channel inside the shell's
+skirt, behind a white diffuser ring, and wash light onto the table. No light goes through the
+shell. Air comes in underneath (under the foot ring, through a light-trapped plenum) and
+leaves through the recessed I/O bay at the back; there are no roof vents.
 
 Run:  python hub.py [--renders] [--details] [--light] [--drawings] [--preview]
 Writes hub.blend, stl/*.stl, and optionally renders/*.png plus drawing data.
 
 Printed parts (one colour each, no AMS needed):
-  shell   - white PLA, printed upside-down (roof on the plate)
-  floor   - black PLA, printed flat: closes the shell, carries the Pi and the ESP32
-  plinth  - black PLA, printed upside-down: the foot under the floor plus the downward
-            LED channel round its edge
-Bought parts (full list with tools in BOM.md): Pi 5 + Active Cooler, SK6812 RGBW 5 V 144/m
-12 mm strip (32 LEDs used), ESP32-C3 SuperMini, 74AHCT1G125 level shifter, 4x M3 heat-set
-inserts, 4x M3x12 button-head screws,
-4x M2.5x6 screws, 330 ohm resistor, 1000 uF capacitor, jumper wires, 4 small rubber feet.
+  shell     - white PLA, printed upside-down (roof on the plate), 0.08 mm product settings
+  diffuser  - white PLA ring, 0.6 mm, printed flat, visible face up
+  plinth    - black PLA, printed upside-down: plate, lining with its 1.5 mm hang, LED channel,
+              foot ring and pads
+  frame     - black PLA, printed flat: the 2 mm plenum rim and the 4 screw spacers
+  floor     - black PLA, printed flat: carries the Pi, the ESP32 and the strip capacitor
+Bought parts: see BOM.md (Pi 5 + Active Cooler, SK6812 RGBW 5 V 144/m 12 mm strip,
+ESP32-C3 SuperMini, 74AHCT1G125, 470 uF capacitor, 4x M3 heat-set inserts, 4x M3x10 button
+heads, 4x M2.5x6, 4x Bumpon SJ5302).
 
 Why an ESP32: Home Assistant OS on a Pi 5 can't drive addressable LEDs from the GPIO
 header (no integration for it, and the Pi 5's RP1 chip breaks the usual LED library).
 A ESP32-C3 running ESPHome drives the strip and talks to Home Assistant over Wi-Fi;
-it takes 5 V and ground from the Pi's header.
+it takes 5 V and ground from the Pi's header (pins 4 and 6).
 """
 import json
 import math
@@ -60,7 +62,7 @@ BOARD_TOP = BOARD_Z + PCB_T
 # Heat-set inserts: CNC Kitchen / Ruthex standard M3 x 5.7 mm, OD 4.6 mm.
 # Maker guidance: 4.0 mm hole, depth >= insert length + 1 mm, wall >= ~2 mm around it.
 INSERT_HOLE_D, INSERT_HOLE_DEPTH = 4.0, 8.0
-BOSS_D = 9.0
+BOSS_D = 9.6                # 2.8 mm wall round the insert; fuses with the wall
 BOSS_X = 40.0               # Rev C had 36; moved out so the strip ends clear the posts by 3 mm
 BOSS = [(sx * BOSS_X, sy * (D / 2 - WALL - BOSS_D / 2 + 0.3)) for sx in (-1, 1)
         for sy in (-1, 1)]
@@ -129,7 +131,8 @@ IN_IN = WALL + FIT           # black parts' outline, inset from the shell outlin
 LINING_T = 1.0              # black lining inside the skirt: no light reaches the white wall
 LINING_DROP = 1.5           # the black lining hangs this far below the shell's bottom edge
 LINING_Z = LIFT - LINING_DROP
-FLANGE, FLANGE_T = 1.5, 0.8   # inward floor at the lining's foot (width, thickness): hides the
+FLANGE, FLANGE_T = 0.0, 0.0   # v4's inward floor at the lining's foot (dropped in v5: the
+                              # diffuser hides the reflections, and the floor trapped it); it hid the
                             # LEDs' reflections in a glossy table from normal viewing angles
 FOOT_IN = WALL + FIT + 1.0 + CH_W   # the foot (inner channel wall) inset from the outline
 FOOT_R = 4.0
@@ -155,13 +158,14 @@ def configure(posts=True):
         N_LONG, N_SHORT = 9, 7
         WIRE_HOLE, FLOOR_HOLE = (46.0, 28.0, 5.0), (46.0, 19.0)
     else:
-        BOSS_X, by = 42.0, 33.5
-        N_LONG, N_SHORT = 11, 8
+        BOSS_X, by = 42.0, 33.2       # pocket clears the lining's inner face by 0.3 mm
+        N_LONG, N_SHORT = 11, 7       # 11 + 7: the long runs reach x +-38.2, the short runs stop
+                                      # at y +-24.3, so their PCBs don't overlap at the corners
         WIRE_HOLE, FLOOR_HOLE = (47.3, 31.0, 4.0), (47.3, 19.0)
     BOSS = [(sx * BOSS_X, sy * by) for sx in (-1, 1) for sy in (-1, 1)]
 
 
-HEAD_POCKET_D = 5.8                # M3 button head (5.7) sits flush in the plinth plate
+HEAD_POCKET_D = 6.4                # M3 button head (5.7) sits flush in the plinth plate
 configure(False)                   # v5: no posts, runs reach the corners
 FEET = [(sx * 30.0, sy * 17.0) for sx in (-1, 1) for sy in (-1, 1)]   # on 4 pads
 PAD_D = 10.0
@@ -171,7 +175,10 @@ INTAKE_W, INTAKE_L = 3.0, 40.0
 INTAKE_PLATE_X = (-21.0, -7.0, 7.0, 21.0)      # slots in the plinth plate
 INTAKE_FLOOR_X = (-28.0, -14.0, 0.0, 14.0, 28.0)  # floor slots, offset (+-28 sit over the pads)
 RIM_W = 2.5                 # plenum rim round the plinth plate's top edge
-DIFF_T = 0.6                # white PLA diffuser ring across the channel opening
+DIFF_T = 0.6                # white PLA diffuser ring across the channel opening ...
+DIFF_Z = LINING_Z + 0.4     # ... its underside, 0.4 mm up inside the black hang
+DIFF_CLEAR = 0.3            # side clearance (PLA shrink + tolerance); crush ribs take it up
+STOP_W, STOP_T = 0.8, 0.6   # stop rings the diffuser is pushed up against
 # 3M Bumpon SJ5302 (7.9 mm x 2.2 mm): 1.8 mm recess leaves 0.4 mm proud
 FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.8
 
@@ -179,7 +186,7 @@ FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.8
 ESP_L, ESP_W, ESP_T = 22.5, 18.0, 1.0           # PCB; parts stand ~3 mm off one face
 ESP_X = 45.5                                    # board plane, standing on edge
 ESP_SLOT_W, ESP_SLOT_D = 1.3, 1.5               # card slot for the antenna-end edge
-CAP_Y = 25.4                                    # 470 uF capacitor saddle, beside the ESP32
+CAP_Y = 24.8                                    # 470 uF capacitor saddle, beside the ESP32
 ESP_PINS = {"5v": "5V", "gnd": "GND", "data": "GPIO4"}   # via 74AHCT1G125 + 330 ohm
 
 
@@ -235,7 +242,6 @@ def label_cutter(body, size, right_x, front_y, top_z, depth=0.6):
     return ob, box
 
 
-# The separator is a placeholder: the owner is choosing a new one (CLAUDE.md, open items).
 LABEL = {"parts": ("HOME", "01"), "size": 6.0, "depth": 0.6, "right_inset": 14.0,
          "front_inset": 10.0}          # HOME · 01, house dot (S.product_label)
 
@@ -304,7 +310,7 @@ def build():
     # the USB-C end points up for flashing with the shell off. A dab of hot glue holds it.
     cradle = S.box("esp_cradle", 4.0, ESP_W + 4.0, 2.0, loc=(ESP_X, 0, z1 + 0.99))
     # saddle for the strip's 470 uF capacitor (6.3 x 11 mm), lying along X
-    saddle = [S.box("cap_saddle", 2.0, 8.0, 2.5, loc=(x, CAP_Y, z1 + 1.24)) for x in (39.5, 47.0)]
+    saddle = [S.box("cap_saddle", 2.0, 8.0, 2.5, loc=(x, CAP_Y, z1 + 1.24)) for x in (38.0, 47.0)]
     S.union(floor, stand + [cradle] + saddle)
     holes = []
     for x, y in PI_HOLES:   # M2.5 screws from the top, through the Pi into the standoffs
@@ -337,17 +343,14 @@ def build():
 
 
 def build_plinth():
-    """Top plate + black lining inside the shell's skirt + foot, with the LED channel
-    between lining and foot. Printed upside-down (top plate on the bed)."""
+    """Top plate + black lining (hangs 1.5 mm below the shell edge) + foot ring and pads, with
+    the LED channel between lining and foot ring. Printed upside-down (top plate on the bed):
+    nothing rises above the plate's top face, so it starts flat on the bed (the plenum rim is
+    a separate part, build_frame)."""
     pw, pd, pr = W - 2 * IN_IN, D - 2 * IN_IN, R - IN_IN
     plate = S.rounded_box("Plinth", pw, pd, PLATE_T, r=pr, loc=(0, 0, Z_PLATE_BOT))
     S.bake(plate)
     lining = _ring_rect("lining", IN_IN, CH_IN0, LINING_Z, Z_PLATE_BOT + 0.01, R)
-    # inward floor at the lining's foot; starts inside the lining wall and 0.05 mm above its
-    # bottom face so no faces coincide (coincident faces break the EXACT boolean)
-    if FLANGE > 0:
-        S.union(lining, [_ring_rect("flange", IN_IN + 0.5, CH_IN0 + FLANGE, LINING_Z + 0.05,
-                                    LINING_Z + FLANGE_T, R)])
     foot = S.rounded_box("foot", W - 2 * FOOT_IN, D - 2 * FOOT_IN, Z_PLATE_BOT + 0.01 - FOOT_GAP,
                          r=FOOT_R, loc=(0, 0, FOOT_GAP))
     S.bake(foot)
@@ -356,35 +359,44 @@ def build_plinth():
                                r=FOOT_R - 1.0, loc=(0, 0, -1))])
     pads = [S.cylinder("pad", PAD_D, Z_PLATE_BOT + 0.01, loc=(x, y, Z_PLATE_BOT / 2))
             for x, y in FEET]
-    zt = LIFT + SKIRT
-    rim = _ring_rect("rim", IN_IN, IN_IN + RIM_W, zt - 0.01, zt + PLENUM, R)
-    spacers = [S.cylinder("spacer", SCREW_POST_D, PLENUM + 0.01, loc=(x, y, zt + PLENUM / 2))
-               for x, y in BOSS]
-    # inner ledge for the diffuser, on the foot ring's outer face
-    zd = LINING_Z + FLANGE_T
-    dled = S.rounded_box("diff_ledge", W - 2 * (FOOT_IN - 1.0), D - 2 * (FOOT_IN - 1.0),
-                         zd - LINING_Z - 0.05, r=FOOT_R + 1.0, loc=(0, 0, LINING_Z + 0.05))
-    S.bake(dled)
-    S.cut(dled, [S.rounded_box("diff_ledge_in", W - 2 * FOOT_IN - 0.4, D - 2 * FOOT_IN - 0.4,
-                               10, r=FOOT_R - 0.2, loc=(0, 0, -1))])
     posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
                         loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS] \
         if POSTS else []
     zl = Z_PLATE_BOT - LEDGE_GAP                   # strip PCB rests on these lips
+    # inner lip: square outer corners so it reaches under the strip ends near the corners
     ledge_in = S.rounded_box("ledge_in", W - 2 * (FOOT_IN - LEDGE), D - 2 * (FOOT_IN - LEDGE),
-                             LEDGE_T, r=FOOT_R + LEDGE, loc=(0, 0, zl - LEDGE_T))
+                             LEDGE_T, r=0.6, loc=(0, 0, zl - LEDGE_T))
     S.bake(ledge_in)
     S.cut(ledge_in, [S.rounded_box("ledge_in_in", W - 2 * FOOT_IN - 0.02,
                                    D - 2 * FOOT_IN - 0.02, LEDGE_T + 2, r=FOOT_R,
                                    loc=(0, 0, zl - LEDGE_T - 1))])
     ledges = [_ring_rect("ledge_out", CH_IN0 - 0.4, CH_IN0 + LEDGE, zl - LEDGE_T, zl, R),
               ledge_in]
-    S.union(plate, [lining, foot, rim, dled] + pads + spacers + posts + ledges)
+    # diffuser stops: the ring is pushed up from below until it meets these, 1.9 mm under the
+    # LED faces; small crush ribs on the foot ring hold it there by friction
+    zs = DIFF_Z + DIFF_T
+    stops = [_ring_rect("stop_out", CH_IN0 - 0.4, CH_IN0 + STOP_W, zs, zs + STOP_T, R)]
+    st_in = S.rounded_box("stop_in", W - 2 * (FOOT_IN - STOP_W), D - 2 * (FOOT_IN - STOP_W),
+                          STOP_T, r=FOOT_R + STOP_W, loc=(0, 0, zs))
+    S.bake(st_in)
+    S.cut(st_in, [S.rounded_box("stop_in_in", W - 2 * FOOT_IN - 0.02, D - 2 * FOOT_IN - 0.02,
+                                STOP_T + 2, r=FOOT_R, loc=(0, 0, zs - 1))])
+    stops.append(st_in)
+    ribs = []
+    for x, y, sx, sy in ((0.0, 1, 0, 1), (0.0, -1, 0, -1), (25.0, 1, 0, 1), (-25.0, 1, 0, 1),
+                         (25.0, -1, 0, -1), (-25.0, -1, 0, -1)):
+        yy = y * (D / 2 - FOOT_IN)
+        ribs.append(S.box("crush", 2.0, 0.6, DIFF_T, loc=(x, yy + sy * 0.15, DIFF_Z + DIFF_T / 2)))
+    for sx in (-1, 1):
+        ribs.append(S.box("crush", 0.6, 2.0, DIFF_T, loc=(sx * (W / 2 - FOOT_IN + 0.15), 0,
+                                                          DIFF_Z + DIFF_T / 2)))
+    S.union(plate, [lining, foot] + pads + posts + ledges + stops + ribs)
     cuts = []
     for x, y in BOSS:
         cuts.append(S.cylinder("m3", 3.4, 2 * (LIFT + SKIRT), loc=(x, y, LIFT)))
-        if not POSTS:   # head pocket through the plate (and lip and flange below it);
-            z0, z1 = LINING_Z - 0.5, Z_PLATE_BOT + 1.7     # head top 0.3 mm into the spacer
+        if not POSTS:   # head pocket through the plate and the lip below it (not the stops)
+            z0, z1 = DIFF_Z + DIFF_T - 0.01, Z_PLATE_BOT + 1.7   # through lip and stop rings;
+            # head top 0.3 mm into the frame; the diffuser covers the notch
             cuts.append(S.cylinder("head", HEAD_POCKET_D, z1 - z0, loc=(x, y, (z0 + z1) / 2)))
     for x in INTAKE_PLATE_X:
         cuts.append(S.slot("intake", INTAKE_W, INTAKE_L, 20, loc=(x, 0, Z_PLATE_BOT), axis="Z",
@@ -394,18 +406,42 @@ def build_plinth():
     wx, wy, wd = WIRE_HOLE
     cuts.append(S.cylinder("wire", wd, 10, loc=(wx, wy, LIFT + SKIRT)))
     S.cut(plate, cuts)
-    check(plate, (pw, pd, LIFT + SKIRT + PLENUM))
+    check(plate, (pw, pd, LIFT + SKIRT))
     S.smooth(plate)
     return plate
 
 
+def build_frame():
+    """Plenum frame: the 2 mm rim round the edge plus the 4 screw spacers, between plinth and
+    floor. Its own flat part, so neither neighbour has to bridge the plenum."""
+    zt = LIFT + SKIRT
+    rim = _ring_rect("Frame", IN_IN, IN_IN + RIM_W, zt, zt + PLENUM, R)
+    spacers = [S.cylinder("spacer", SCREW_POST_D, PLENUM, loc=(x, y, zt + PLENUM / 2))
+               for x, y in BOSS]
+    # (each spacer already overlaps the rim, so the frame is one piece)
+    S.union(rim, spacers)
+    cuts = [S.cylinder("m3", 3.4, 10, loc=(x, y, zt)) for x, y in BOSS]
+    wx, wy, wd = WIRE_HOLE
+    cuts.append(S.cylinder("wire", wd + 0.6, 10, loc=(wx, wy, zt)))
+    S.cut(rim, cuts)
+    check(rim, (W - 2 * IN_IN, D - 2 * IN_IN, PLENUM))
+    S.smooth(rim)
+    return rim
+
+
 def build_diffuser():
     """White PLA ring across the channel opening: blends the LEDs into one band (corners too)
-    and hides their reflections. Rests on the lining's flange and the foot ring's ledge.
-    Printed flat, 0.6 mm (3 layers at 0.2)."""
-    z0 = LINING_Z + FLANGE_T
-    d = _ring_rect("Diffuser", CH_IN0 + 0.15, FOOT_IN - 0.15, z0, z0 + DIFF_T, R)
-    check(d, (W - 2 * (CH_IN0 + 0.15), D - 2 * (CH_IN0 + 0.15), DIFF_T))
+    and hides their reflections. Pushed up from below against the stops; crush ribs on the
+    foot ring hold it. Pops out with a fingernail to reach the four screws. Its inner corners
+    follow the foot ring (no unscattered light past them). Printed flat, 0.6 mm (3 layers at
+    0.2), visible face up."""
+    c = DIFF_CLEAR
+    d = S.rounded_box("Diffuser", W - 2 * (CH_IN0 + c), D - 2 * (CH_IN0 + c), DIFF_T,
+                      r=R - CH_IN0 - c, loc=(0, 0, DIFF_Z))
+    S.bake(d)
+    S.cut(d, [S.rounded_box("diff_in", W - 2 * (FOOT_IN - c), D - 2 * (FOOT_IN - c),
+                            DIFF_T + 2, r=FOOT_R + c, loc=(0, 0, DIFF_Z - 1))])
+    check(d, (W - 2 * (CH_IN0 + c), D - 2 * (CH_IN0 + c), DIFF_T))
     S.smooth(d)
     return d
 
@@ -547,6 +583,10 @@ LED_W_NIGHT = 0.015          # ~4.5 lm per LED at the 0.5 A cap (as in underglow
 LED_W_DAY = LED_W_NIGHT
 
 
+def black_mat():
+    return S.pla("black")
+
+
 def scattering_white():
     """White PLA with subsurface scattering (1.2 mm), for parts light passes through."""
     m = S.material("PLA white (scattering)", S.PLA["white"], rough=0.5)
@@ -622,6 +662,9 @@ def main():
     S.export_stl(floor, os.path.join(HERE, "stl", "hub_floor_black.stl"))
     diff = build_diffuser()
     S.assign(diff, scattering_white())
+    frame = build_frame()
+    S.assign(frame, black_mat())
+    S.export_stl(frame, os.path.join(HERE, "stl", "hub_frame_black.stl"))
     S.export_stl(diff, os.path.join(HERE, "stl", "hub_diffuser_white.stl"))
     S.export_stl(plinth, os.path.join(HERE, "stl", "hub_plinth_black.stl"))
     # Fit test: the last 15 mm of the shell at the ports end (~20 min print).
@@ -641,7 +684,7 @@ def main():
     esp = esp_mock()
     hparts, wires = harness()
     strip = pcbs + leds
-    root = S.to_studio([shell, floor, plinth, diff, pi, esp] + strip + hparts + wires)
+    root = S.to_studio([shell, floor, plinth, diff, frame, pi, esp] + strip + hparts + wires)
     S.studio()
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(HERE, "hub.blend"))
     out = os.path.join(HERE, "renders")
@@ -676,7 +719,8 @@ def main():
         # exploded, bottom to top: plinth + strip | floor + ESP32 | Pi | shell
         show(inside, True)
         show(wires + hparts, False)
-        moves = [(shell, (0, 0, 115)), (pi, (0, 0, 55)), (floor, (0, 0, 28)), (esp, (0, 0, 28))]
+        moves = [(shell, (0, 0, 125)), (pi, (0, 0, 66)), (floor, (0, 0, 40)), (esp, (0, 0, 40)),
+                 (frame, (0, 0, 22)), (diff, (0, 0, -16))]
         for o, d in moves:
             shift([o], d)
         S.camera((0.36, -0.52, 0.32), target=(0, 0, 0.075), lens=55)
@@ -690,7 +734,7 @@ def main():
         gone = [o for o in strip if max(v.co.y for v in o.data.vertices) > 2]
         gone += [w for w in wires if w.name.startswith("wire_strip")]
         show(gone + [pi], False)
-        for o in (shell, floor, plinth, diff):   # (the Pi and ESP32 stand-ins are too crude to cut;
+        for o in (shell, floor, plinth, diff, frame):   # (the Pi and ESP32 stand-ins are too crude;
                                            #  the Pi stays out of this view)
             c = o.copy()
             c.data = o.data.copy()
@@ -700,12 +744,12 @@ def main():
             S.cut(c, [cut])
             c.hide_render = False
             halves.append(c)
-        show([shell, floor, plinth, diff], False)
+        show([shell, floor, plinth, diff, frame], False)
         S.camera((0.20, 0.30, 0.17), target=(0.004, 0.0, 0.016), lens=60)
         S.render(os.path.join(out, "hub_cutaway.png"))
         for c in halves:
             bpy.data.objects.remove(c, do_unlink=True)
-        show([shell, floor, plinth, diff] + gone, True)
+        show([shell, floor, plinth, diff, frame] + gone, True)
         show(inside, False)
         root.rotation_euler = (math.pi, 0, 0)
         root.location = (0, 0, TOP * m)
@@ -782,7 +826,7 @@ def main():
         # cut copies with the guarded S.cut; the strip needs no cut, the camera's near clip
         # plane (at y = 0) hides everything in front of the section
         show(strip, True)
-        for o in (shell, floor, plinth):
+        for o in (shell, floor, plinth, frame, diff):
             c = o.copy()
             c.data = o.data.copy()
             bpy.context.collection.objects.link(c)

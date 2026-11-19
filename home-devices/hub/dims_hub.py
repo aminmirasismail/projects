@@ -131,16 +131,16 @@ def build():
     bx, by = abs(d["boss"][0][0]), abs(d["boss"][0][1])
     s.dim_h(-bx, bx, -by, -by - 10, f"{fmt(2 * bx)} screws", color=ACCENT)
     s.dim_v(-by, by, bx, bx + 12, fmt(2 * by), color=ACCENT)
-    s.leader(-bx, -by, -bx - 8, -by + 18, "4× M3×12 button head", color=ACCENT,
-             anchor="end")
+    s.leader(-bx, by, -bx + 2, by + 10, "4× M3×10 button head, flush (under diffuser)",
+             color=ACCENT, anchor="start")
     fw, fd = W - 2 * pl["foot_in"], Dp - 2 * pl["foot_in"]
     s.dim_h(-fw / 2, fw / 2, -fd / 2, -fd / 2 + 7, f"{fmt(fw)} foot")
     s.dim_v(-fd / 2, fd / 2, -fw / 2, -fw / 2 + 8, f"{fmt(fd)}")
     fx0, fy0 = d["feet"][0]
     s.leader(fx0, -fy0, fx0 + 10, -fy0 - 10, f"4× Ø8.6 rubber feet", anchor="start")
     a = W / 2 - pl["ch_mid"]
-    s.leader(a, 0, a - 12, -16, f"{st['n_long'] * 2 + st['n_short'] * 2} LEDs, 4 runs",
-             color=ACCENT, anchor="end")
+    s.leader(a, 12, 36, by + 10, f"{st['n_long'] * 2 + st['n_short'] * 2} LEDs, 4 runs",
+             color=ACCENT, anchor="start")
     out["bottom"] = s.svg(f"UNDERSIDE  ·  {rev}  ·  mm")
 
     # SECTION through the channel, +X end
