@@ -90,6 +90,10 @@ building new lighting.
 ## Open items
 
 - Pi 5 port positions in `hub/hub.py` are provisional until checked against RP-008347.
-- Hub lighting direction: concept F (thin-skin reveal line + underglow) recommended, pending
-  the thin-skin coupon test.
+- Hub lighting direction: **concept D (underglow)**, the owner's choice (2026-11-18). The shell
+  floats on a small inset black base and an LED strip washes light onto the table; no light
+  through the white shell. Light-through-plastic (concept F, thin skins) is tabled.
+- Light diffusion experiments are a separate later project: the skin coupons (printed
+  2026-11-18) plus a jig with pin-located LED carriers on interchangeable spacer pins and
+  black walls. See the "Light diffusion test rig" idea on the Idea Bench.
 - `README.md` links to `dexter_handheld_mobile_agent/`, but the folder is `dexter/`.
