@@ -59,7 +59,7 @@ BOARD_TOP = BOARD_Z + PCB_T
 # Maker guidance: 4.0 mm hole, depth >= insert length + 1 mm, wall >= ~2 mm around it.
 INSERT_HOLE_D, INSERT_HOLE_DEPTH = 4.0, 8.0
 BOSS_D = 9.0
-BOSS_X = 38.0               # Rev C had 36; moved out so the strip clears the screw posts
+BOSS_X = 40.0               # Rev C had 36; moved out so the strip ends clear the posts by 3 mm
 BOSS = [(sx * BOSS_X, sy * (D / 2 - WALL - BOSS_D / 2 + 0.3)) for sx in (-1, 1)
         for sy in (-1, 1)]
 
@@ -80,9 +80,12 @@ PI = {
 }
 
 
+PI_X0 = 36.6   # board's u = 0 edge: ports end 0.2 mm inside the wall, so the floor drops in
+
+
 def pi_xy(u, v):
     """Board coords -> enclosure XY. Board is rotated so Ethernet/USB face -X, USB-C +Y."""
-    return 35.0 - u, 28.0 - v
+    return PI_X0 - u, 28.0 - v
 
 
 def header_pin_xy(n):
@@ -96,41 +99,48 @@ def header_pin_xy(n):
 PI_HOLES = [pi_xy(u, v) for u in PI["holes_u"] for v in PI["holes_v"]]
 FAN_C = pi_xy(30.0, 27.0)
 USBC = pi_xy(PI["usbc_u"], 0)
-DUPONT_TOP = BOARD_TOP + 2.5 + 14.0            # top of a female jumper on a header pin
+DUPONT_TOP = BOARD_TOP + 2.5 + 8.0             # right-angle female jumper on a header pin
 HEADER_USED = {"5v": 2, "gnd": 6}              # ESP32 power from the Pi header
 
-_vs = [(v - w / 2, v + w / 2) for _, v, w, _, _, _ in PI["ports"]]
-_ys = sorted([28.0 - a for a, b in _vs] + [28.0 - b for a, b in _vs])
-PORT_WIN = {"y0": _ys[0] - 1.0, "y1": _ys[-1] + 1.0,
-            "z0": BOARD_TOP - 1.0, "z1": BOARD_TOP + max(p[3] for p in PI["ports"]) + 1.0}
+# one window per port (ribs between them keep the printed bridges short)
+PORT_WINS = [{"name": n, "y0": 28.0 - v - w / 2 - 1.0, "y1": 28.0 - v + w / 2 + 1.0,
+              "z0": BOARD_TOP - 0.2, "z1": BOARD_TOP + h + 1.0}
+             for n, v, w, h, _, _ in PI["ports"]]
+PORT_WIN = {"y0": min(p["y0"] for p in PORT_WINS), "y1": max(p["y1"] for p in PORT_WINS),
+            "z0": BOARD_TOP - 0.2, "z1": max(p["z1"] for p in PORT_WINS)}
 USBC_SLOT = (13.0, 7.5)
 
 # ---------------------------------------------------------------- underglow plinth
-# SK6812 RGBW 5 V, 60 LEDs/m, 10 mm wide, bare (IP30). Cut points every 16.67 mm.
+# SK6812 RGBW 5 V, 144 LEDs/m, 12 mm wide, bare (IP30). Cut points every 6.94 mm.
+# (60/m left separate pools of light on the table; 144/m reads as a band.)
 # The strip can't bend sideways, so it lies flat (LEDs down) in straight runs along the
 # four sides; short jumper wires carry 5 V / GND / data round each corner.
-STRIP_W, STRIP_PCB_T, LED_SIZE, LED_H = 10.0, 0.25, 5.0, 1.6
-PITCH = 1000.0 / 60
+STRIP_W, STRIP_PCB_T, LED_SIZE, LED_H = 12.0, 0.25, 5.0, 1.6
+PITCH = 1000.0 / 144
+CH_W = STRIP_W + 0.4        # channel width
+LEDGE, LEDGE_T = 0.5, 0.6   # lips either side that hold the strip up (no reliance on tape)
 IN_IN = WALL + FIT           # black parts' outline, inset from the shell outline
 LINING_T = 1.0              # black lining inside the skirt: no light reaches the white wall
 LINING_Z = LIFT + 0.3       # bottom of the lining, just above the shell's bottom edge
-FOOT_IN = 14.0              # the foot (inner channel wall) inset from the shell outline
+FOOT_IN = WALL + FIT + 1.0 + CH_W   # the foot (inner channel wall) inset from the outline
 FOOT_R = 4.0
 CH_IN0, CH_IN1 = IN_IN + LINING_T, FOOT_IN             # channel, inset from outline
 CH_MID = (CH_IN0 + CH_IN1) / 2                         # strip centreline inset
 Z_LED_FACE = Z_PLATE_BOT - STRIP_PCB_T - LED_H
 SCREW_POST_D, SCREW_SEAT = 7.0, LIFT + 2.0   # M3 button head seats here, hidden by the skirt
 SCREW_HEAD_D = 5.7
-N_LONG, N_SHORT = 4, 3
-WIRE_HOLE = (W / 2 - CH_MID, (N_SHORT / 2) * PITCH + 2.0, 5.0)   # x, y, diameter
-FEET = [(sx * 30.0, sy * 16.0) for sx in (-1, 1) for sy in (-1, 1)]
-FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.2
+N_LONG, N_SHORT = 9, 7
+WIRE_HOLE = (46.0, 28.0, 5.0)      # x, y, diameter: through the plinth, beside the +X run's end
+FLOOR_HOLE = (46.0, 19.0)          # through the floor, offset: light must turn a corner
+FEET = [(sx * 28.0, sy * 14.0) for sx in (-1, 1) for sy in (-1, 1)]
+# 3M Bumpon SJ5302 (7.9 mm x 2.2 mm): 1.8 mm recess leaves 0.4 mm proud
+FOOT_RECESS_D, FOOT_RECESS = 8.6, 1.8
 
 # ---------------------------------------------------------------- ESP32-C3 SuperMini
 ESP_L, ESP_W, ESP_T = 22.5, 18.0, 1.0           # PCB; parts stand ~3 mm off one face
-ESP_X = 45.0                                    # board plane, standing on edge
-ESP_SLOT_W = 1.4
-ESP_PINS = {"5v": 5, "gnd": 6, "data": 2}       # strip data on GPIO2 via 330 ohm
+ESP_X = 45.5                                    # board plane, standing on edge
+ESP_SLOT_W, ESP_SLOT_D = 1.3, 1.5               # card slot for the antenna-end edge
+ESP_PINS = {"5v": "5V", "gnd": "GND", "data": "GPIO4"}   # via 74AHCT1G125 + 330 ohm
 
 
 def led_positions():
@@ -209,10 +219,10 @@ def build():
     for x, y in BOSS:
         cutters.append(S.cylinder("insert", INSERT_HOLE_D, INSERT_HOLE_DEPTH + 1,
                                   loc=(x, y, FLOOR_TOP + (INSERT_HOLE_DEPTH - 1) / 2)))
-    pw = PORT_WIN
-    cutters.append(S.slot("ports", pw["y1"] - pw["y0"], pw["z1"] - pw["z0"], 10,
-                          loc=(-W / 2, (pw["y0"] + pw["y1"]) / 2, (pw["z0"] + pw["z1"]) / 2),
-                          axis="X", r=2.5))
+    for pw in PORT_WINS:
+        cutters.append(S.slot("port_" + pw["name"], pw["y1"] - pw["y0"], pw["z1"] - pw["z0"],
+                              10, loc=(-W / 2, (pw["y0"] + pw["y1"]) / 2,
+                                       (pw["z0"] + pw["z1"]) / 2), axis="X", r=2.0))
     cutters.append(S.slot("usbc", *USBC_SLOT, 10, loc=(USBC[0], D / 2, BOARD_TOP + 1.6),
                           axis="Y"))
     S.cut(shell, cutters)
@@ -242,22 +252,24 @@ def build():
     z1 = FLOOR_TOP
     stand = [S.cylinder("standoff", 6, STANDOFF_H + 0.5,
                         loc=(x, y, z1 + STANDOFF_H / 2 - 0.25)) for x, y in PI_HOLES]
-    # ESP32 holder: two posts with a slot each; the board stands on edge between them
-    rails = [S.box("esp_rail", 4.0, 3.0, 7.0, loc=(ESP_X, sy * (ESP_W / 2 + 0.9), z1 + 3.49))
-             for sy in (-1, 1)]
-    S.union(floor, stand + rails)
+    # ESP32 cradle: a card slot that takes the board's antenna-end edge (pads stay clear);
+    # the USB-C end points up for flashing with the shell off. A dab of hot glue holds it.
+    cradle = S.box("esp_cradle", 4.0, ESP_W + 4.0, 2.0, loc=(ESP_X, 0, z1 + 0.99))
+    S.union(floor, stand + [cradle])
     holes = []
     for x, y in PI_HOLES:   # M2.5 screws from the top, through the Pi into the standoffs
         holes.append(S.cylinder("m25", 2.2, 6.0, loc=(x, y, z1 + STANDOFF_H - 2.5)))
     for x, y in BOSS:
         holes.append(S.cylinder("m3", 3.4, 10, loc=(x, y, FLOOR_Z0)))
-    for sy in (-1, 1):
-        holes.append(S.box("esp_slot", ESP_SLOT_W, 3.2, 10,
-                           loc=(ESP_X, sy * (ESP_W / 2 + 0.2), z1 + 5.5)))
+    holes.append(S.box("esp_slot", ESP_SLOT_W, ESP_W + 0.4, ESP_SLOT_D + 1,
+                       loc=(ESP_X, 0, z1 + 2.0 - ESP_SLOT_D + (ESP_SLOT_D + 1) / 2)))
     wx, wy, wd = WIRE_HOLE
-    holes.append(S.cylinder("wire", wd, 10, loc=(wx, wy, FLOOR_Z0)))
+    fx, fy = FLOOR_HOLE
+    holes.append(S.cylinder("wire", wd, 10, loc=(fx, fy, FLOOR_Z0)))
+    groove = S.box("wire_groove", wd, wy - fy, 2.4, loc=(wx, (wy + fy) / 2, FLOOR_Z0))
+    holes += [groove, S.cylinder("wire_end", wd, 2.4, loc=(wx, wy, FLOOR_Z0))]
     S.cut(floor, holes)
-    check(floor, (fw, fd, FLOOR_T + 7.0 - 0.01))
+    check(floor, (fw, fd, FLOOR_T + STANDOFF_H))
     S.assign(floor, black)
     S.smooth(floor)
 
@@ -277,7 +289,10 @@ def build_plinth():
                          r=FOOT_R, loc=(0, 0, 0))
     posts = [S.cylinder("post", SCREW_POST_D, Z_PLATE_BOT - SCREW_SEAT + 0.01,
                         loc=(x, y, (SCREW_SEAT + Z_PLATE_BOT) / 2)) for x, y in BOSS]
-    S.union(plate, [lining, foot] + posts)
+    zl = Z_PLATE_BOT - STRIP_PCB_T - 0.1           # strip PCB rests on these lips
+    ledges = [_ring_rect("ledge_out", CH_IN0 - 0.01, CH_IN0 + LEDGE, zl - LEDGE_T, zl, R),
+              _ring_rect("ledge_in", FOOT_IN - LEDGE, FOOT_IN + 0.01, zl - LEDGE_T, zl, R)]
+    S.union(plate, [lining, foot] + posts + ledges)
     cuts = []
     for x, y in BOSS:
         cuts.append(S.cylinder("m3", 3.4, 2 * (LIFT + SKIRT), loc=(x, y, LIFT)))
@@ -304,11 +319,10 @@ def _curve(name, pts, radius, mat):
     cu.dimensions = "3D"
     cu.bevel_depth = radius
     cu.bevel_resolution = 4
-    sp = cu.splines.new("BEZIER")
-    sp.bezier_points.add(len(pts) - 1)
-    for bp, p in zip(sp.bezier_points, pts):
-        bp.co = p
-        bp.handle_left_type = bp.handle_right_type = "AUTO"
+    sp = cu.splines.new("POLY")              # straight runs: no Bezier overshoot
+    sp.points.add(len(pts) - 1)
+    for pt, p in zip(sp.points, pts):
+        pt.co = (*p, 1.0)
     ob = bpy.data.objects.new(name, cu)
     bpy.context.collection.objects.link(ob)
     ob.data.materials.append(mat)
@@ -338,9 +352,10 @@ def esp_mock():
     metal = S.material("Steel", (0.78, 0.78, 0.8, 1), rough=0.22)
     metal.node_tree.nodes["Principled BSDF"].inputs["Metallic"].default_value = 1.0
     z1 = FLOOR_TOP
-    board = S.box("esp_pcb", ESP_T, ESP_W, ESP_L, loc=(ESP_X, 0, z1 + ESP_L / 2))
-    usb = S.box("esp_usbc", 3.2, 8.9, 7.4, loc=(ESP_X - 2.1, 0, z1 + ESP_L - 3.2))
-    chip = S.box("esp_can", 1.0, 7.0, 7.0, loc=(ESP_X - 1.0, 0, z1 + 9.0))
+    zb = z1 + 2.0 - ESP_SLOT_D                       # board edge on the slot floor
+    board = S.box("esp_pcb", ESP_T, ESP_W, ESP_L, loc=(ESP_X, 0, zb + ESP_L / 2))
+    usb = S.box("esp_usbc", 3.2, 8.9, 7.4, loc=(ESP_X - 2.1, 0, zb + ESP_L - 3.2))
+    chip = S.box("esp_can", 1.0, 7.0, 7.0, loc=(ESP_X - 1.0, 0, zb + 11.0))
     return S.join([S.assign(board, pcb), S.assign(usb, metal), S.assign(chip, metal)],
                   "ESP32-C3 (reference)")
 
@@ -353,21 +368,23 @@ def harness():
     housing = S.material("Dupont housing", (0.02, 0.02, 0.02, 1), rough=0.6)
     cols = {"5v": w_red, "gnd": w_blk, "data": w_yel}
     wx, wy, _ = WIRE_HOLE
+    fx, fy = FLOOR_HOLE
     z1 = FLOOR_TOP
     wires, parts = [], []
     for i, sig in enumerate(("5v", "gnd", "data")):
         off = (i - 1) * 1.3
-        pts = [(wx + off, wy - 2.0, Z_PLATE_BOT - 0.3), (wx + off, wy, LIFT - 0.5),
-               (wx + off, wy, z1 + 3.0), (ESP_X - 2.5, 6.0 + off, z1 + 6.0),
-               (ESP_X - 0.8, 4.0 + off * 2, z1 + 4.0 + i * 2.54)]
+        pts = [(wx + off, N_SHORT / 2 * PITCH - 1.0, Z_PLATE_BOT - 0.4),
+               (wx + off, wy, Z_PLATE_BOT - 0.4), (wx + off, wy, FLOOR_Z0 - 0.6),
+               (fx + off, fy, FLOOR_Z0 - 0.6), (fx + off, fy, z1 + 2.0),
+               (ESP_X - 1.2, 8.0, z1 + 6.0 + i * 2.54)]
         wires.append(_curve(f"wire_strip_{sig}", pts, 0.45, cols[sig]))
     for i, (sig, pin) in enumerate(HEADER_USED.items()):
         hx, hy = header_pin_xy(pin)
-        parts.append(S.assign(S.box(f"dupont_{sig}", 2.54, 2.54, 14.0,
-                                    loc=(hx, hy, BOARD_TOP + 2.5 + 7.0)), housing))
-        pts = [(hx, hy, DUPONT_TOP), (hx, hy - 3, DUPONT_TOP + 3.0),
-               (ESP_X - 6.0, -2.0 - i * 1.5, DUPONT_TOP + 1.0),
-               (ESP_X - 0.8, -4.0 - i * 2.54, z1 + 4.0 + i * 2.54)]
+        parts.append(S.assign(S.box(f"dupont_{sig}", 2.54, 2.54, 8.0,
+                                    loc=(hx, hy, BOARD_TOP + 2.5 + 4.0)), housing))
+        pts = [(hx, hy, DUPONT_TOP - 1.0), (hx, hy - 4.0, DUPONT_TOP - 1.0),
+               (ESP_X - 6.0, hy - 6.0 - i * 1.5, DUPONT_TOP - 1.0),
+               (ESP_X - 1.2, -8.0, z1 + 6.0 + i * 2.54)]
         wires.append(_curve(f"wire_pwr_{sig}", pts, 0.45, cols[sig]))
     return parts, wires
 
@@ -422,8 +439,8 @@ def pi_mock():
 
 # ---------------------------------------------------------------- light
 BLUE, ORANGE = (0.08, 0.32, 1.0), (1.0, 0.42, 0.03)
-LED_W_NIGHT = 0.02 * 52 / 14     # same total light as the concept D render (52 x 0.02 W)
-LED_W_DAY = 0.02 * 52 / 14
+LED_W_NIGHT = 0.02 * 52 / (2 * N_LONG + 2 * N_SHORT)   # same total light as concept D's render
+LED_W_DAY = LED_W_NIGHT
 
 
 def gradient(t):
@@ -470,7 +487,8 @@ def write_dims_json(out):
                    "screw_seat": SCREW_SEAT, "post_d": SCREW_POST_D},
         "strip": {"w": STRIP_W, "pitch": PITCH, "n_long": N_LONG, "n_short": N_SHORT,
                   "runs": strip_runs(), "leds": [p[:2] for p in led_positions()]},
-        "wire_hole": WIRE_HOLE, "esp": {"x": ESP_X, "w": ESP_W, "l": ESP_L},
+        "wire_hole": WIRE_HOLE, "floor_hole": FLOOR_HOLE, "port_wins": PORT_WINS,
+        "esp": {"x": ESP_X, "w": ESP_W, "l": ESP_L},
         "fan_c": FAN_C, "label": LABEL,
     }
     with open(os.path.join(out, "dims.json"), "w") as f:
@@ -552,7 +570,7 @@ def main():
         show(inside, True)
         # (cut copies with the guarded S.cut: a live EXACT modifier emptied floor and plinth)
         halves = []
-        gone = [o for o in strip if S.dims(o) and min(v.co.y for v in o.data.vertices) > 2]
+        gone = [o for o in strip if max(v.co.y for v in o.data.vertices) > 2]
         show(gone + [pi], False)
         for o in (shell, floor, plinth):   # (the Pi and ESP32 stand-ins are too crude to cut;
                                            #  the Pi stays out of this view)
@@ -589,8 +607,8 @@ def main():
         S.camera((0.02, -0.09, 0.13), target=(0, 0, TOP * m), lens=90)
         S.render(os.path.join(out, "d_vents.png"))
         # the float: low view of the corner, shadow line, gap and plinth
-        S.camera((0.110, -0.090, 0.008), target=(W / 2 * m - 0.010, -D / 2 * m + 0.010, 0.005),
-                 lens=100)
+        S.camera((0.150, -0.150, 0.012), target=(W / 2 * m - 0.012, -D / 2 * m + 0.012, 0.006),
+                 lens=85)
         S.render(os.path.join(out, "d_float.png"))
         show([pi], True)
         S.camera((-0.13, -0.05, 0.035), target=(-W / 2 * m, 0, 0.020), lens=70)
@@ -649,13 +667,13 @@ def main():
             c = o.copy()
             c.data = o.data.copy()
             bpy.context.collection.objects.link(c)
-            sec = S.box("sec", 300, 100, 200, loc=(0, -50.0 + 0.001, 0))
+            sec = S.box("sec", 300, 100, 200, loc=(0, -50.0 - 0.5, 0))   # section plane at y = -0.5
             sec.parent = root
             S.cut(c, [sec])
             o.hide_render = True
         c = (W / 2 - 12.0, 0, 9.0)
         cam = S.ortho_camera("front", tuple(k * m for k in c), 0.030)
-        cam.data.clip_start, cam.data.clip_end = 0.5 - 0.0002, 0.5 + 0.004
+        cam.data.clip_start, cam.data.clip_end = 0.5 - 0.0007, 0.5 + 0.004
         S.render(os.path.join(out, "dwg_section_channel.png"))
         meta["section_channel"] = {"view": "front", "center_mm": c, "scale_mm": 30.0,
                                    "res": [sc.render.resolution_x, sc.render.resolution_y]}
