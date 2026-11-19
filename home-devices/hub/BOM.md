@@ -12,7 +12,7 @@ US estimates (late 2026), not checked against live listings; check before orderi
 | 3 | Raspberry Pi 27 W USB-C power supply | **official 27 W (5.1 V 5 A)**: the LEDs and ESP32 run off the Pi's 5 V, so a 3 A supply would brown out | 1 | $12 |
 | 4 | microSD card, 64 GB high endurance | SanDisk High Endurance or Samsung PRO Endurance | 1 | $12 |
 | 5 | Ethernet cable, 0.5–1 m | hub to router | 1 | $5 |
-| 6 | Addressable RGBW LED strip | **SK6812 RGBW, 5 V, 144 LEDs/m, 12 mm wide, white PCB, IP30 (no silicone)**, white channel warm (~3000 K) or natural (~4000 K). Uses 36 LEDs in 4 runs of 11 + 7 + 11 + 7 (0.26 m); 1 m is the usual minimum | 1 m | $15–25 |
+| 6 | Addressable RGBW LED strip | **SK6812 RGBW, 5 V, 144 LEDs/m, 12 mm wide, white PCB, IP30 (no silicone)**, white channel warm (~3000 K) or natural (~4000 K). Uses 34 LEDs in 4 runs of 7 + 10 + 7 + 10 (0.24 m); 1 m is the usual minimum | 1 m | $15–25 |
 | 7 | ESP32-C3 SuperMini | 22.5 × 18 mm, USB-C; runs ESPHome and drives the strip. Usually sold in 2–3 packs | 1 (pack) | $8 |
 | 8 | Level shifter, **74AHCT1G125** (single gate, SOT-23-5) | 3.3 V data to the 5 V strip. Wired in line in the data wire under heat-shrink: pin 1 (/OE) to GND, pin 2 input from the ESP32, pin 4 output, pin 5 to 5 V, pin 3 GND | 2 (spare) | $2 |
 | 8a | SOT-23 to DIP adapter boards | so the tiny chip can be soldered by hand | 1 pack | $5 |
@@ -66,7 +66,7 @@ Parts total (without filament): about $160–180.
 - The plinth and floor come off together with the ESP32 and the strip still wired, so no connector is
   needed between them.
 - Software is free: Raspberry Pi Imager (Home Assistant OS) and ESPHome (inside Home Assistant).
-  36 LEDs at full RGBW would draw about 2.6 A (white channel alone about 0.7 A), hence the cap below.
+  34 LEDs at full RGBW would draw about 2.5 A (white channel alone about 0.7 A), hence the cap below.
 - Fit the level shifter: the strip may misread 3.3 V data at 5 V.
 - **Power cap: about 0.5 A.** ESPHome has no current setting, so set `max_brightness` and
   `color_correct` on the light (e.g. white channel alone at full, about 0.7 A, scaled to 70 %).

@@ -1,7 +1,7 @@
 """Home Assistant hub enclosure for a Raspberry Pi 5 + official Active Cooler. v5.
 
-v5 is lighting concept D, "underglow": the white shell floats 5 mm above the table; 36 SK6812
-RGBW LEDs (four straight runs, 11 + 7 a side) face down in a black channel inside the shell's
+v5 is lighting concept D, "underglow": the white shell floats 5 mm above the table; 34 SK6812
+RGBW LEDs (four straight runs, 10 + 7 a side) face down in a black channel inside the shell's
 skirt, behind a white diffuser ring, and wash light onto the table. No light goes through the
 shell. Air comes in underneath (under the foot ring, through a light-trapped plenum) and
 leaves through the recessed I/O bay at the back; there are no roof vents.
@@ -159,9 +159,11 @@ def configure(posts=True):
         WIRE_HOLE, FLOOR_HOLE = (46.0, 28.0, 5.0), (46.0, 19.0)
     else:
         BOSS_X, by = 42.0, 33.2       # pocket clears the lining's inner face by 0.3 mm
-        N_LONG, N_SHORT = 11, 7       # 11 + 7: the long runs reach x +-38.2, the short runs stop
-                                      # at y +-24.3, so their PCBs don't overlap at the corners
-        WIRE_HOLE, FLOOR_HOLE = (47.3, 31.0, 4.0), (47.3, 19.0)
+        N_LONG, N_SHORT = 10, 7       # 10 + 7: long runs end at x +-34.7, short runs at y +-24.3:
+                                      # a 4 mm wiring bay at each corner for the jumpers, clear
+                                      # of the screwdriver's path to the head pocket
+        WIRE_HOLE, FLOOR_HOLE = (46.5, 27.0, 4.0), (47.3, 19.0)   # beside the chain's start,
+                                      # clear of the +X+Y screw pocket
     BOSS = [(sx * BOSS_X, sy * by) for sx in (-1, 1) for sy in (-1, 1)]
 
 

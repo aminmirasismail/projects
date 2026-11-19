@@ -97,7 +97,7 @@ a { color: var(--accent) }
     <p class="lede">A Raspberry Pi 5 Home Assistant hub in a floating white shell. A continuous band of light washes onto the table from underneath; air comes in through a hidden, light-trapped intake below and leaves through the recessed I/O bay at the back. This report covers every printed part with its dimensions and print settings, the drawings, assembly and wiring, airflow, the design review and the bill of materials.</p>
     <nav class="toc" aria-label="Sections">
       <a href="#overview">Overview</a><a href="#light">Light</a><a href="#air">Airflow</a><a href="#parts">Parts</a>
-      <a href="#drawings">Drawings</a><a href="#assembly">Assembly</a><a href="#wiring">Wiring</a><a href="#review">Review</a>
+      <a href="#drawings">Drawings</a><a href="#electrical">Electrical</a><a href="#assembly">Assembly</a><a href="#review">Review</a>
       <a href="#risks">Open items</a><a href="#bom">BOM</a>
     </nav>
   </header>
@@ -110,7 +110,7 @@ a { color: var(--accent) }
     <div class="facts">
       <div class="fact"><b>106 × 80 × 42</b><span>mm overall (W × D × H)</span></div>
       <div class="fact"><b>5.0</b><span>mm float under the shell</span></div>
-      <div class="fact"><b>36</b><span>RGBW LEDs, 4 straight runs</span></div>
+      <div class="fact"><b>34</b><span>RGBW LEDs, 4 straight runs</span></div>
       <div class="fact"><b>6</b><span>printed parts, no AMS</span></div>
       <div class="fact"><b>4 h 43 min</b><span>total print time</span></div>
       <div class="fact"><b>97 g</b><span>filament (58 g white, 39 g black)</span></div>
@@ -124,16 +124,16 @@ a { color: var(--accent) }
 
   <section id="light">
     <div class="sec-head"><span class="label">Light</span><h2>Underglow: one continuous band</h2></div>
-    <p>The strip lies flat, LEDs down, in a black channel inside the shell's skirt: an SK6812 RGBW 5 V strip at 144 LEDs/m, 12 mm wide. It is cut into four straight runs (11 + 7 + 11 + 7) joined by three short wires at each corner. A 0.6 mm white PLA diffuser ring across the channel opening blends the LEDs into one band, carries it round the corners, and hides the reflections of individual LEDs on glossy tables. The black lining hangs 1.5 mm below the shell's edge and reads as a thin shadow line. No light reaches the white shell.</p>
+    <p>The strip lies flat, LEDs down, in a black channel inside the shell's skirt: an SK6812 RGBW 5 V strip at 144 LEDs/m, 12 mm wide. It is cut into four straight runs (7 + 10 + 7 + 10) joined by three short wires at each corner, in a 4 mm wiring bay kept clear of the screws. A 0.6 mm white PLA diffuser ring across the channel opening blends the LEDs into one band, carries it round the corners, and hides the reflections of individual LEDs on glossy tables. The black lining hangs 1.5 mm below the shell's edge and reads as a thin shadow line. No light reaches the white shell.</p>
     <div class="grid2">
       <figure><img src="renders/glow_wood_dim_grad.jpg" alt="Hub on a satin oak table in warm evening light with the gradient glow" loading="lazy"><figcaption>Satin oak, dim warm room.</figcaption></figure>
       <figure><img src="renders/glow_quartz_dark_grad.jpg" alt="Hub on cream quartz in a dark room" loading="lazy"><figcaption>Honed cream quartz, dark room.</figcaption></figure>
       <figure><img src="renders/glow_wood_dark_grad.jpg" alt="Hub on oak in a dark room" loading="lazy"><figcaption>Satin oak, dark room.</figcaption></figure>
       <figure><img src="renders/glow_quartz_bright_grad.jpg" alt="Hub on quartz in a bright room: the glow is a faint accent" loading="lazy"><figcaption>Quartz, bright room: a faint accent, as expected.</figcaption></figure>
     </div>
-    <p class="muted">All light renders use the same output: about 4.5 lm per LED at the 0.5 A power cap, each LED modelled as a 5 mm emitter facing down. Colours in renders look paler than the LEDs' raw colours; judge the gradient on the real strip.</p>
+    <p class="muted">All light renders use the same output: about 4.5 lm per LED at the 0.5 A power cap, each LED modelled as a 5 mm emitter facing down. Colours in renders look paler than the LEDs' raw colours; judge the gradient on the real strip. The surface renders were made with 36 LEDs, before the final change to 34; the corner comparison below shows the difference is not visible.</p>
     <div class="grid2">
-      <figure><img src="renders/corner_EF_corner.jpg" alt="Corner close-ups comparing variants E and F" loading="lazy"><figcaption>Corner study: with the screw posts gone and the diffuser fitted (F, right), the band runs round the corner with no extra LEDs.</figcaption></figure>
+      <figure><img src="renders/corner_v5_compare_corner.jpg" alt="Corner close-ups: 38 LEDs before, 34 LEDs in v5" loading="lazy"><figcaption>Corner, dark room: with the diffuser, 34 LEDs (right) look the same as 38 (left). The band runs round the corner with no corner LEDs.</figcaption></figure>
       <figure><img src="renders/d_channel.jpg" alt="Close-up of the channel from below with the diffuser ring" loading="lazy"><figcaption>Channel from below: diffuser ring, foot ring, screw pocket under the diffuser.</figcaption></figure>
     </div>
   </section>
@@ -205,7 +205,7 @@ a { color: var(--accent) }
           <li>LED channel 12.3 mm wide; strip lips 0.8 × 0.6 mm with 0.6 mm above them for PCB + tape; LED faces at z 6.4, 1.4 mm above the shell edge (hidden from the side).</li>
           <li>Foot ring 1.6 mm wall, inset 15.5 mm, ending 2.0 mm above the table; 4 pads Ø10 at (±30, ±17) with Ø8.6 × 1.8 recesses for Bumpons.</li>
           <li>Diffuser stop rings 0.8 × 0.6 mm and 8 crush ribs; 4 intake slots 3 × 40 at x −21, −7, 7, 21.</li>
-          <li>Head pockets Ø6.4 at the screw positions, flush with the plate; wire hole Ø4 at (47.3, 31).</li>
+          <li>Head pockets Ø6.4 at the screw positions, flush with the plate; wire hole Ø4 at (46.5, 27), beside the start of the chain.</li>
         </ul>
       </div>
     </article>
@@ -257,24 +257,27 @@ a { color: var(--accent) }
     <figure class="drawing"><img src="renders/dwg_back.svg" alt="USB-C side view with slot dimensions" loading="lazy"></figure>
   </section>
 
-  <section id="assembly">
-    <div class="sec-head"><span class="label">Assembly</span><h2>Assembly sequence</h2></div>
+  <section id="electrical">
+    <div class="sec-head"><span class="label">Electrical assembly</span><h2>Wiring, step by step</h2></div>
+    <p>All the soldering is small and low-voltage: three wires at each of three strip corners, the strip's input, and the little circuit at the ESP32. The diagrams are to scale and drawn as you'll see the parts on the bench. Click one to open it full size.</p>
+    <figure class="drawing"><img src="renders/wiring_schematic.svg" alt="Wiring schematic: Pi header pins 4 and 6, ESP32-C3, level shifter, 330 ohm resistor, 470 µF capacitor and the LED strip" loading="lazy"><figcaption>The whole circuit. Red is 5 V, black is ground, yellow is data.</figcaption></figure>
+    <figure class="drawing"><img src="renders/wiring_plan.svg" alt="Plan of the plinth from below showing the four strip runs, data direction, corner jumpers and the wire hole" loading="lazy"><figcaption>Strip layout with the plinth upside down: run order, data direction, corner jumpers, the chain's start at the wire hole, and the four circles to keep clear for the screwdriver.</figcaption></figure>
+    <figure class="drawing"><img src="renders/wiring_corner.svg" alt="Enlarged corner showing the three jumpers routed around the screw pocket" loading="lazy"><figcaption>One corner, enlarged. The other two corners are mirror images.</figcaption></figure>
+    <figure class="drawing"><img src="renders/wiring_pins.svg" alt="Pin maps for the Pi 5 header, the ESP32-C3 SuperMini and the 74AHCT1G125" loading="lazy"><figcaption>The only pins you touch.</figcaption></figure>
+    <h3>Soldering order</h3>
     <ol class="steps">
-      <li>Flash Home Assistant OS onto the microSD card, and ESPHome onto the ESP32 over USB, before anything is wired to the Pi.</li>
-      <li>With the shell upside down, press the four M3 heat-set inserts into the bosses with the insert tip, flush and square.</li>
-      <li>Cut the strip at its cut marks into two runs of 11 and two of 7. Join them in chain order (+X run, −Y, −X, +Y) with three short 26 AWG jumpers at each corner: 5 V, GND and data (DO to DI, following the arrows).</li>
-      <li>Snap the runs into the plinth's channel, LEDs facing down, bowing each slightly to get it past the lips.</li>
-      <li>Take the chain's input wires (5 V, GND, DIN) up through the plinth's wire hole, the frame and the floor's wire hole, then seal the plinth hole round them with black hot glue.</li>
-      <li>On the floor: seat the 470 µF capacitor in its saddle across 5 V / GND, and wire the 74AHCT1G125 (on its adapter, under heat-shrink) and the 330 Ω resistor in the data line. Stand the ESP32 in its card slot, antenna end down, with a dab of hot glue on the corners.</li>
-      <li>Fit the Active Cooler to the Pi, screw the Pi to the floor's standoffs with 4 × M2.5 × 6 from the top, and push the 1 × 2 header onto pins 4 and 6.</li>
-      <li>Lower the floor into the upside-down shell, Pi first, so the ports line up with the I/O bay. Then lay the frame on it, then the plinth.</li>
-      <li>Drive the four M3 × 10 button heads up through the plinth's pockets into the inserts. Don't overtighten into PLA.</li>
-      <li>Push the diffuser ring up into the channel until it meets the stops, and stick the four Bumpons into the pad recesses.</li>
-      <li>Test: run the LEDs at the cap for an hour and feel the plinth; run a 10-minute stress test and log the Pi's temperature.</li>
+      <li>Cut the strip only at its printed cut marks: two runs of 10 and two of 7. Lay them out as in the plan, LEDs facing up on the bench, with the printed arrows following the chain.</li>
+      <li>Tin all the pads first, then tin each wire end. Cut 26 AWG silicone wire to about 25 mm per jumper.</li>
+      <li>Solder the three jumpers at each of the three corners on the bench, routed as drawn: each pad to the pad on the same edge of the next run. Check continuity across each corner, and check 5 V to GND for no short.</li>
+      <li>Solder the input wires (5 V, DIN, GND, about 120 mm) to Run 1's start, put the 330 Ω resistor in the DIN wire right at the strip, and heat-shrink it.</li>
+      <li>Snap the chain into the plinth's channel. Thread the input wires through the wire hole and seal the hole round them with black hot glue.</li>
+      <li>Solder the 74AHCT1G125 to its SOT-23 adapter, add the 0.1 µF across pins 5 and 3, and tie pin 1 to pin 3. Wire it in line between the ESP32's GPIO4 and the strip's DIN, and heat-shrink it.</li>
+      <li>Join the 5 V and GND wires from the strip, the ESP32 and the level shifter to the 1 × 2 female header, with the 470 µF capacitor across them (+ to 5 V). The header goes on Pi pins 4 and 6.</li>
+      <li>Before closing up, power the Pi on the bench and run a slow colour sweep from ESPHome to check every LED lights in order.</li>
     </ol>
   </section>
 
-  <section id="wiring">
+  <section id="wiring-table">
     <div class="sec-head"><span class="label">Wiring</span><h2>Wiring</h2></div>
     <div class="tablewrap"><table>
       <thead><tr><th>From</th><th>To</th><th>Wire</th><th>Note</th></tr></thead>
@@ -286,8 +289,25 @@ a { color: var(--accent) }
         <tr><td>Strip DO (end of each run)</td><td>DI of the next run</td><td>26 AWG × 3 per corner</td><td class="muted">5 V and GND jumpers alongside</td></tr>
       </tbody>
     </table></div>
-    <p class="muted">Power cap: set <code>max_brightness</code> and <code>color_correct</code> in ESPHome so the strip stays near 0.5 A. Full RGBW on 36 LEDs would draw about 2.6 A. Never plug USB into the ESP32 while the Pi is powered.</p>
+    <p class="muted">Power cap: set <code>max_brightness</code> and <code>color_correct</code> in ESPHome so the strip stays near 0.5 A. Full RGBW on 34 LEDs would draw about 2.5 A. Never plug USB into the ESP32 while the Pi is powered.</p>
   </section>
+  <section id="assembly">
+    <div class="sec-head"><span class="label">Assembly</span><h2>Assembly sequence</h2></div>
+    <ol class="steps">
+      <li>Flash Home Assistant OS onto the microSD card, and ESPHome onto the ESP32 over USB, before anything is wired to the Pi.</li>
+      <li>With the shell upside down, press the four M3 heat-set inserts into the bosses with the insert tip, flush and square.</li>
+      <li>Cut the strip at its cut marks into two runs of 10 and two of 7. Lay them out as in the strip wiring plan below and join them in chain order (Run 1 to Run 4) with three short 26 AWG jumpers at each corner: 5 V, GND and data (DO to DI, following the arrows).</li>
+      <li>Snap the runs into the plinth's channel, LEDs facing down, bowing each slightly to get it past the lips.</li>
+      <li>Take the chain's input wires (5 V, GND, DIN) up through the plinth's wire hole, the frame and the floor's wire hole, then seal the plinth hole round them with black hot glue.</li>
+      <li>On the floor: seat the 470 µF capacitor in its saddle across 5 V / GND, and wire the 74AHCT1G125 (on its adapter, under heat-shrink) and the 330 Ω resistor in the data line. Stand the ESP32 in its card slot, antenna end down, with a dab of hot glue on the corners.</li>
+      <li>Fit the Active Cooler to the Pi, screw the Pi to the floor's standoffs with 4 × M2.5 × 6 from the top, and push the 1 × 2 header onto pins 4 and 6.</li>
+      <li>Lower the floor into the upside-down shell, Pi first, so the ports line up with the I/O bay. Then lay the frame on it, then the plinth.</li>
+      <li>Drive the four M3 × 10 button heads up through the plinth's pockets into the inserts. Don't overtighten into PLA.</li>
+      <li>Push the diffuser ring up into the channel until it meets the stops, and stick the four Bumpons into the pad recesses.</li>
+      <li>Test: run the LEDs at the cap for an hour and feel the plinth; run a 10-minute stress test and log the Pi's temperature.</li>
+    </ol>
+  </section>
+
 
   <section id="review">
     <div class="sec-head"><span class="label">Design review</span><h2>What the review found, and what changed</h2></div>
@@ -297,7 +317,8 @@ a { color: var(--accent) }
       <tbody>
         <tr><td>The diffuser couldn't be fitted, and it would have hidden the screws</td><td><span class="pill blocker">Blocker</span></td><td>Inward floor and ledge removed. The diffuser is now a press fit against stop rings with crush ribs, and comes out to reach the screws. <span class="pill fixed">Fixed</span></td></tr>
         <tr><td>Plinth print would bridge its whole 72 mm plate 2 mm off the bed</td><td><span class="pill blocker">Blocker</span></td><td>Plenum rim and spacers moved to a separate flat-printed frame. <span class="pill fixed">Fixed</span></td></tr>
-        <tr><td>Strip ends overlapped at the corners (11 + 8)</td><td><span class="pill open">Should fix</span></td><td>11 + 7 a side, 36 LEDs. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Strip ends overlapped at the corners (11 + 8)</td><td><span class="pill open">Should fix</span></td><td>10 + 7 a side, 34 LEDs. <span class="pill fixed">Fixed</span></td></tr>
+        <tr><td>Found afterwards: no room for the corner jumpers outside the screwdriver's path, and the wire hole overlapped a screw pocket</td><td><span class="pill open">Should fix</span></td><td>Long runs shortened to 10 LEDs, leaving a 4.1 mm wiring bay per corner; wire hole moved to (46.5, 27). The corner re-render shows no visible change in the light. <span class="pill fixed">Fixed</span></td></tr>
         <tr><td>Inner lip didn't reach the strip ends</td><td><span class="pill open">Should fix</span></td><td>Lip corners squared. <span class="pill fixed">Fixed</span></td></tr>
         <tr><td>Screw head pockets too tight (Ø5.8 for a 5.7 head)</td><td><span class="pill open">Should fix</span></td><td>Ø6.4; bosses Ø9.6 at y ±33.2 so the pockets clear the lining by 0.3 mm. <span class="pill fixed">Fixed</span></td></tr>
         <tr><td>Light leak at the diffuser's inner corners</td><td><span class="pill open">Should fix</span></td><td>Inner corners now follow the foot ring. <span class="pill fixed">Fixed</span></td></tr>
@@ -338,7 +359,7 @@ a { color: var(--accent) }
         <tr><td>Official 27 W USB-C supply</td><td class="muted">5.1 V 5 A: LEDs and ESP32 run off the Pi's 5 V</td><td class="num">1</td><td class="num">$12</td></tr>
         <tr><td>microSD 64 GB, high endurance</td><td class="muted">SanDisk High Endurance / Samsung PRO Endurance</td><td class="num">1</td><td class="num">$12</td></tr>
         <tr><td>Ethernet cable 0.5–1 m</td><td class="muted"></td><td class="num">1</td><td class="num">$5</td></tr>
-        <tr><td>LED strip</td><td class="muted">SK6812 RGBW, 5 V, 144/m, 12 mm, white PCB, IP30; warm or natural white. 36 LEDs used</td><td class="num">1 m</td><td class="num">$15–25</td></tr>
+        <tr><td>LED strip</td><td class="muted">SK6812 RGBW, 5 V, 144/m, 12 mm, white PCB, IP30; warm or natural white. 34 LEDs used</td><td class="num">1 m</td><td class="num">$15–25</td></tr>
         <tr><td>ESP32-C3 SuperMini</td><td class="muted">22.5 × 18 mm; usually a 2–3 pack</td><td class="num">1</td><td class="num">$8</td></tr>
         <tr><td>74AHCT1G125 level shifter</td><td class="muted">SOT-23-5, plus SOT-23 to DIP adapters and a 0.1 µF capacitor</td><td class="num">2</td><td class="num">$8</td></tr>
         <tr><td>Electrolytic capacitor</td><td class="muted">470 µF, 10 V, 6.3 × 11 mm</td><td class="num">1</td><td class="num">$1</td></tr>
