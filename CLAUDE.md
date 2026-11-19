@@ -22,6 +22,25 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
   (`.claude/agents/mech-design-review.md`) on each new or changed part, fix what it finds,
   then present. Check meshes and slices with `home-devices/tools/printcheck.py`.
 
+## Branches
+
+Each project has its own base branch; topic branches come off it and merge back into it, and
+the base branch merges into `main` at milestones.
+
+```
+main                              stable; milestone merges only
+home-devices/dev                  base branch for the home-devices project
+home-devices/design/<topic>       modelling, renders, review pages
+home-devices/print/<topic>        print tests, coupons, slicing
+home-devices/feat/<topic>         firmware, Home Assistant, software
+home-devices/fix/<topic>          corrections
+home-devices/docs/<topic>         notes and docs only
+dexter/dev, dexter/feat/<topic>   same pattern for the voice agent
+```
+
+Topics are short kebab-case names (`hub-concept-d`, `skin-coupons`). Start new work from the
+project's `dev` branch, not from `main`. Never push to `main` without the owner's go-ahead.
+
 ## Repo layout
 
 - `dexter/`: push-to-talk voice agent (Python, uv).
