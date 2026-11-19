@@ -185,7 +185,8 @@ def product_label(name, parts, size, depth, sep="dot", font=None):
     Expects capital letters and digits (no descenders). The separator centres are stored on
     the result as ob["seps"] (x, y pairs), e.g. to place inlays."""
     font = font or label_font()
-    gap = 0.42 * size
+    gap = 0.3 * size                     # clear space each side of the mark
+    mark_w = {"dot": 0.22, "ring": 0.36, "pair": 0.17}.get(sep, 0) * size or INLAY_HOLE
     words, x = [], 0.0
     for i, p in enumerate(parts):
         ob = text(f"{name}_{i}", p, size, depth, loc=(0, 0, 0), font=font)
@@ -197,12 +198,12 @@ def product_label(name, parts, size, depth, sep="dot", font=None):
         x = max(v.co.x for v in ob.data.vertices)
         words.append((ob, x))
         if i < len(parts) - 1:
-            x += gap * 2 + 0.36 * size           # room for the widest mark
+            x += gap * 2 + mark_w
     cap = max(v.co.y for ob, _ in words for v in ob.data.vertices)
     objs = [ob for ob, _ in words]
     seps = []
     for (_, xe), _ in zip(words[:-1], parts[1:]):
-        cx, cy = xe + gap + 0.18 * size, cap / 2
+        cx, cy = xe + gap + mark_w / 2, cap / 2
         seps.append((cx, cy))
         sd = {"dot": 2 * DOT_DEPTH, "inlay": 2 * depth}.get(sep, depth)
         if sep == "dot":

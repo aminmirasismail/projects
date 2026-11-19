@@ -41,20 +41,22 @@ REV = "B"
 PRINT_PROCESS = "0.08mm Extra Fine @BBL A1M"     # High Quality slows everything: 6.5 h vs 4.3 h
 PRINT_SETS = {"wall_loops": "3", "top_shell_layers": "12", "elefant_foot_compensation": "0.15",
               "seam_position": "back",
-              "outer_wall_speed": "60", "outer_wall_acceleration": "2000"}   # only what shows
+              "outer_wall_speed": "60", "outer_wall_acceleration": "2000",   # only what shows
+              "gap_infill_speed": "60",        # gap fill sits right under the rim top
+              "top_surface_speed": "100"}      # calmer floor finish, cheaper than ironing
 
 # ---------------------------------------------------------------- size (mm)
 W, D = 72.0, 150.0          # footprint: narrow across, long along the printer's side
 R = 10.0                    # plan corner radius (design language: 10-12)
 EDGE = S.EDGE_R             # 1.2 top edge fillet
 BASE_T = 3.0                # black base
-SHELL_H = 49.2              # white shell; total height 52.2
+SHELL_H = 49.16             # white shell; on the 0.08 grid (0.2 + 0.08 k); total 52.16
 TOP = BASE_T + SHELL_H
 WALL = 2.5                  # ~6 lines with a 0.4 nozzle
-FLOOR = 3.6                 # leaves 1.2 mm over the pin holes
+FLOOR = 3.64                # on the 0.08 grid; leaves 1.2 mm over the pin holes
 FLOOR_R = 6.0               # inside floor fillet: purge slides out when you tip it
 GAP = S.SHADOW_GAP          # base inset under the shell
-RIM_CH = 0.6                # 45-degree chamfer on the inside top edge: soft to grip and tip
+RIM_CH = 0.5                # 45-deg inside chamfer; leaves a 0.8 mm flat = two clean lines
 
 # The bin sits under the left end of the X gantry. The lowest the toolhead/gantry passes over
 # it must clear the rim, or it will hit on homing.
@@ -63,7 +65,7 @@ assert TOP <= GANTRY_CLEAR - 5, "bin rim too close to the gantry"
 
 # base-to-shell locating pins
 PIN_D, PIN_H, PIN_CH = 3.0, 1.8, 0.4      # pin with a 0.4 mm lead-in chamfer on its tip
-HOLE_D, HOLE_H = 3.4, 2.4   # 0.2 mm a side: drops on blind; printed holes come out small
+HOLE_D, HOLE_H = 3.4, 2.44  # depth on the 0.08 grid; 0.2 mm a side: drops on blind; printed holes come out small
 PIN_XY = [(sx * (W / 2 - 14), sy * (D / 2 - 22)) for sx in (-1, 1) for sy in (-1, 1)]
 
 # label on the front end

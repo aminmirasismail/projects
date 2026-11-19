@@ -97,9 +97,9 @@ dialog.lb::backdrop { background: var(--bg); }
     <h1>Purge Bin<span class="dot"></span></h1>
     <p class="lede">A slim side bin for the A1 Mini. It sits on the desk against the printer's left side, under the end of the gantry where the wiper drops purged filament. Same family as the hub: white shell, black base set in as a shadow line, 10 mm corners, one small engraved label.</p>
     <div class="facts">
-      <div><span class="tag">Size</span><b>72 × 150 × 52.2</b><span class="muted">mm</span></div>
+      <div><span class="tag">Size</span><b>72 × 150 × 52.16</b><span class="muted">mm</span></div>
       <div><span class="tag">Holds</span><b>~0.44 L</b><span class="muted">months of purge</span></div>
-      <div><span class="tag">Shell · white</span><b>4 h 19 m</b><span class="muted">90 g · 0.08 mm</span></div>
+      <div><span class="tag">Shell · white</span><b>4 h 23 m</b><span class="muted">90 g · 0.08 mm</span></div>
       <div><span class="tag">Base · black</span><b>34 m</b><span class="muted">23 g · 0.12 mm</span></div>
     </div>
   </header>
@@ -112,7 +112,7 @@ dialog.lb::backdrop { background: var(--bg); }
   <section>
     <div class="sec-head"><span class="tag">Fit</span><h2>Clears the gantry by 17.8 mm</h2></div>
     <div class="ask">
-      <p>You measured 70 mm under the left end of the gantry. The bin is 52.2 mm tall, so the rim sits 17.8 mm below anything that moves over it. <code>purge_bin.py</code> now holds that 70 mm and stops the build if the bin ever grows within 5 mm of it.</p>
+      <p>You measured 70 mm under the left end of the gantry. The bin is 52.16 mm tall, so the rim sits 17.8 mm below anything that moves over it. <code>purge_bin.py</code> now holds that 70 mm and stops the build if the bin ever grows within 5 mm of it.</p>
       <p class="muted">Placement: line the bin up under the wiper, with the long side against the printer. The 67 × 145 mm opening leaves plenty of room either side of where the purge drops.</p>
     </div>
   </section>
@@ -125,7 +125,7 @@ dialog.lb::backdrop { background: var(--bg); }
       <figure><img src="renders/bin_exploded.jpg" alt="Shell lifted above the black base, showing four small locating pins" width="1600" height="1200" loading="lazy"><figcaption><span><b>Exploded.</b> Four chamfered pins locate the shell on the base.</span><span class="n">04</span></figcaption></figure>
       <figure><img src="renders/bin_cutaway.jpg" alt="Bin cut through two pins, showing the wall, filleted floor and pin holes" width="1600" height="1200" loading="lazy"><figcaption><span><b>Cutaway.</b> A 6 mm fillet inside the floor, so purge slides out when you tip it.</span><span class="n">05</span></figcaption></figure>
       <figure><img src="renders/bin_underside.jpg" alt="Bin upside down showing the black base" width="1600" height="1200" loading="lazy"><figcaption><span><b>Underside.</b> Plain black plate; the stray reflections are the studio lights.</span><span class="n">06</span></figcaption></figure>
-      <figure><img src="renders/d_inside.jpg" alt="Close-up into the bin past the chamfered rim" width="1400" height="1050" loading="lazy"><figcaption><span><b>Inside.</b> 1.2 mm round outside, 0.6 mm chamfer inside: soft to grip and tip.</span><span class="n">07</span></figcaption></figure>
+      <figure><img src="renders/d_inside.jpg" alt="Close-up into the bin past the chamfered rim" width="1400" height="1050" loading="lazy"><figcaption><span><b>Inside.</b> 1.2 mm round outside, 0.5 mm chamfer inside: soft to grip and tip.</span><span class="n">07</span></figcaption></figure>
     </div>
   </section>
 
@@ -164,14 +164,15 @@ dialog.lb::backdrop { background: var(--bg); }
     <div class="sec-head"><span class="tag">Design review</span><h2>What the review found, and what changed</h2></div>
     <p class="muted">Independent review against the house checklist: geometry, mesh health, and every layer of the sliced G-code.</p>
     <div class="rows">
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fit under the gantry wasn't measured</h3><p class="muted">You measured 70 mm of clearance against a 52.2 mm bin. The model now checks it.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fit under the gantry wasn't measured</h3><p class="muted">You measured 70 mm of clearance against a 52.16 mm bin. The model now checks it.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Wall printed as two shells around sparse infill</h3><p class="muted">The infill grid would ghost through white PLA. Now three wall loops: six solid lines across the 2.5 mm wall (checked at z = 20).</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Seam ran down the outward-facing side</h3><p class="muted">The shell is now turned 90° on the plate with the seam set to the back. 741 of 770 outer-wall starts now land on the printer-facing side, out of sight.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Pins too tight to drop the shell on blind</h3><p class="muted">Holes are now Ø3.4 and pins Ø3.0 × 1.8 with a 0.4 mm lead-in, leaving 0.6 mm of clearance at the tips. You can glue it with CA or leave it loose.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Floor would pillow</h3><p class="muted">Twelve top layers (about 1 mm of skin) instead of five.</p></div></div>
-      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Sharp inside rim, elephant's foot at the shadow line</h3><p class="muted">Added a 0.6 mm chamfer inside the rim and 0.15 mm elephant-foot compensation.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Sharp inside rim, elephant's foot at the shadow line</h3><p class="muted">Added a 0.5 mm chamfer inside the rim, leaving a flat exactly two lines wide, and 0.15 mm elephant-foot compensation.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Label said A1, not A1 Mini</h3><p class="muted">Now <code>PURGE · A1M</code>. Every letter survives on all 31 layers it spans.</p></div></div>
       <div class="row"><span class="pill fixed">Fixed</span><div><h3>Fillets looked low-poly</h3><p class="muted">Edge fillets used a fixed 6 facets, so the 6 mm inside-floor fillet had 1.6 mm flats that showed as bands. Every curve is now faceted by its radius, within 0.005 mm of the true arc, and the shell prints at 0.08 mm layers.</p></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><h3>Flat faces between layers at 0.08 mm</h3><p class="muted">The rim top and floor fell exactly on a layer boundary, so the slicer printed the rim 0.04 mm proud and over-filled its top line. The shell is now 49.16 mm and the floor 3.64 mm, both on whole layers. Gap fill under the rim runs at 60 mm/s and the floor's top surface at 100 mm/s.</p></div></div>
       <div class="row"><span class="pill kept">Kept</span><div><h3>No feet on the base</h3><p class="muted">Glued, it's one solid part and doesn't slide. Stick-on bumpers work if you want them.</p></div></div>
     </div>
   </section>
@@ -184,7 +185,7 @@ dialog.lb::backdrop { background: var(--bg); }
         <dl>
           <dt>File</dt><dd><code>print_shell_white.gcode.3mf</code></dd>
           <dt>Orientation</dt><dd>Upright, open top up, no supports</dd>
-          <dt>Time</dt><dd>4 h 19 m</dd>
+          <dt>Time</dt><dd>4 h 23 m</dd>
           <dt>Filament</dt><dd>~90 g</dd>
         </dl>
       </div>
@@ -199,7 +200,7 @@ dialog.lb::backdrop { background: var(--bg); }
       </div>
     </div>
     <ul class="plain muted">
-      <li>Shell, for surface finish: 0.08mm Extra Fine @BBL A1M, Bambu PLA Basic, Textured PEI. Changes from the preset: outer wall slowed to 60 mm/s at 2000 mm/s², 3 walls, 12 top layers, seam at back, elephant-foot compensation 0.15. Only the visible wall is slowed; the 0.08 High Quality preset slows everything and takes 6 h 30 m for the same look.</li>
+      <li>Shell, for surface finish: 0.08mm Extra Fine @BBL A1M, Bambu PLA Basic, Textured PEI. Changes from the preset: outer wall slowed to 60 mm/s at 2000 mm/s², gap fill 60 mm/s, top surface 100 mm/s, 3 walls, 12 top layers, seam at back, elephant-foot compensation 0.15. Only the visible wall is slowed; the 0.08 High Quality preset slows everything and takes 6 h 30 m for the same look.</li>
       <li>Base: 0.12mm Fine, 3 walls. Only its 3 mm edge shows, as the shadow line.</li>
       <li>The times are Bambu Studio CLI estimates. Check them in the Studio GUI before sending.</li>
       <li>Nothing has been sent to the printer.</li>
