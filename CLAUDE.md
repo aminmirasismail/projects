@@ -53,6 +53,20 @@ project's `dev` branch, not from `main`. Never push to `main` without the owner'
   - `tests/`: print-test coupons (`skin_coupons.py`, `skin_test_plate.3mf`).
 - `ideas.html`: the project idea list (published as the "Idea Bench" artifact).
 
+## Naming
+
+- **Concepts are letters** (concept A, B, C...): alternative design directions.
+- **Iterations are version numbers** (v1, v2, v3...): successive builds of the chosen design.
+  Never use letters for iterations. The hub's old "Rev A–D" are v1–v4 (v4 is concept D);
+  the next hub iteration is v5.
+
+## Venting and light rules (owner, 2026-11-19)
+
+- Keep good ventilation: an inlet/exhaust low (bottom or side) and another high.
+- Hide vents, or make them a deliberate design feature, never a plain grating on top.
+- Every visible opening has light shining through it; no unlit visible seam next to a lit one.
+- At most one visible continuous seam of light (on the hub: the underglow).
+
 ## Design language (home devices)
 
 - White PLA body, black PLA base and internal parts, at most one accent. Printed on a Bambu
