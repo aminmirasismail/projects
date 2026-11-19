@@ -1,4 +1,4 @@
-"""Purge bin for the Bambu A1 Mini. Rev A.
+"""Purge bin for the Bambu A1 Mini. Rev B (design review fixes).
 
 A slim side bin that sits against the left side of the printer, under the end of the
 X gantry where the nozzle wiper flicks off the purged filament. Same family as the hub:
@@ -16,7 +16,13 @@ Printed parts (one colour each, no AMS):
 Join: a drop of CA glue on each pin, or leave loose (the pins are a snug fit).
 
 Coordinates: X across (printer on the +X side), Y front-to-back (front is -Y), Z up.
-Heights are multiples of 0.6 mm, so they land on whole layers at 0.12 and 0.20 mm.
+Print settings (on top of 0.12mm Fine @BBL A1M): PRINT_SETS below. Three wall loops fill the
+2.5 mm wall solid (two left a sparse-infill core that ghosts through white PLA), eight top
+layers keep the floor from pillowing, and elephant-foot compensation keeps the shadow line crisp.
+The shell is turned 90 degrees on the plate so its printer side faces the back of the bed,
+where seam_position=back puts the seam: out of sight against the printer.
+
+Fit against the printer is NOT yet measured: see GANTRY_CLEAR below.
 """
 import json
 import math
@@ -28,7 +34,11 @@ sys.path.insert(0, os.path.join(HERE, "..", "tools"))
 import bpy  # noqa: E402
 import studio as S  # noqa: E402
 
-REV = "A"
+REV = "B"
+
+# slicer settings on top of "0.12mm Fine @BBL A1M" (see docstring)
+PRINT_SETS = {"wall_loops": "3", "top_shell_layers": "8", "elefant_foot_compensation": "0.15",
+              "seam_position": "back"}
 
 # ---------------------------------------------------------------- size (mm)
 W, D = 72.0, 150.0          # footprint: narrow across, long along the printer's side
@@ -41,14 +51,20 @@ WALL = 2.5                  # ~6 lines with a 0.4 nozzle
 FLOOR = 3.6                 # leaves 1.2 mm over the pin holes
 FLOOR_R = 6.0               # inside floor fillet: purge slides out when you tip it
 GAP = S.SHADOW_GAP          # base inset under the shell
+RIM_CH = 0.6                # 45-degree chamfer on the inside top edge: soft to grip and tip
+
+# The bin sits under the left end of the X gantry. The lowest the toolhead/gantry passes over
+# it must clear the rim, or it will hit on homing. Owner to measure; TOP must stay below it.
+GANTRY_CLEAR = None         # mm above the desk, lowest moving part over the bin (unmeasured)
+assert GANTRY_CLEAR is None or TOP <= GANTRY_CLEAR - 5, "bin rim too close to the gantry"
 
 # base-to-shell locating pins
-PIN_D, PIN_H = 3.0, 2.2
-HOLE_D, HOLE_H = 3.2, 2.4   # 0.1 mm a side: snug; printed holes come out a touch small
+PIN_D, PIN_H, PIN_CH = 3.0, 1.8, 0.4      # pin with a 0.4 mm lead-in chamfer on its tip
+HOLE_D, HOLE_H = 3.4, 2.4   # 0.2 mm a side: drops on blind; printed holes come out small
 PIN_XY = [(sx * (W / 2 - 14), sy * (D / 2 - 22)) for sx in (-1, 1) for sy in (-1, 1)]
 
 # label on the front end
-LABEL = "PURGE / A1"
+LABEL = "PURGE / A1M"
 LABEL_SIZE = 6.0            # bold mono at 6 mm: strokes ~0.65 mm, wider than the nozzle
 ENGRAVE = 0.6
 LABEL_Z = TOP - 9.0         # centre height of the text
@@ -89,6 +105,31 @@ def front_label():
     return ob, box
 
 
+def offset_top(ob, z_top, c):
+    """Push the verts at z_top outward by c along the rounded-rect outline's normal, turning a
+    rounded-rect prism into a 45-degree flare (an exact offset, corners included)."""
+    vs = ob.data.vertices
+    a = W / 2 - R                                  # half-size of the cavity's straight core
+    b = D / 2 - R
+    for v in vs:
+        if abs(v.co.z - z_top) < 1e-4:
+            cx, cy = max(-a, min(a, v.co.x)), max(-b, min(b, v.co.y))
+            nx, ny = v.co.x - cx, v.co.y - cy
+            n = math.hypot(nx, ny)
+            v.co.x += c * nx / n
+            v.co.y += c * ny / n
+    ob.data.update()
+    return ob
+
+
+def pin(x, y):
+    p = S.cylinder("pin", PIN_D, PIN_H - PIN_CH, loc=(x, y, BASE_T + (PIN_H - PIN_CH) / 2))
+    bpy.ops.mesh.primitive_cone_add(vertices=48, radius1=PIN_D / 2, radius2=PIN_D / 2 - PIN_CH,
+                                    depth=PIN_CH, location=(x, y, BASE_T + PIN_H - PIN_CH / 2))
+    S.union(p, [bpy.context.active_object])
+    return p
+
+
 def build():
     S.reset()
     white, black = S.pla("white"), S.pla("black")
@@ -97,8 +138,18 @@ def build():
     S.bake(shell)
     cav = S.rounded_box("cavity", W - 2 * WALL, D - 2 * WALL, SHELL_H, r=R - WALL,
                         r_bot=FLOOR_R, loc=(0, 0, BASE_T + FLOOR))
+    # inside rim chamfer: a cavity-shaped prism from TOP - RIM_CH up, flared 45 deg at the top
+    lip = S.rounded_box("rim", W - 2 * WALL, D - 2 * WALL, RIM_CH, r=R - WALL,
+                        loc=(0, 0, TOP - RIM_CH))
+    S.bake(lip)
+    offset_top(lip, TOP, RIM_CH)
+    for v in lip.data.vertices:               # carry the flare 1 mm past the top, still at 45 deg
+        if abs(v.co.z - TOP) < 1e-4:
+            v.co.z = TOP + 1.0
+    lip.data.update()
+    offset_top(lip, TOP + 1.0, 1.0)
     holes = [S.cylinder("hole", HOLE_D, 2 * HOLE_H, loc=(x, y, BASE_T)) for x, y in PIN_XY]
-    S.cut(shell, [cav] + holes)
+    S.cut(shell, [cav, lip] + holes)
     lab, box = front_label()
     v0 = S.volume(shell)
     S.cut(shell, [lab])
@@ -109,8 +160,7 @@ def build():
 
     base = S.rounded_box("Base", W - 2 * GAP, D - 2 * GAP, BASE_T, r=R - GAP)
     S.bake(base)
-    pins = [S.cylinder("pin", PIN_D, PIN_H, loc=(x, y, BASE_T + PIN_H / 2)) for x, y in PIN_XY]
-    S.union(base, pins)
+    S.union(base, [pin(x, y) for x, y in PIN_XY])
     check(base, (W - 2 * GAP, D - 2 * GAP, BASE_T + PIN_H))
     S.assign(base, black)
     S.smooth(base, 35)
@@ -151,8 +201,8 @@ def main():
     os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
     S.export_stl(shell, os.path.join(HERE, "stl", "purge_bin_shell_white.stl"))
     S.export_stl(base, os.path.join(HERE, "stl", "purge_bin_base_black.stl"))
-    # long side diagonal-free: 150 mm runs along the plate's Y, fits the 180 mm bed
-    write_3mf(shell, os.path.join(HERE, "purge_bin_shell_white.3mf"))
+    # turned 90 deg: the printer side (+X) faces the back of the bed, where the seam goes
+    write_3mf(shell, os.path.join(HERE, "purge_bin_shell_white.3mf"), rot_z=math.pi / 2)
     write_3mf(base, os.path.join(HERE, "purge_bin_base_black.3mf"))
 
     root = S.to_studio([shell, base])

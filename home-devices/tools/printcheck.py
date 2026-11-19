@@ -1,7 +1,7 @@
 """Print-readiness checks for home-devices parts (plain Python, no Blender needed).
 
   python printcheck.py mesh  part.3mf|part.stl      mesh health per object
-  python printcheck.py slice part.3mf [--out DIR] [--set key=value ...]
+  python printcheck.py slice part.3mf [--out DIR] [--process NAME] [--set key=value ...]
                                                     slice for the A1 Mini with Bambu Studio's CLI
                                                     and print time, filament and per-object extents
   python printcheck.py paths sliced.gcode            dump extrusion paths to paths.json for
@@ -145,11 +145,11 @@ def resolve(kind, name):
     return merged
 
 
-def slice_part(path, out=None, sets=()):
+def slice_part(path, out=None, sets=(), process=PROCESS):
     out = out or tempfile.mkdtemp(prefix="slice_")
     os.makedirs(out, exist_ok=True)
     machine = resolve("machine", MACHINE)
-    proc = resolve("process", PROCESS)
+    proc = resolve("process", process)
     fil = resolve("filament", FILAMENT)
     proc.update({"name": "printcheck", "print_settings_id": "printcheck",
                  "compatible_printers": [MACHINE], "curr_bed_type": BED})
@@ -188,25 +188,50 @@ def slice_part(path, out=None, sets=()):
 
 
 # ------------------------------------------------------------------ paths
+def _arc(x0, y0, x1, y1, i, j, cw, step=0.5):
+    """Points along a G2/G3 arc (centre at x0+i, y0+j), excluding the start."""
+    cx, cy = x0 + i, y0 + j
+    r = math.hypot(i, j)
+    a0, a1 = math.atan2(y0 - cy, x0 - cx), math.atan2(y1 - cy, x1 - cx)
+    sweep = a1 - a0
+    if cw and sweep >= 0:
+        sweep -= 2 * math.pi
+    if not cw and sweep <= 0:
+        sweep += 2 * math.pi
+    n = max(1, int(abs(sweep) * r / step))
+    pts = [(cx + r * math.cos(a0 + sweep * k / n), cy + r * math.sin(a0 + sweep * k / n))
+           for k in range(1, n)]
+    return pts + [(x1, y1)]
+
+
 def dump_paths(gcode):
-    """Extrusion segments per object: [z, x0, y0, x1, y1, feature] -> paths.json."""
+    """Extrusion segments per object: [z, x0, y0, x1, y1, feature] -> paths.json.
+    Arcs (G2/G3) are split into short chords. G-code without M624 object markers (the CLI's
+    single-object plates) goes under object "0"."""
     X = Y = Z = 0.0
-    obj = feat = None
+    feat = None
+    has_markers = any(l.startswith("M624") for l in open(gcode))
+    obj = None if has_markers else "0"
     segs = defaultdict(list)
     for l in open(gcode):
         if l.startswith("; Z_HEIGHT:"):
             Z = float(l.split(":")[1])
         elif l.startswith("; FEATURE:"):
             feat = l[10:].strip()
-        elif l.startswith("M624"):
+        elif has_markers and l.startswith("M624"):
             obj = l.split()[1]
-        elif l.startswith("M625"):
+        elif has_markers and l.startswith("M625"):
             obj = None
         elif l.startswith(("G1 ", "G2 ", "G3 ")):
-            d = {m[0]: float(m[1:]) for m in l.split(";")[0].split()[1:] if m[0] in "XYZE"}
+            d = {m[0]: float(m[1:]) for m in l.split(";")[0].split()[1:] if m[0] in "XYZEIJ"}
             nx, ny = d.get("X", X), d.get("Y", Y)
             if d.get("E", 0) > 0 and obj and (nx, ny) != (X, Y):
-                segs[obj].append([Z, X, Y, nx, ny, feat])
+                pts = ([(nx, ny)] if l[1] == "1" else
+                       _arc(X, Y, nx, ny, d.get("I", 0), d.get("J", 0), l[1] == "2"))
+                px, py = X, Y
+                for qx, qy in pts:
+                    segs[obj].append([Z, px, py, qx, qy, feat])
+                    px, py = qx, qy
             X, Y = nx, ny
     out = os.path.join(os.path.dirname(os.path.abspath(gcode)), "paths.json")
     json.dump(segs, open(out, "w"))
@@ -227,7 +252,8 @@ if __name__ == "__main__":
         a = sys.argv[3:]
         out = a[a.index("--out") + 1] if "--out" in a else None
         sets = [a[i + 1] for i, x in enumerate(a) if x == "--set"]
-        slice_part(path, out, sets)
+        proc = a[a.index("--process") + 1] if "--process" in a else PROCESS
+        slice_part(path, out, sets, proc)
     elif cmd == "paths":
         dump_paths(path)
     else:

@@ -1,0 +1,54 @@
+{
+ "front": {
+  "view": "front",
+  "center_mm": [
+   0,
+   0,
+   26.1
+  ],
+  "scale_mm": 120.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "left": {
+  "view": "left",
+  "center_mm": [
+   0,
+   0,
+   26.1
+  ],
+  "scale_mm": 200.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "top": {
+  "view": "top",
+  "center_mm": [
+   0,
+   0,
+   26.1
+  ],
+  "scale_mm": 200.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "section": {
+  "view": "front",
+  "center_mm": [
+   0,
+   0,
+   26.1
+  ],
+  "scale_mm": 120.0,
+  "res": [
+   1800,
+   1200
+  ]
+ }
+}
