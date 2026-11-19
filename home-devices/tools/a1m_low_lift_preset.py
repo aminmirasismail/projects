@@ -9,7 +9,9 @@ scatters past the purge bin. This preset lifts 10 mm instead; the bed slides out
 """
 import json, os, time, sys
 SYS = r"C:\Program Files\Bambu Studio\resources\profiles\BBL\machine"
-USER = os.path.join(os.environ["APPDATA"], "BambuStudio", "user", "3576320859", "machine")
+ROOT = os.path.join(os.environ["APPDATA"], "BambuStudio", "user")
+UID = next(d for d in os.listdir(ROOT) if d.isdigit())   # the signed-in Bambu account
+USER = os.path.join(ROOT, UID, "machine")
 NAME = "Bambu Lab A1 mini 0.4 nozzle - Low lift"
 g = json.load(open(os.path.join(SYS, "Bambu Lab A1 mini 0.4 nozzle template machine_end_gcode.json"), encoding="utf-8"))["machine_end_gcode"]
 old = """{if (max_layer_z + 100.0) < 180}
@@ -32,5 +34,5 @@ if "--check" in sys.argv:          # write the merged preset for a CLI slice tes
 os.makedirs(USER, exist_ok=True)
 json.dump(preset, open(os.path.join(USER, NAME + ".json"), "w", encoding="utf-8"), indent=4)
 open(os.path.join(USER, NAME + ".info"), "w").write(
-    f"sync_info = \nuser_id = 3576320859\nsetting_id = \nbase_id = GM020\nupdated_time = {int(time.time())}\n")
+    f"sync_info = \nuser_id = {UID}\nsetting_id = \nbase_id = GM020\nupdated_time = {int(time.time())}\n")
 print("wrote", os.path.join(USER, NAME + ".json"))
