@@ -1,7 +1,8 @@
 """Print-readiness checks for home-devices parts (plain Python, no Blender needed).
 
   python printcheck.py mesh  part.3mf|part.stl      mesh health per object
-  python printcheck.py slice part.3mf [--out DIR] [--process NAME] [--filament NAME] [--set k=v ...]
+  python printcheck.py slice part.3mf [--out DIR] [--process NAME] [--filament NAME]
+                                                    [--machine NAME] [--set k=v ...]
                                                     slice for the A1 Mini with Bambu Studio's CLI
                                                     and print time, filament and per-object extents
   python printcheck.py paths sliced.gcode            dump extrusion paths to paths.json for
@@ -192,10 +193,45 @@ def resolve(kind, name):
     return merged
 
 
-def slice_part(path, out=None, sets=(), process=PROCESS, filament=FILAMENT):
+def _diff(a, b):
+    """Keys whose values differ between two resolved presets (Studio's 'modified' list)."""
+    skip = {"name", "from", "instantiation", "inherits", "setting_id", "base_id", "filament_id",
+            "print_settings_id", "printer_settings_id", "compatible_printers", "version",
+            "is_custom_defined", "type", "updated_time", "user_id", "sync_info"}
+    return sorted(k for k in set(a) | set(b) if k not in skip and a.get(k) != b.get(k))
+
+
+def keep_preset_names(gcode3mf, process, proc, machine_name, filament):
+    """Rewrite the sliced file's project settings so Bambu Studio sees the real presets
+    ('0.08mm Extra Fine @BBL A1M' + modified keys), not an unknown 'printcheck' preset.
+    Without this Studio opened the file showing the wrong settings (2026-11-19)."""
+    sys_proc = resolve("process", process)
+    m = _presets("machine")[machine_name]
+    m_parent = m.get("inherits") if m.get("from", "").lower() == "user" else None
+    m_diff = _diff(resolve("machine", machine_name), resolve("machine", m_parent)) if m_parent else []
+    tmp = gcode3mf + ".tmp"
+    with zipfile.ZipFile(gcode3mf) as zi, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zo:
+        for it in zi.infolist():
+            data = zi.read(it.filename)
+            if it.filename == "Metadata/project_settings.config":
+                c = json.loads(data)
+                c["print_settings_id"] = process
+                c["printer_settings_id"] = machine_name
+                c["filament_settings_id"] = [filament]
+                c["different_settings_to_system"] = [";".join(_diff(proc, sys_proc)), "",
+                                                     ";".join(m_diff)]
+                c["inherits_group"] = ["", "", m_parent or ""]
+                c["from"], c["name"] = "project", "project_settings"
+                data = json.dumps(c, indent=4).encode("utf-8")
+            zo.writestr(it, data)
+    os.replace(tmp, gcode3mf)
+
+
+def slice_part(path, out=None, sets=(), process=PROCESS, filament=FILAMENT, machine_name=MACHINE):
     out = out or tempfile.mkdtemp(prefix="slice_")
     os.makedirs(out, exist_ok=True)
-    machine = resolve("machine", MACHINE)
+    print(f"printer: {machine_name}, process: {process}")
+    machine = resolve("machine", machine_name)
     proc = resolve("process", process)
     if filament is None:
         filament, colour = synced()[0]
@@ -203,8 +239,8 @@ def slice_part(path, out=None, sets=(), process=PROCESS, filament=FILAMENT):
     else:
         print(f"filament: {filament} (given with --filament)")
     fil = resolve("filament", filament)
-    proc.update({"name": "printcheck", "print_settings_id": "printcheck",
-                 "compatible_printers": [MACHINE], "curr_bed_type": BED})
+    proc.update({"name": process, "print_settings_id": process,
+                 "compatible_printers": sorted({MACHINE, machine_name}), "curr_bed_type": BED})
     for s in sets:
         k, v = s.split("=", 1)
         proc[k] = v
@@ -220,6 +256,9 @@ def slice_part(path, out=None, sets=(), process=PROCESS, filament=FILAMENT):
     subprocess.run(cmd, cwd=out, capture_output=True)
     res = json.load(open(os.path.join(out, "result.json")))
     print("slicer:", res.get("error_string"))
+    if os.path.exists(os.path.join(out, "sliced.gcode.3mf")):
+        keep_preset_names(os.path.join(out, "sliced.gcode.3mf"), process, proc, machine_name,
+                          filament)
     g = os.path.join(out, "plate_1.gcode")
     if os.path.exists(g):
         for l in open(g):
@@ -308,7 +347,8 @@ if __name__ == "__main__":
         sets = [a[i + 1] for i, x in enumerate(a) if x == "--set"]
         proc = a[a.index("--process") + 1] if "--process" in a else PROCESS
         fil = a[a.index("--filament") + 1] if "--filament" in a else FILAMENT
-        slice_part(path, out, sets, proc, fil)
+        mach = a[a.index("--machine") + 1] if "--machine" in a else MACHINE
+        slice_part(path, out, sets, proc, fil, mach)
     elif cmd == "paths":
         dump_paths(path)
     else:
