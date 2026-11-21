@@ -28,6 +28,8 @@ Guidance for Claude Code sessions in this repo. Read it at the start of every se
   - `hub/`: the hub enclosure (`hub.py` model, `concepts.py` lighting concepts,
     `light_study.py`, `review.html` and `concepts.html` review pages, `stl/`, `renders/`).
   - `tests/`: print-test coupons (`skin_coupons.py`, `skin_test_plate.3mf`).
+- `brush-rack/`: folding makeup-brush drying rack (`brush_rack.py` model with `--check` fold-sweep
+  collision test, `drawings.py`, `review.html`, `stl/`, `renders/`). Reuses `home-devices/tools`.
 - `ideas.html`: the project idea list (published as the "Idea Bench" artifact).
 
 ## Design language (home devices)

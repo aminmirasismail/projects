@@ -247,10 +247,26 @@ def tray():
     y_front_bar = YF + UF + (BAR_ABOVE - BAR_BELOW) / 2
     for y in (y_back_bar, y_front_bar):
         cut.append(S.slot("finger", 28, 13, 10, loc=(0, y, 0), axis="Z"))
-    lab = S.text("label", "BRUSH / 01", 3.6, 1.2, loc=(L / 2 - WALL - 34, Y_FRONT_IN + 7, Z0 - 0.4))
+    lab = mono_text("label", "BRUSH / 01", 3.6, 1.2, loc=(L / 2 - WALL - 34, Y_FRONT_IN + 7, Z0 - 0.4))
     cut.append(lab)
     S.cut(base, cut)
     return base
+
+
+def mono_text(name, body, size, depth, loc):
+    """Engraving cutter in JetBrains Mono (the family's label font)."""
+    bpy.ops.object.text_add(location=loc)
+    ob = bpy.context.active_object
+    ob.name = name
+    font = "/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Medium.ttf"
+    if os.path.exists(font):
+        ob.data.font = bpy.data.fonts.load(font)
+    ob.data.body = body
+    ob.data.size = size
+    ob.data.extrude = depth / 2
+    ob.data.space_character = 1.1
+    bpy.ops.object.convert(target="MESH")
+    return ob
 
 
 def _slot_z(name, w, h, depth, loc):
@@ -518,12 +534,6 @@ def main():
         for o in objs:
             o.hide_render = not on
 
-    def pose(th_f, th_b):
-        fr.matrix_world = root.matrix_world @ pose_front(th_f)
-        bk.matrix_world = root.matrix_world @ pose_back(th_b)
-        for p in pn:
-            pass
-
     def setpose(th_f, th_b):
         fr.matrix_parent_inverse.identity()
         bk.matrix_parent_inverse.identity()
@@ -591,6 +601,39 @@ def main():
         S.render(os.path.join(out, "d_folded_edge.png"))
         setpose(TH_F, TH_B)
         sc.render.resolution_x, sc.render.resolution_y = res0
+
+    if "--drawings" in args:
+        import json
+        show(flat, False)
+        for p in pn:
+            p.hide_render = True
+        S.drawing_setup()
+        grey = S.material("Drawing grey", (0.86, 0.86, 0.86, 1), rough=0.9)
+        sc.view_layers[0].material_override = grey
+        meta = {}
+        views = [("open_side", "right", (0, 0, 40), 0.200, (TH_F, TH_B)),
+                 ("open_front", "front", (0, 0, 40), 0.200, (TH_F, TH_B)),
+                 ("folded_top", "top", (0, 0, 0), 0.235, (0, 0)),
+                 ("folded_side", "right", (0, 0, 4.3), 0.140, (0, 0))]
+        for name, v, c, scale, (a, b) in views:
+            setpose(a, b)
+            S.ortho_camera(v, tuple(k * m for k in c), scale)
+            S.render(os.path.join(out, f"dwg_{name}.png"))
+            meta[name] = {"view": v, "center_mm": c, "scale_mm": scale * 1000,
+                          "res": [sc.render.resolution_x, sc.render.resolution_y]}
+        with open(os.path.join(out, "dwg_cameras.json"), "w") as f:
+            json.dump(meta, f, indent=1)
+        slots, _ = slot_x()
+        dims = {"rev": REV, "L": L, "D": D, "H_TRAY": H_TRAY, "Z0": Z0, "PZ": PZ,
+                "YF": YF, "YB": YB, "YNF": YNF, "HN": HN, "SPAN": SPAN,
+                "TILT": math.degrees(TILT), "LEAN_F": math.degrees(LEAN_F),
+                "LEAN_B": math.degrees(LEAN_B), "UF": UF, "UB": UB,
+                "BAR_ABOVE": BAR_ABOVE, "BAR_BELOW": BAR_BELOW,
+                "Y_FRONT_IN": Y_FRONT_IN, "Y_BACK_IN": Y_BACK_IN,
+                "slots": [{"k": k, "x": x, "w": w, "depth": NOTCH[k]["depth"],
+                           "angle": 2 * math.degrees(NOTCH[k]["half"])} for k, x, w in slots]}
+        with open(os.path.join(out, "dims.json"), "w") as f:
+            json.dump(dims, f, indent=1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,54 @@
+{
+ "open_side": {
+  "view": "right",
+  "center_mm": [
+   0,
+   0,
+   40
+  ],
+  "scale_mm": 200.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "open_front": {
+  "view": "front",
+  "center_mm": [
+   0,
+   0,
+   40
+  ],
+  "scale_mm": 200.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "folded_top": {
+  "view": "top",
+  "center_mm": [
+   0,
+   0,
+   0
+  ],
+  "scale_mm": 235.0,
+  "res": [
+   1800,
+   1200
+  ]
+ },
+ "folded_side": {
+  "view": "right",
+  "center_mm": [
+   0,
+   0,
+   4.3
+  ],
+  "scale_mm": 140.0,
+  "res": [
+   1800,
+   1200
+  ]
+ }
+}

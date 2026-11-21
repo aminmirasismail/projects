@@ -1,0 +1,155 @@
+<title>Brush Rack 01</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: same dark product sheet as the hub review. Full-bleed renders, facts in quiet grids, one red accent. */
+:root {
+  --bg: #0d0d0e;
+  --surface: #161617;
+  --ink: #ededeb;
+  --ink-2: #9a9a96;
+  --rule: #2a2a2c;
+  --red: #ff4136;
+  --amber: #e8b43a;
+  --green: #5fc48a;
+  --paper: #ffffff;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-display); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 80px; }
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 72px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.6rem, 9vw, 5.2rem); font-weight: 700; line-height: 0.92; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 70ch; }
+.tag { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
+.muted { color: var(--ink-2); }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+header { display: grid; gap: 18px; }
+.lede { font-size: 1.15rem; color: var(--ink-2); }
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); }
+figure.paper img { background: var(--paper); }
+figcaption { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--ink-2); }
+figcaption .n { font-family: var(--f-mono); flex: none; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.grid2 { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+section { display: grid; gap: 26px; }
+.sec-head { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 18px; }
+.sec-head .tag { color: var(--red); }
+.facts { display: grid; gap: 1px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.fact { background: var(--bg); padding: 16px 18px; display: grid; gap: 4px; }
+.fact .v { font: 500 1.35rem/1.2 var(--f-mono); font-variant-numeric: tabular-nums; }
+.decisions { display: grid; gap: 12px; }
+.decision { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 18px; padding: 18px 20px; background: var(--surface); border-radius: 8px; }
+@media (max-width: 640px) { .decision { grid-template-columns: 1fr; gap: 8px; } }
+.risk { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.pill { font: 500 11px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid currentColor; align-self: start; white-space: nowrap; }
+.pill.amber { color: var(--amber); }
+.pill.green { color: var(--green); }
+.pill.red { color: var(--red); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.swatch { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 2px; vertical-align: -0.05em; margin-right: 6px; border: 1px solid var(--rule); }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Brush rack · Rev A · design review</span>
+    <h1>Brush Rack 01</h1>
+    <p class="lede">A drying rack for makeup brushes that folds into a flat tray, 170 × 113 × 8.6 mm, small enough for a drawer. Flip up two frames and it holds 10 brushes with the bristles hanging forward in the air, tilted 10° down, so water drains out of the bristles instead of back into the ferrule.</p>
+  </header>
+
+  <figure>
+    <img src="renders/br_hero.jpg" alt="The rack open with ten brushes resting across two black notched frames over a white tray">
+    <figcaption><span><b>Open, loaded.</b> Face brushes sit forward, eye brushes sit further back, so the big heads and small heads don't touch.</span><span class="n">01</span></figcaption>
+  </figure>
+
+  <div class="facts">
+    <div class="fact"><span class="tag">Folded</span><span class="v">170 × 113 × 8.6</span></div>
+    <div class="fact"><span class="tag">Open height</span><span class="v">74 mm</span></div>
+    <div class="fact"><span class="tag">Capacity</span><span class="v">10 brushes</span></div>
+    <div class="fact"><span class="tag">Brush angle</span><span class="v">10° down</span></div>
+    <div class="fact"><span class="tag">Parts</span><span class="v">3 + 4 pins</span></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><span class="tag">Use</span><h2>Open it in two moves, fold it in two</h2>
+      <p class="muted">To open, lift the back frame first, then the front frame. To fold, lay the front frame down first. If you do it the other way round, the two frames bump into each other. Nothing breaks, they just won't pass. Each frame swings until a small heel on its leg lands on the floor. That's the stop, and gravity holds it there. There are no latches.</p></div>
+    <div class="grid2">
+      <figure><img src="renders/br_folded.jpg" alt="Folded: both frames lie flat inside the tray walls"><figcaption><span><b>Folded.</b> Both frames lie flat in the same layer, inside the walls.</span><span class="n">1</span></figcaption></figure>
+      <figure><img src="renders/br_unfold_1.jpg" alt="Back frame swinging up"><figcaption><span><b>Back frame up.</b> Push it up through the finger hole underneath, or catch a notch with a nail.</span><span class="n">2</span></figcaption></figure>
+      <figure><img src="renders/br_unfold_2.jpg" alt="Front frame swinging up"><figcaption><span><b>Front frame up.</b> Its legs run inside the back frame's legs, so the two never touch.</span><span class="n">3</span></figcaption></figure>
+      <figure><img src="renders/br_open.jpg" alt="Open and empty"><figcaption><span><b>Open.</b> The front frame leans 10° forward and the back frame 20° back. Both rest on their stops.</span><span class="n">4</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Why it looks like this</span><h2>Decisions</h2></div>
+    <div class="decisions">
+      <div class="decision"><h3>Lying at 10° instead of hanging upside down</h3><p>Hanging brushes need something that grips the handle. With rigid PLA that means rubber rings or clips that suit only one size. Laying a brush across two V-notches works for any handle. 10° is steep enough that water runs toward the bristle tips. It's also shallow enough that friction in the V holds the brush: PLA on a brush handle needs about 0.18, and the V-notch roughly doubles the grip.</p></div>
+      <div class="decision"><h3>Frames that nest</h3><p>Each frame is a notched bar on two legs. The front frame's legs sit just inside the back frame's legs, so both frames fold flat into the same 5 mm layer and never cross. That's why it folds to 8.6 mm. A script swings both frames through their whole travel and checks for collisions. It found none.</p></div>
+      <div class="decision"><h3>No latches</h3><p>The front frame leans forward, so its own weight and the brushes' tendency to slide forward both push it onto its stop. The back frame leans 20° back, so gravity holds it against its stop. Each stop is a heel on the leg, shaped from the swing path so it clears the floor the whole way and lands flat at the end.</p></div>
+      <div class="decision"><h3>Two slot sizes, alternating</h3><p>The slots are laid out <code>S L S L S S L S L S</code>. Big brush heads are 25–30 mm wide, too wide to sit side by side at handle spacing. So each large slot has a small one next to it. Eye brushes sit about 14 mm further back than face brushes, so the small heads stay behind the big ones.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Close-ups</span><h2>Details</h2></div>
+    <div class="grid2">
+      <figure><img src="renders/br_top.jpg" alt="Top view, loaded"><figcaption><span><b>From above.</b> The large and small slots alternate, so big heads have room on each side.</span><span class="n">a</span></figcaption></figure>
+      <figure><img src="renders/d_label.jpg" alt="Engraved label on the tray floor"><figcaption><span><b>Label.</b> <code>BRUSH / 01</code> engraved into the floor, 3.6 mm tall.</span><span class="n">b</span></figcaption></figure>
+      <figure><img src="renders/d_folded_edge.jpg" alt="Folded edge close-up"><figcaption><span><b>Folded edge.</b> 10 mm corners and a 1.2 mm top fillet, matching the rest of the family.</span><span class="n">c</span></figcaption></figure>
+      <figure><img src="renders/br_side.jpg" alt="Side view with brushes"><figcaption><span><b>Side.</b> Big heads clear the tray by more than 30 mm.</span><span class="n">d</span></figcaption></figure>
+      <figure><img src="renders/br_underside.jpg" alt="Underside with finger holes"><figcaption><span><b>Underside.</b> Two finger holes let you push each frame up from below. They also drain drips.</span><span class="n">e</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Drawings</span><h2>Dimensions</h2></div>
+    <div class="grid2">
+      <figure class="paper"><img src="renders/dwg_open_side.svg" alt="Side drawing, open"><figcaption><span><b>Open, side.</b> The supports are 66 mm apart along the brush.</span><span class="n">D1</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_open_front.svg" alt="Front drawing, open"><figcaption><span><b>Open, front.</b> Slot layout.</span><span class="n">D2</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_folded_top.svg" alt="Top drawing, folded"><figcaption><span><b>Folded, top.</b></span><span class="n">D3</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_folded_side.svg" alt="Side drawing, folded"><figcaption><span><b>Folded, side.</b></span><span class="n">D4</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Make it</span><h2>Print and assemble</h2></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Part</th><th>PLA</th><th>Orientation</th><th>Size (mm)</th><th>Approx.</th></tr></thead>
+      <tbody>
+        <tr><td>Tray</td><td><span class="swatch" style="background:#e6e6e2"></span>White</td><td>Floor down</td><td class="num">170 × 112.6 × 8.6</td><td class="num">~50 g</td></tr>
+        <tr><td>Back frame</td><td><span class="swatch" style="background:#111112"></span>Black</td><td>Flat</td><td class="num">164.4 × 75.9 × 5</td><td class="num">~20 g</td></tr>
+        <tr><td>Front frame</td><td><span class="swatch" style="background:#111112"></span>Black</td><td>Flat</td><td class="num">152 × 61.4 × 5</td><td class="num">~17 g</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted">The weights are my estimate from the part volumes. Bambu Studio will give the real time and filament once it's sliced on the PC. The two frames fit on one plate.</p>
+    <ol>
+      <li>Cut four 10 mm pieces of 1.75 mm filament.</li>
+      <li><b>Back frame:</b> set it in the tray, with its legs against the end walls. From outside, push a pin through each end-wall hole into the leg. The leg hole is tight, so the pin stays put. Trim it flush.</li>
+      <li><b>Front frame:</b> its legs go just inside the back frame's legs. From the inside, push a pin through each small pivot block into the leg.</li>
+      <li>Swing both frames through their travel a few times. If a frame drags, open the 2.1 mm tray hole with a 2 mm drill.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Before printing</span><h2>What still needs checking</h2></div>
+    <div>
+      <div class="risk"><span class="pill amber">Check</span><p><b>Chelsea's real brushes.</b> I designed for typical sizes: eye-brush handles 5–9 mm, face-brush handles up to ~14 mm, heads up to ~28 mm wide. A brush also needs about 75 mm of handle behind the ferrule to reach both supports, so mini or travel brushes won't fit. Measuring her biggest and smallest brushes would confirm the slot sizes.</p></div>
+      <div class="risk"><span class="pill amber">Check</span><p><b>Grip at 10°.</b> Glossy lacquered handles are slippery. If a brush creeps forward, the fix is a single number in the model (tilt 10° → 8°), or a strip of silicone tape in the notches.</p></div>
+      <div class="risk"><span class="pill amber">Check</span><p><b>Knocking the back frame forward.</b> It stays up by leaning back, so a hard knock from behind could fold it. If that turns out to be annoying, rev B can add a small click detent at the hinge.</p></div>
+      <div class="risk"><span class="pill green">Done</span><p>Fold sweep checked: no collisions at any angle when opened back frame first. All parts fit the A1 Mini bed, and each part is one colour.</p></div>
+    </div>
+  </section>
+</div>
