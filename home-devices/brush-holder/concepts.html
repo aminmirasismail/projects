@@ -1,0 +1,267 @@
+<title>Brush Drying Stand</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark sheet per concept: hero + side views, the fold animation, facts, good/watch. Same family as the hub pages. */
+:root {
+  --bg: #0d0d0e;
+  --surface: #161617;
+  --ink: #ededeb;
+  --ink-2: #9a9a96;
+  --rule: #2a2a2c;
+  --rose: #d9a08f;
+  --good: #7fd6a2;
+  --warn: #ff8a7a;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-display); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 80px; }
+.wrap { max-width: 1160px; margin: 0 auto; display: grid; gap: 80px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.4rem, 7vw, 4.6rem); font-weight: 700; line-height: 0.95; }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); font-weight: 600; }
+h3 { font-size: 1rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+code { font-family: var(--f-mono); font-size: 0.9em; }
+.tag { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
+.muted { color: var(--ink-2); }
+.accent { color: var(--rose); }
+:focus-visible { outline: 2px solid var(--rose); outline-offset: 2px; }
+
+header { display: grid; gap: 16px; }
+.lede { font-size: 1.12rem; color: var(--ink-2); }
+.bar { height: 4px; border-radius: 2px; background: var(--rose); max-width: 120px; }
+
+nav ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+nav a { display: grid; gap: 4px; padding: 14px 16px; background: var(--surface); border-radius: 8px; color: var(--ink); text-decoration: none; border: 1px solid transparent; }
+nav a:hover { border-color: var(--rule); }
+nav b { font-weight: 600; }
+
+.concept { display: grid; gap: 22px; }
+.head { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 18px; }
+.head .tag b { color: var(--ink); font-weight: 500; }
+.strip { display: grid; gap: 12px; grid-template-columns: 2fr 1fr; }
+.strip .side { display: grid; gap: 12px; align-content: start; }
+.duo { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+figure img, figure video { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); }
+figure img { cursor: zoom-in; }
+figcaption { font-size: 12px; color: var(--ink-2); font-family: var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase; }
+
+.facts { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.fact { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.fact p { font-size: 14px; }
+.pc { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.pc ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+.pc h3 { margin-bottom: 6px; }
+.plus h3 { color: var(--good); }
+.minus h3 { color: var(--warn); }
+
+.common { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.card { background: var(--surface); border-radius: 8px; padding: 18px 20px; display: grid; gap: 6px; align-content: start; }
+.card p, .card li { font-size: 14px; color: var(--ink-2); }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.card b { color: var(--ink); font-weight: 500; }
+
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 11px var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); background: var(--surface); }
+tbody th { font: 600 14px var(--f-display); letter-spacing: 0; text-transform: none; color: var(--ink); }
+td { font-variant-numeric: tabular-nums; }
+.rec { background: var(--surface); border-radius: 8px; padding: 20px 22px; display: grid; gap: 8px; border-left: 3px solid var(--rose); }
+
+#lb { position: fixed; inset: 0; background: rgba(0,0,0,.92); display: grid; place-items: center; z-index: 50; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow: auto; cursor: zoom-out; }
+#lb img { max-width: 100%; max-height: 100%; border-radius: 6px; }
+#lb.full { place-items: start; }
+#lb.full img { max-width: none; max-height: none; }
+
+@media (max-width: 720px) { .strip, .duo { grid-template-columns: 1fr; } .strip .side { grid-template-columns: 1fr 1fr; } }
+@media (prefers-reduced-motion: reduce) { video { display: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Home projects · Brush stand · Concepts round 1</span>
+    <h1>Dry brushes <span class="accent">head-down</span></h1>
+    <div class="bar" aria-hidden="true"></div>
+    <p class="lede">Four ways to hang Chelsea's eight brushes upside down while they dry, each with a different way to fold away. All hold the brushes by the handle in the same snap clip, all are white PLA with black for the base and small accents, and all fit the A1 Mini's bed.</p>
+    <p class="muted" style="font-size:14px">Brush sizes are placeholders until you measure them: four <b>thick</b> brushes with 11 mm handles and four <b>thin</b> ones with 7 mm handles, 172 and 146 mm long. Click any image to zoom; click again for full size.</p>
+  </header>
+
+  <section class="concept" id="why">
+    <div class="head"><span class="tag">Research</span><h2>Why upside down</h2></div>
+    <div class="common">
+      <div class="card"><h3>Keep water out of the ferrule</h3><p>The metal collar holds the bristles in with glue. Dried upright, rinse water runs down into it, softens the glue and the brush starts shedding. Hanging head-down lets gravity pull water out through the tips instead.</p></div>
+      <div class="card"><h3>Let the head hang free</h3><p>Lying flat squashes one side and dries slowly; a cup traps water. The usual advice is to squeeze, reshape, and hang the brush with nothing touching the bristles and air all round. So every concept spaces the heads apart and keeps them clear of the floor.</p></div>
+      <div class="card"><h3>No heat, catch the drips</h3><p>Hair dryers and radiators soften the glue too, so air drying overnight is the norm. Wet brushes drip for the first while, so A, B and D have a black drip tray under the heads. C drips onto the counter or a towel.</p></div>
+    </div>
+  </section>
+
+  <nav aria-label="Concepts">
+    <ul>
+      <li><a href="#concept-a"><span class="tag">A</span><b>Telescope</b><span class="muted">Post slides down into a 9 cm puck</span></a></li>
+      <li><a href="#concept-b"><span class="tag">B</span><b>Folio</b><span class="muted">Folds flat like a closed book</span></a></li>
+      <li><a href="#concept-c"><span class="tag">C</span><b>Fan</b><span class="muted">Arms swing into one line</span></a></li>
+      <li><a href="#concept-d"><span class="tag">D</span><b>Flat-pack</b><span class="muted">No moving parts, stacks flat</span></a></li>
+      <li><a href="#clip"><span class="tag">All</span><b>The snap clip</b><span class="muted">How the handle is held</span></a></li>
+      <li><a href="#compare"><span class="tag">Pick</span><b>Comparison</b><span class="muted">And my recommendation</span></a></li>
+    </ul>
+  </nav>
+
+  <section class="concept" id="concept-a">
+    <div class="head"><span class="tag">Concept A · <b>Telescope</b> · 9 parts</span><h2>A post that slides down</h2>
+      <p class="muted">A round black drip dish with a three-stage white post. The clip disc sits on top with the eight brushes round its rim, thick and thin alternating. Pull the disc up and the post telescopes out; black twist collars lock each stage. Pushed down, it stands about 10 cm tall.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_A_hero.jpg" alt="Concept A: round black dish, white telescoping post, white clip disc with eight brushes hanging head-down round its rim" width="1400" height="1050"><figcaption>Open, with brushes</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_A_side.jpg" alt="Concept A from the left" width="1400" height="1050"><figcaption>From the left</figcaption></figure>
+        <figure><img src="renders/concept_A_top.jpg" alt="Concept A from above: brushes evenly spaced round the disc" width="1400" height="1050"><figcaption>From above</figcaption></figure>
+      </div>
+    </div>
+    <div class="duo">
+      <figure><video src="renders/concept_A_fold.mp4" autoplay muted loop playsinline aria-label="Animation: the post telescopes up from the collapsed position, holds, then slides back down"></video><figcaption>Extend and collapse</figcaption></figure>
+      <figure><img src="renders/concept_A_folded.jpg" alt="Concept A collapsed: the disc sits low over the dish" width="1400" height="1050"><figcaption>Stored</figcaption></figure>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Size</span><p>Ø164 mm dish. Disc top 165 mm high open; about 103 mm stored.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Dish, 3 post tubes, 2 lock collars, disc, knob. Black: dish, collars, knob.</p></div>
+      <div class="fact"><span class="tag">Printing</span><p>Tubes print upright, disc and dish flat. All fit the bed, no supports.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Evenly spaced brushes, easy to reach from any side.</li><li>Drips land in the dish.</li><li>Looks the most like a finished product.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Sliding joints rock unless they overlap a lot. I've set 30 mm overlaps; they also need real bayonet locks, which I haven't designed yet.</li><li>Only shrinks to about 60% of its height.</li><li>Most work to get right in PLA.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-b">
+    <div class="head"><span class="tag">Concept B · <b>Folio</b> · 6 parts</span><h2>Folds flat like a closed book</h2>
+      <p class="muted">A black drip tray with a white back panel hinged along its rear edge. A clip shelf hangs off the top of the panel. Thick brushes snap in from the front; thin ones snap in from behind, through a 32 mm gap between the shelf and the panel. To store, the shelf swings down against the panel and the panel folds forward onto the tray.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_B_hero.jpg" alt="Concept B: black tray, white upright panel with a window, white shelf on top holding eight brushes in two rows" width="1400" height="1050"><figcaption>Open, with brushes</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_B_side.jpg" alt="Concept B from the left, showing the two rows of brushes" width="1400" height="1050"><figcaption>From the left</figcaption></figure>
+        <figure><img src="renders/concept_B_top.jpg" alt="Concept B from above: four thick brushes in front, four thin behind" width="1400" height="1050"><figcaption>From above</figcaption></figure>
+      </div>
+    </div>
+    <div class="duo">
+      <figure><video src="renders/concept_B_fold.mp4" autoplay muted loop playsinline aria-label="Animation: the panel lifts up from the tray, the shelf swings out level, then both fold back down"></video><figcaption>Unfold and fold</figcaption></figure>
+      <figure><img src="renders/concept_B_folded.jpg" alt="Concept B folded into a flat slab" width="1400" height="1050"><figcaption>Stored</figcaption></figure>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Size</span><p>176 × 160 mm. Shelf 165 mm high open; about 26 mm thick folded.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Tray, panel, shelf, hinge pins. Black: tray and pins.</p></div>
+      <div class="fact"><span class="tag">Printing</span><p>All parts print flat. The 176 mm tray leaves no room on the bed for a brim.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Flattest when stored: slides into a drawer.</li><li>Wide, low tray that is hard to tip.</li><li>Flat parts: quick, clean prints.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Nothing holds it open yet. Both hinges need hard 90° stops plus a latch, or the brushes' weight folds the panel forward.</li><li>The back row is awkward to load.</li><li>Takes the most counter space when open.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-c">
+    <div class="head"><span class="tag">Concept C · <b>Fan</b> · 11 parts</span><h2>Arms that swing into one line</h2>
+      <p class="muted">A black drip dish with a white post. Four white arms stack on the post with black spacers and swivel independently, with a clip at each end. Fanned out at 45° they hold eight brushes in a ring; swung together, they stack into one narrow bar.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_C_hero.jpg" alt="Concept C: black dish, white post, four white arms fanned out holding eight brushes" width="1400" height="1050"><figcaption>Open, with brushes</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_C_side.jpg" alt="Concept C from the left" width="1400" height="1050"><figcaption>From the left</figcaption></figure>
+        <figure><img src="renders/concept_C_top.jpg" alt="Concept C from above: arms at 45 degree steps" width="1400" height="1050"><figcaption>From above</figcaption></figure>
+      </div>
+    </div>
+    <div class="duo">
+      <figure><video src="renders/concept_C_fold.mp4" autoplay muted loop playsinline aria-label="Animation: the four arms fan out from a single stack, hold, then swing back together"></video><figcaption>Fan out and close</figcaption></figure>
+      <figure><img src="renders/concept_C_folded.jpg" alt="Concept C stored: the four arms stacked in one line over the dish" width="1400" height="1050"><figcaption>Stored</figcaption></figure>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Size</span><p>Ø164 mm dish, arms 128 mm long, 176 mm tall. Same height stored.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Dish, post, 4 arms, 4 spacers, cap. Black: dish, spacers, cap.</p></div>
+      <div class="fact"><span class="tag">Printing</span><p>Arms and dish flat; post upright.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Satisfying to use.</li><li>Arms can be set to any angle to space big heads further apart.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Doesn't really collapse: it only gets narrower, and the dish stays round.</li><li>Swivel arms have play: about 4 mm at the tips.</li><li>Tallest, so the easiest to tip when you push a brush in.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="concept-d">
+    <div class="head"><span class="tag">Concept D · <b>Flat-pack</b> · 4 parts</span><h2>No moving parts, stacks flat</h2>
+      <p class="muted">Two white plates slot together into a cross, standing in a cross-shaped socket in the black drip dish. The clip disc drops onto the plates' tops. The brushes hang in the four bays between the plates, two per bay, so wet heads never swing into each other. To store, lift it apart and stack the three white parts on the dish.</p></div>
+    <div class="strip">
+      <figure><img src="renders/concept_D_hero.jpg" alt="Concept D: black dish, two white plates crossed under a white clip disc, eight brushes hanging between the plates" width="1400" height="1050"><figcaption>Open, with brushes</figcaption></figure>
+      <div class="side">
+        <figure><img src="renders/concept_D_side.jpg" alt="Concept D from the left" width="1400" height="1050"><figcaption>From the left</figcaption></figure>
+        <figure><img src="renders/concept_D_top.jpg" alt="Concept D from above: two brushes in each quarter" width="1400" height="1050"><figcaption>From above</figcaption></figure>
+      </div>
+    </div>
+    <div class="duo">
+      <figure><video src="renders/concept_D_fold.mp4" autoplay muted loop playsinline aria-label="Animation: from a flat stack, the plates rise and slot together, the disc drops on top, then it all packs back down"></video><figcaption>Assemble and pack</figcaption></figure>
+      <figure><img src="renders/concept_D_folded.jpg" alt="Concept D packed: disc and plates stacked flat on the dish" width="1400" height="1050"><figcaption>Stored</figcaption></figure>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="tag">Size</span><p>Ø164 mm dish, disc top 165 mm high. About 35 mm tall packed.</p></div>
+      <div class="fact"><span class="tag">Parts</span><p>Dish, two plates, disc. Black: dish only.</p></div>
+      <div class="fact"><span class="tag">Printing</span><p>All flat, no supports. Plates 128 × 156 mm.</p></div>
+    </div>
+    <div class="pc">
+      <div class="plus"><h3>Good</h3><ul><li>Sturdiest: the cross joints engage about 80 mm, so it's stiff every way, with no hinge play.</li><li>Simplest to print and to get right first time.</li><li>The plates keep wet heads apart.</li></ul></div>
+      <div class="minus"><h3>Watch</h3><ul><li>Packs down by taking apart, not folding.</li><li>The disc only rests on the plates; it needs snap tabs so pulling a brush out doesn't lift it.</li><li>The plates' corners overhang the dish when packed.</li></ul></div>
+    </div>
+  </section>
+
+  <section class="concept" id="clip">
+    <div class="head"><span class="tag">Shared by all four</span><h2>The snap clip</h2>
+      <p class="muted">What the renders show: a keyhole in an 8 mm plate. You push the handle in sideways through an opening slightly narrower than it. Two curved relief slots turn the sides into springy jaws that open about 0.8 mm and close round the handle, and friction holds the brush up.</p></div>
+    <div class="duo">
+      <figure><img src="renders/clip_closeup.jpg" alt="Close-up of the white clip plate with a handle snapped into the larger clip, the smaller clip empty" width="1400" height="1050"><figcaption>Thick clip with a handle, thin clip empty</figcaption></figure>
+      <figure><img src="renders/clip_top.jpg" alt="Top view of the two keyhole clips showing the curved relief slots around each seat" width="1400" height="1050"><figcaption>From above: seat, entry and relief slots</figcaption></figure>
+    </div>
+    <div class="common">
+      <div class="card"><h3>The review says this clip won't last in PLA</h3><p>Opening the jaws 0.5–0.8 mm strains the PLA close to its yield point (about 1.5%), and pushing a brush in takes tens of newtons sideways. That is enough to tip a stand this tall. PLA held open also creeps, so the grip fades over weeks, and repeated use will crack the jaws within months. The geometry stays as a placeholder until we choose one of the two fixes below.</p></div>
+      <div class="card"><h3>Fix 1 (recommended): soft grommet, loaded from below</h3><p>Use a plain hole in the white PLA plate with a black rubber grommet in it: about 1.5 mm thick, 6–8 radial slits, a hole about 70% of the handle diameter. You push the handle's tail <b>up</b> through it from underneath. The force is vertical, so nothing tips, and one grommet fits a range of handle sizes. It needs either black TPU filament (a new spool) or off-the-shelf silicone grommets.</p></div>
+      <div class="card"><h3>Fix 2: PLA only, a longer and gentler spring</h3><p>Use jaws at least 18 mm long and 1.2 mm thick (three lines), with rounded slot ends. Strain falls to about 0.35% and the push force to about 1.5 N per mm. The clip then works as a light keeper sized to each handle, not a tight grip. That's fine for 10–40 g brushes, but each clip must be sized to one handle.</p></div>
+    </div>
+  </section>
+
+  <section class="concept" id="compare">
+    <div class="head"><span class="tag">Pick one</span><h2>Side by side</h2></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th scope="col"></th><th scope="col">Open footprint</th><th scope="col">Stored</th><th scope="col">Parts</th><th scope="col">Sturdiness</th><th scope="col">Drip tray</th><th scope="col">Effort</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">A · Telescope</th><td>Ø164 mm</td><td>Ø164 × ~103 mm</td><td>9</td><td>Good base; sliding joints can rock</td><td>Yes</td><td>High: needs bayonet locks</td></tr>
+        <tr><th scope="row">B · Folio</th><td>176 × 160 mm</td><td>176 × 160 × ~26 mm slab</td><td>6</td><td>Good once both hinges have stops and latches</td><td>Yes</td><td>Medium: two hinges, stops, latches</td></tr>
+        <tr><th scope="row">C · Fan</th><td>Ø164 mm</td><td>Ø164 × 176 mm (narrower only)</td><td>11</td><td>Tallest; arms have play</td><td>Yes</td><td>Low-medium</td></tr>
+        <tr><th scope="row">D · Flat-pack</th><td>Ø164 mm</td><td>~35 mm stack on its dish</td><td>4</td><td>Excellent: rigid cross, no play</td><td>Yes</td><td>Low: nothing moves</td></tr>
+      </tbody>
+    </table></div>
+    <div class="rec"><span class="tag">Recommendation</span><h3>D · Flat-pack, with the grommet grip</h3><p>It's the sturdiest by a margin: nothing slides or hinges, so nothing wobbles or wears loose. It is also the simplest and most reliable to print. It packs to a 35 mm stack. If Chelsea wants it to fold into a drawer-thin slab instead, B is the pick, but its hinges need more design work before it is as solid. Whichever you choose, I'd switch to grommets loaded from below, and add snap tabs or rubber feet as needed.</p></div>
+  </section>
+
+  <section class="concept" id="next">
+    <div class="head"><span class="tag">Next</span><h2>What I need from you</h2></div>
+    <div class="common">
+      <div class="card"><h3>Pick a concept and a grip</h3><p>Choose a concept, or mix them, for example D's cross on B's rectangular tray. Then choose the grip: grommets (TPU spool or bought silicone) or the PLA-only spring clip.</p></div>
+      <div class="card"><h3>Measure each brush</h3><ul><li>Handle diameter about 40 mm from the handle end (where it's gripped).</li><li>Overall length.</li><li>Widest point of the head when fluffed.</li></ul><p>Calipers are best; a ruler across the flats is fine for a start.</p></div>
+      <div class="card"><h3>Then I'll</h3><p>Size each clip to its brush, set the height so the longest brush clears the tray, print a small clip test strip for the snap fit, and send you the full set of renders, drawings and the sliced plate for approval.</p></div>
+    </div>
+  </section>
+</div>
+
+<div id="lb" hidden><img alt=""></div>
+<script>
+(() => {
+  const lb = document.getElementById('lb'), big = lb.querySelector('img');
+  document.querySelectorAll('figure img').forEach(img => img.addEventListener('click', () => {
+    big.src = img.currentSrc || img.src; big.alt = img.alt; lb.classList.remove('full'); lb.hidden = false;
+  }));
+  lb.addEventListener('click', () => {
+    if (!lb.classList.contains('full') && big.naturalWidth > big.clientWidth) { lb.classList.add('full'); }
+    else { lb.hidden = true; lb.classList.remove('full'); }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.hidden = true; });
+})();
+</script>
