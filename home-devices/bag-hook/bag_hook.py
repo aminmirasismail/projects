@@ -1,4 +1,4 @@
-"""Tote-bag hook that hangs on 3M CLAW 15 lb drywall picture hangers. Rev A.
+"""Tote-bag hook that hangs on 3M CLAW 15 lb drywall picture hangers. Rev B.
 
 Run inside Blender:
   blender --background --factory-startup --python bag_hook.py -- [--renders] [--details]
@@ -37,7 +37,7 @@ from mathutils import Matrix, Vector  # noqa: E402
 
 import studio as S  # noqa: E402
 
-REV = "A"
+REV = "B"
 
 # ---------------------------------------------------------------- body
 W, H, T = 120.0, 70.0, 14.0     # width along the wall, height, thickness off the wall
@@ -358,8 +358,12 @@ def main():
     os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
     S.export_stl(hook, os.path.join(HERE, "stl", "bag_hook_white.stl"))
     S.export_stl(fit, os.path.join(HERE, "stl", "bag_hook_fittest_white.stl"))
-    # print upright as it hangs; the long side runs along the bed's X
-    write_3mf(hook, os.path.join(HERE, "bag_hook_white.3mf"))
+    # print upright as it hangs, turned 90 degrees so the 120 mm length runs along the bed's
+    # Y travel: with 60 mm pegs the centre of mass sits over the front edge of the 12 mm
+    # footprint, so the bed's front-back moves must push along the part, not across it.
+    # The wall face points -X; seam_position=back puts the seam on the right end face.
+    write_3mf(hook, os.path.join(HERE, "bag_hook_white.3mf"),
+              rot=Matrix.Rotation(math.pi / 2, 3, "Z"))
     write_3mf(fit, os.path.join(HERE, "fittest_white.3mf"))
 
     out = os.path.join(HERE, "renders")
