@@ -1,4 +1,6 @@
-"""Convert renders/*.png to .jpg (quality 90) for the review page. Run: blender -b --python tojpg.py"""
+"""Convert renders/*.png to .jpg (quality 90) for the review page.
+Run: blender -b --python tojpg.py [-- subdir]   e.g. -- v2"""
+import sys
 import glob
 import os
 
@@ -13,7 +15,8 @@ s.view_settings.view_transform = "Standard"
 s.view_settings.look = "None"
 s.view_settings.exposure = 0.0
 s.view_settings.gamma = 1.0
-for p in glob.glob(os.path.join(HERE, "renders", "*.png")):
+SUB = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv and len(sys.argv) > sys.argv.index("--") + 1 else ""
+for p in glob.glob(os.path.join(HERE, "renders", SUB, "*.png")):
     im = bpy.data.images.load(p)
     im.save_render(p[:-4] + ".jpg", scene=s)
     bpy.data.images.remove(im)
