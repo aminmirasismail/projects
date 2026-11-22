@@ -12,7 +12,7 @@ How it hangs
   The CLAW is a 23 x 23 mm stainless plate, ~0.9 mm thick, pushed flat onto drywall. A tab
   struck from the middle of the plate is hinged at its bottom and leans outward, so it makes a
   V that opens upward (that's where picture wire or a D-ring drops in). On the back of this
-  hook a thin tongue runs across the full width, 0.3 mm in front of the plate. Lift the hook,
+  hook a tongue (1.2 mm at the tip) runs across the full width, 0.34 mm in front of the plate. Lift the hook,
   slide it down the wall and the tongue drops into each CLAW's V. The bag load pushes the
   tongue down into the V; the tab stops the top of the hook pulling away from the wall.
 
@@ -21,7 +21,8 @@ Printing: upright, as it hangs (bottom face on the plate), no supports.
   - The tongue hangs down inside a back pocket. Its bottom edge is bridged in 17 mm spans
     between ribs; a CLAW tab sits in any of the five bays between the ribs.
   - Bottom plan corners are teardrops (arc plus 45-degree flat), so the first layers don't
-    overhang; the top corners are plain 10 mm arcs.
+    overhang; the top corners are full 10 mm arcs.
+  - Print with a 4 mm brim: it stands 70 mm tall on a 12 mm wide footprint on a bed-slinger.
 """
 import json
 import math
@@ -50,24 +51,29 @@ PEG_ANGLE = 45.0                # above horizontal; also the overhang limit when
 PEG_L = 48.0                    # along the axis, from the front face to the end face
 PEG_Z = 20.0                    # axis height where it leaves the front face
 PEG_X = (W / 2 - 30, W / 2 + 30)
-PEG_EMBED = 4.0                 # axis starts this far inside the body (trimmed by the pocket)
+PEG_EMBED = 8.0                 # >= r tan 45 = 7, so the start cap is fully inside the body
+PEG_END_R = 3.0                 # end-face round: handles slide off it instead of snagging
 
 # ---------------------------------------------------------------- CLAW interface
 CLAW_W, CLAW_H, CLAW_T = 23.0, 23.0, 0.9   # 3M: 0.9 in square; plate ~0.034 in (0.86 mm)
 TAB_W, TAB_H, TAB_ANG = 7.0, 9.0, 28.0     # estimated from 3M's drawings; checked by the fit test
 TAB_HINGE = 11.0                           # tab hinge height above the plate's bottom edge
-BACK_GAP = 1.2                  # tongue's back face: plate (0.9) + 0.3 clearance
-TONGUE_T = 1.4                  # 3-4 extrusion lines (>= 0.5 mm rule), thin enough for the V
+BACK_GAP = 1.2                  # tongue's back face: plate (0.86 by 3M) + 0.34 for paint, dishing
+TONGUE_T = 1.2                  # at the tip: 2 wall lines + gap fill (>= 0.5 mm rule)
+TONGUE_ROOT_T = 2.2             # front face drafts out to this at the root: ~3x less root stress
 TONGUE_BOT, TONGUE_TOP = 53.0, 60.0   # tongue tip and root heights
-RECESS = (22.0, 66.0)           # back recess (u < BACK_GAP) where the plates sit
+RECESS = (29.0, 66.0)           # back recess (u < BACK_GAP) where the plates sit
 RECESS_X = (3.0, W - 3.0)
-POCKET_FLOOR = 24.0             # bays: tab space in front of the tongue and below it
+POCKET_FLOOR = 31.0             # bays: tab space; floor above the peg roots so they sit on solid
 POCKET_U = 9.0                  # bays reach 9 mm into the 14 mm body (5 mm front wall left)
 RIB_W = 3.0
 RIBS = (30.0, 50.0, 70.0, 90.0)
 BAY_ENDS = (11.5, W - 11.5)
-TIP_IN_V = 3.5                  # tongue tip rests ~3.5 mm up the V (where it's 1.4+ wide)
-LIFT = 9.0                      # lift the hook this much to drop it on
+# Above the hinge the plate has a hole where the tab was punched out, so the V runs from the
+# plate's edges (u = 0.9) to the tab's back face (u = h tan TAB_ANG). The tongue's front face
+# (u = 2.4 at the tip) seats where the tab has leaned out that far: h = 2.4 / tan 28 = 4.5 mm.
+TIP_IN_V = 4.5
+LIFT = 7.0                      # lift the hook this much to drop it on (needs ~4)
 
 # ---------------------------------------------------------------- label
 LABEL = ("BAGS", "01")          # engraved BAGS · 01 (house dot separator)
@@ -99,15 +105,14 @@ def arc(c, r, a0, a1, n=None):
 
 def front_outline():
     """Front-view outline in (x, z), counter-clockwise seen from the front.
-    Corners are teardrops: a 10 mm arc that stops at 45 degrees, then a short 45-degree flat
-    to the top or bottom face. The bottom ones must be (they touch the bed; a full arc would
-    overhang ~1.3 mm on the first 0.08 mm layer); the top ones match them."""
+    Bottom corners are teardrops: a 10 mm arc that stops at 45 degrees, then a short
+    45-degree flat to the bed (a full arc would overhang ~1.3 mm on the first 0.08 mm layer).
+    Top corners are full R10 arcs: they print without overhang and are the ones you see."""
     k = R * (1 - math.cos(math.radians(45)))          # 2.93: where the arc stops
     pts = [(2 * k, 0.0), (W - 2 * k, 0.0)]
     pts += arc((W - R, R), R, -45, 0)                  # bottom-right: flat, then arc
-    pts += arc((W - R, H - R), R, 0, 45)               # top-right: arc, then flat
-    pts += [(W - 2 * k, H), (2 * k, H)]
-    pts += arc((R, H - R), R, 135, 180)
+    pts += arc((W - R, H - R), R, 0, 90)               # top corners: full R10 arcs
+    pts += arc((R, H - R), R, 90, 180)
     pts += arc((R, R), R, 180, 225)                    # bottom-left arc, then the flat
     out = []
     for p in pts:                                      # drop duplicates
@@ -144,7 +149,8 @@ def body():
 
 
 def peg(x):
-    """Ø14 peg rising at PEG_ANGLE, flat end with an EDGE round, axis from inside the body."""
+    """Ø14 peg rising at PEG_ANGLE, flat end with a PEG_END_R round, axis from inside the body.
+    Printed upright, the end round's normals stay within 45 degrees of horizontal."""
     bm = bmesh.new()
     seg = S.arc_segments(PEG_D / 2, 360, minimum=48)
     length = PEG_L + PEG_EMBED
@@ -154,7 +160,7 @@ def peg(x):
         v.co.z += length / 2
     tip = [e for e in bm.edges if all(abs(v.co.z - length) < 1e-6 for v in e.verts)
            and len(e.link_faces) == 2 and any(abs(f.normal.z) < 0.5 for f in e.link_faces)]
-    bmesh.ops.bevel(bm, geom=tip, offset=EDGE, segments=S.arc_segments(EDGE), profile=0.5,
+    bmesh.ops.bevel(bm, geom=tip, offset=PEG_END_R, segments=S.arc_segments(PEG_END_R), profile=0.5,
                     affect="EDGES")
     a = math.radians(PEG_ANGLE)
     # rotating by t about X sends +Z to (0, -sin t, cos t); with t = 90 - a that is
@@ -175,7 +181,7 @@ def pocket_cutters():
     cut.append(_prism("recess", rec, to3d, *RECESS_X))
     # bay profile (u, z): starts 0.2 mm inside the recess so faces never coincide
     bay = [(BACK_GAP - 0.2, POCKET_FLOOR), (POCKET_U, POCKET_FLOOR), (POCKET_U, TONGUE_TOP),
-           (BACK_GAP + TONGUE_T, TONGUE_TOP), (BACK_GAP + TONGUE_T, TONGUE_BOT),
+           (BACK_GAP + TONGUE_ROOT_T, TONGUE_TOP), (BACK_GAP + TONGUE_T, TONGUE_BOT),
            (BACK_GAP - 0.2, TONGUE_BOT)]
     for i, (x0, x1) in enumerate(bays()):
         cut.append(_prism(f"bay{i}", bay, to3d, x0, x1))
@@ -282,11 +288,11 @@ def write_3mf(ob, path, bed=(180.0, 180.0), rot=None):
 def write_dims_json(out, box, hook, fit):
     bottom, top, hinge = claw_z()
     data = {"rev": REV, "W": W, "H": H, "T": T, "R": R, "edge": EDGE,
-            "peg": {"d": PEG_D, "angle": PEG_ANGLE, "len": PEG_L, "z": PEG_Z, "x": PEG_X},
+            "peg": {"end_r": PEG_END_R, "d": PEG_D, "angle": PEG_ANGLE, "len": PEG_L, "z": PEG_Z, "x": PEG_X},
             "claw": {"w": CLAW_W, "h": CLAW_H, "t": CLAW_T, "tab_w": TAB_W, "tab_h": TAB_H,
                      "tab_ang": TAB_ANG, "tab_hinge": TAB_HINGE, "plate_bottom_z": bottom,
                      "plate_top_z": top, "hinge_z": hinge},
-            "tongue": {"t": TONGUE_T, "back_gap": BACK_GAP, "bot": TONGUE_BOT, "top": TONGUE_TOP},
+            "tongue": {"t": TONGUE_T, "root_t": TONGUE_ROOT_T, "back_gap": BACK_GAP, "bot": TONGUE_BOT, "top": TONGUE_TOP},
             "recess": RECESS, "recess_x": RECESS_X, "floor": POCKET_FLOOR, "pocket_u": POCKET_U,
             "ribs": RIBS, "rib_w": RIB_W, "bays": bays(), "lift": LIFT,
             "label": " · ".join(LABEL), "label_box": box, "label_z": LABEL_Z,
@@ -317,23 +323,20 @@ def claw_mock(xc):
 def strap(x, u, z_axis, width, color, name):
     """A tote handle hanging over a peg: two legs and a curve over the top, in the plane
     y = -u (a loop around the peg's elliptical section there)."""
-    cu = bpy.data.curves.new(name, "CURVE")
-    cu.dimensions = "3D"
-    sp = cu.splines.new("POLY")
     rx, rz = PEG_D / 2 + 1.2, PEG_D / 2 / math.cos(math.radians(PEG_ANGLE)) + 1.2
     pts = [(x - rx - 3, z_axis - 260)]
     pts += [(x + rx * math.cos(math.radians(t)), z_axis + rz * math.sin(math.radians(t)))
-            for t in range(180, -1, -10)]
+            for t in range(180, -1, -6)]
     pts += [(x + rx + 3, z_axis - 260)]
-    sp.points.add(len(pts) - 1)
-    for p, (px, pz) in zip(sp.points, pts):
-        p.co = (px, -u, pz, 1)
-    cu.extrude = width / 2          # ribbon: extruded along the curve's normal (here ~Y)
-    cu.bevel_depth = 0.0
-    cu.offset = 0
-    cu.twist_mode = "Z_UP"
-    ob = bpy.data.objects.new(name, cu)
-    bpy.context.collection.objects.link(ob)
+    # ribbon: the strap's width runs along the peg axis, so the loop stays wrapped round it
+    a = math.radians(PEG_ANGLE)
+    d = Vector((0, -math.cos(a), math.sin(a)))
+    bm = bmesh.new()
+    rows = [[bm.verts.new(Vector((px, -u, pz)) + d * s) for px, pz in pts]
+            for s in (-width / 2, width / 2)]
+    for i in range(len(pts) - 1):
+        bm.faces.new((rows[0][i], rows[0][i + 1], rows[1][i + 1], rows[1][i]))
+    ob = S._link(name, bm)
     md = ob.modifiers.new("t", "SOLIDIFY")
     md.thickness = 1.6
     S.assign(ob, S.material(f"strap {name}", color, rough=0.85))
@@ -405,10 +408,10 @@ def main():
                 (0.42, 0.31, 0.18, 1)]
         straps = []
         a_ = math.radians(PEG_ANGLE)
-        for i, (px, us) in enumerate(((PEG_X[0], (24.0, 36.0)), (PEG_X[1], (24.0, 36.0)))):
+        for i, (px, us) in enumerate(((PEG_X[0], (31.0, 50.0)), (PEG_X[1], (31.0, 50.0)))):
             for j, u in enumerate(us):
                 zx = PEG_Z + (u - T) * math.tan(a_)
-                s = strap(px, u, zx, 10.0, cols[2 * i + j], f"strap{i}{j}")
+                s = strap(px, u, zx, 26.0, cols[2 * i + j], f"strap{i}{j}")
                 s.parent = root
                 straps.append(s)
         S.camera(P(-160, -420, 160), target=P(W / 2, -24, 10), lens=55)

@@ -1,0 +1,269 @@
+<title>Tote Bag Hook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the home-devices dark product sheet (hub, purge bin), continued. Full-bleed renders, facts in quiet grids, one red accent. */
+:root {
+  --bg: #0d0d0e;
+  --surface: #161617;
+  --ink: #ededeb;
+  --ink-2: #9a9a96;
+  --rule: #2a2a2c;
+  --red: #ff4136;
+  --amber: #e8b43a;
+  --green: #5fc48a;
+  --steel: #9aa3b0;
+  --paper: #ffffff;
+  --f-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-display);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 80px; }
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 64px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.6rem, 8vw, 5rem); font-weight: 700; line-height: 0.95; }
+h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 600; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+code { font-family: var(--f-mono); font-size: 0.88em; }
+.tag { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-2); }
+.dot { display: inline-block; width: 0.36em; height: 0.36em; border-radius: 50%; background: var(--red); vertical-align: 0.55em; margin-left: 0.06em; }
+a { color: var(--ink); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+header { display: grid; gap: 18px; }
+.lede { font-size: 1.12rem; color: var(--ink-2); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.facts div { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; }
+.facts b { font: 500 1.25rem/1.2 var(--f-display); font-variant-numeric: tabular-nums; }
+
+figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--surface); }
+figure.paper img { background: var(--paper); }
+figcaption { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--ink-2); }
+figcaption b { color: var(--ink); font-weight: 600; }
+figcaption .n { font-family: var(--f-mono); flex: none; }
+.grid3 { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.grid2 { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); }
+
+section { display: grid; gap: 24px; }
+.sec-head { display: grid; gap: 8px; border-top: 1px solid var(--rule); padding-top: 18px; }
+.sec-head .tag { color: var(--red); }
+
+.ask { background: var(--surface); border-left: 3px solid var(--amber); border-radius: 0 8px 8px 0; padding: 18px 20px; display: grid; gap: 10px; }
+.ask ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; max-width: 70ch; }
+
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; counter-reset: s; }
+.steps li { background: var(--surface); padding: 14px 18px 14px 56px; position: relative; counter-increment: s; }
+.steps li::before { content: counter(s); position: absolute; left: 18px; top: 13px; font: 500 13px/1.6 var(--f-mono); color: var(--red); }
+.steps b { font-weight: 600; }
+
+.rows { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.row { background: var(--surface); padding: 14px 18px; display: grid; grid-template-columns: 110px 1fr; gap: 16px; }
+.row > div { min-width: 0; display: grid; gap: 4px; }
+.pill { justify-self: start; align-self: start; font: 500 10.5px/1 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 8px; border-radius: 99px; border: 1px solid currentColor; }
+.pill.fixed { color: var(--green); }
+.pill.open { color: var(--amber); }
+.pill.kept { color: var(--ink-2); }
+.muted { color: var(--ink-2); }
+
+.print { display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+.plate { background: var(--surface); border-radius: 8px; padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+.plate dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 14px; }
+.plate dt { color: var(--ink-2); }
+.plate dd { margin: 0; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: 0; border: 1px solid var(--rule); background: #f2f2ee; }
+ul.plain { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; max-width: 70ch; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; gap: 8px; } }
+
+/* click any image to see it full size */
+.zoomable { cursor: zoom-in; }
+.dwgs { display: grid; gap: 28px; }
+.hint { font: 500 11px/1.4 var(--f-mono); letter-spacing: 0.06em; color: var(--ink-2); }
+dialog.lb { border: 0; padding: 0; margin: 0; width: 100vw; height: 100vh; max-width: none; max-height: none; background: var(--bg); color: var(--ink); }
+dialog.lb::backdrop { background: var(--bg); }
+.lb-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--bg);
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid var(--rule); }
+.lb-bar span { font-size: 13px; color: var(--ink-2); min-width: 0; }
+.lb-bar button { font: 500 12px var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 12px; cursor: pointer; flex: none; }
+.lb-body { overflow: auto; height: calc(100% - 52px - env(safe-area-inset-top, 0px)); display: grid; place-items: center; padding: 16px; }
+.lb-body img { display: block; max-width: 100%; height: auto; border-radius: 6px; cursor: zoom-in; }
+.lb-body.full { place-items: start; }
+.lb-body.full img { max-width: none; width: auto; cursor: zoom-out; }
+.lb-body.paper img { background: var(--paper); }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="tag">Home devices · Entryway · Rev A</span>
+    <h1>Tote Bag Hook<span class="dot"></span></h1>
+    <p class="lede">A small white plate with two 45° pegs for your four empty Costco and Trader Joe's totes, two per peg. It has no screws and no adhesive. A thin tongue on the back drops into the tab of each 3M CLAW drywall hanger, the way picture wire would.</p>
+    <div class="facts">
+      <div><span class="tag">Size</span><b>120 × 70</b><span class="muted">mm · 52 off the wall</span></div>
+      <div><span class="tag">Hook · white</span><b>6 h 06 m</b><span class="muted">78 g · 0.08 mm</span></div>
+      <div><span class="tag">Fit test · white</span><b>1 h 22 m</b><span class="muted">13 g · same settings</span></div>
+      <div><span class="tag">Anchors</span><b>2 × CLAW 15 lb</b><span class="muted">80 mm apart, level</span></div>
+    </div>
+  </header>
+
+  <figure>
+    <img src="renders/hook_hero.jpg" alt="White rounded-rectangle wall plate with two cylindrical pegs angled up at 45 degrees and a small engraved BAGS · 01 label" width="1600" height="1200">
+    <figcaption><span><b>Hero.</b> 120 × 70 × 14 mm plate, Ø14 pegs 60 mm apart, R10 corners and R1.2 rims.</span><span class="n">01</span></figcaption>
+  </figure>
+
+  <section>
+    <div class="sec-head"><span class="tag">Before you print</span><h2>Two things to know</h2></div>
+    <div class="ask">
+      <p><b>Drywall only, not the door.</b> 3M says the CLAW is for drywall only. Its steel claw needs the gypsum core to bite into. On a solid wood door it won't go in, and on a hollow-core door the skin is too thin to hold it. Mount this on the wall beside the door. If you want it on the door itself, I can make an over-the-door version instead.</p>
+      <p><b>The CLAW's tab is estimated, so print the fit test first.</b> I couldn't measure a real CLAW. I read the tab from 3M's drawings: about 7 mm wide and 9 mm tall, leaning out about 28°. If the tab leans less than about 20°, the tongue barely catches it. The fit test is a 30 mm slice through one bay, printed at the same settings as the hook. Push one CLAW into the wall, hang the slice on it, and check:</p>
+      <ol>
+        <li><b>It drops on without forcing</b> and its back sits flat on the wall.</li>
+        <li><b>Its top edge is about 9.5 mm above the CLAW's top.</b> If it's clearly higher, the tab is shallower than I assumed, and the tongue is catching less of it.</li>
+        <li><b>You have to lift it at least 3 mm</b> before it comes off. A pull straight out at the bottom shouldn't release it.</li>
+        <li>Even better, if you can: measure one CLAW's tab (its height, and how far its top edge stands off the plate). Then I can set the tongue to the real part.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">In use</span><h2>Two totes per peg</h2></div>
+    <figure>
+      <img src="renders/hook_inuse.jpg" alt="The hook with four tote handles hanging over the two pegs, two on each" width="1600" height="1200" loading="lazy">
+      <figcaption><span><b>In use.</b> Handles slide down the 45° pegs toward the wall, so they stay on when you take another bag. Four 25–35 mm handles on one 48 mm peg will bunch up, but empty totes nest.</span><span class="n">02</span></figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">How it hangs</span><h2>A tongue in the CLAW's V</h2></div>
+    <p>The CLAW is a 23 mm square steel plate. A tab punched from its middle is hinged at the bottom and leans out, making a V that opens upward. Picture wire and D-rings drop into it. A tongue runs along the back of the hook, 0.34 mm in front of the plate, and drops into the same V. It is 1.2 mm thick at the tip and thickens to 2.2 mm at the root. The bags' weight wedges it down. The tab stops the top pulling off the wall, and the bottom 29 mm of the plate rests flat against the wall below the CLAWs.</p>
+    <div class="grid2">
+      <figure><img src="renders/d_tongue_section.jpg" alt="Side section through a CLAW: the tongue sits between the CLAW plate and its leaning tab" width="1400" height="1050" loading="lazy"><figcaption><span><b>Section at the CLAW.</b> The tongue (white) sits in the V between the plate (grey, on the wall) and the leaning tab.</span><span class="n">03</span></figcaption></figure>
+      <figure><img src="renders/d_section_full.jpg" alt="Side section through the whole hook at a CLAW, showing the peg, the bay and the tongue" width="1400" height="1050" loading="lazy"><figcaption><span><b>Whole section.</b> The bay leaves room for the tab when you lift the hook on and off. The front wall is 5 mm.</span><span class="n">04</span></figcaption></figure>
+    </div>
+    <ol class="steps">
+      <li><b>Mark two dots 80 mm apart and level</b>, 32.5 mm below where you want the hook's top edge. Use a pencil or the CLAW spot markers.</li>
+      <li><b>Push in the CLAWs</b> as 3M describes: put the notch in each CLAW's bottom edge on a dot, then push the top in until it sits flush. Each CLAW's top ends up 9.5 mm below the hook's top edge.</li>
+      <li><b>Hang the hook</b>: hold it flat on the wall about 5 mm above its final spot, then slide it down until the tongue drops into both tabs. The tabs go in bays 1 and 5 on the back. Anything from 60 to 90 mm apart still lands in them. Keep the CLAWs level: 1 mm of difference tilts the hook visibly.</li>
+      <li><b>To take it off</b>, lift it about 5 mm and pull it away.</li>
+      <li><b>Optional anti-lift:</b> nothing but gravity holds the hook down. If lifting off the last tote ever unhooks it, put a small removable adhesive strip on the flat back below the recess.</li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Views</span><h2>Around the hook</h2></div>
+    <div class="grid2">
+      <figure><img src="renders/hook_front.jpg" alt="The hook seen straight on" width="1600" height="1200" loading="lazy"><figcaption><span><b>Front.</b> The label sits centred between the pegs, above where the handles hang.</span><span class="n">05</span></figcaption></figure>
+      <figure><img src="renders/hook_side.jpg" alt="The hook from the right, showing the pegs' 45° rise" width="1600" height="1200" loading="lazy"><figcaption><span><b>Side.</b> It projects 52 mm from the wall at the peg tips.</span><span class="n">06</span></figcaption></figure>
+      <figure><img src="renders/hook_back.jpg" alt="The back of the hook: a shallow recess with five bays separated by ribs" width="1600" height="1200" loading="lazy"><figcaption><span><b>Back.</b> A 1.2 mm recess for the CLAW plates, and five bays separated by ribs. Only bays 1 and 5 are used for the tabs. The ribs carry the tongue's lower edge while it prints. The tongue runs along the top of the bays.</span><span class="n">07</span></figcaption></figure>
+      <figure><img src="renders/hook_cutaway.jpg" alt="The hook cut through the right CLAW, showing the CLAW tab in its bay" width="1600" height="1200" loading="lazy"><figcaption><span><b>Cutaway.</b> Cut through the right CLAW (bay 5).</span><span class="n">08</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Details</span><h2>Close-ups</h2></div>
+    <div class="grid2">
+      <figure><img src="renders/d_label.jpg" alt="Close-up of the engraved BAGS · 01 label" width="1400" height="1050" loading="lazy"><figcaption><span><b>Label.</b> BAGS · 01 in 6 mm bold mono, 0.6 mm deep with the house dot. The cut slopes down 45° so the letter tops don't sag.</span><span class="n">09</span></figcaption></figure>
+      <figure><img src="renders/d_peg.jpg" alt="Close-up of a peg's flat end and its root on the plate" width="1400" height="1050" loading="lazy"><figcaption><span><b>Peg.</b> Flat end with an R3 edge, so handles slide off it instead of catching. A plain root where it meets the plate, like a dowel.</span><span class="n">10</span></figcaption></figure>
+      <figure><img src="renders/d_corner.jpg" alt="Close-up of the bottom-left corner showing the R10 arc ending in a short 45° flat" width="1400" height="1050" loading="lazy"><figcaption><span><b>Bottom corner.</b> The R10 arc stops at 45° and finishes with a 4 mm flat. A full arc would overhang 1.3 mm on the first layer. The top corners are full R10 arcs.</span><span class="n">11</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Part views</span><h2>What you're printing</h2></div>
+    <div class="grid2">
+      <figure><img src="renders/view_front.jpg" alt="Part alone, front view" width="1600" height="1200" loading="lazy"><figcaption><span><b>Front.</b></span><span class="n">12</span></figcaption></figure>
+      <figure><img src="renders/view_back.jpg" alt="Part alone, back view" width="1600" height="1200" loading="lazy"><figcaption><span><b>Back.</b></span><span class="n">13</span></figcaption></figure>
+      <figure><img src="renders/view_side.jpg" alt="Part alone, side view" width="1600" height="1200" loading="lazy"><figcaption><span><b>Side.</b></span><span class="n">14</span></figcaption></figure>
+      <figure><img src="renders/view_top.jpg" alt="Part alone, top view" width="1600" height="1200" loading="lazy"><figcaption><span><b>Top.</b></span><span class="n">15</span></figcaption></figure>
+      <figure><img src="renders/view_printbed.jpg" alt="The hook standing upright on the print bed" width="1600" height="1200" loading="lazy"><figcaption><span><b>On the bed.</b> Upright as it hangs, with no supports and a 4 mm brim, since it stands 70 mm tall on a 12 mm footprint. The pegs rise at 45°. The tongue's lower edge bridges 17 mm between ribs.</span><span class="n">16</span></figcaption></figure>
+      <figure><img src="renders/view_fittest.jpg" alt="The fit-test slice on the print bed" width="1600" height="1200" loading="lazy"><figcaption><span><b>Fit test.</b> A 30 mm slice through the middle bay, z 20–70. It prints the same way up, at the same settings as the hook.</span><span class="n">17</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Drawings</span><h2>Dimensions</h2><span class="hint">Click a drawing to enlarge it, and click again for full size.</span></div>
+    <div class="dwgs">
+      <figure class="paper"><img src="renders/dwg_section.svg" alt="Dimensioned section through a CLAW" width="1080" height="1010" loading="lazy"><figcaption><span><b>Section.</b> The tongue, bay and CLAW, plus where the hook sits relative to the CLAW.</span><span class="n">18</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_front.svg" alt="Dimensioned front view" width="1080" height="860" loading="lazy"><figcaption><span><b>Front.</b></span><span class="n">19</span></figcaption></figure>
+      <figure class="paper"><img src="renders/dwg_back.svg" alt="Dimensioned back view with CLAW bays" width="1080" height="880" loading="lazy"><figcaption><span><b>Back.</b> Bays and CLAW spacing.</span><span class="n">20</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="tag">Design review</span><h2>What the independent review found</h2></div>
+    <div class="rows">
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>Each peg root had a chin printing in mid-air.</b><span class="muted">The peg started only 4 mm inside the plate, so its 45° start cap poked out below the root. It's now embedded 8 mm, and the root starts cleanly on the face.</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>The CLAW spacing advice was wrong.</b><span class="muted">At 40 mm apart, a peg sits outside the support span, and one tote on it tips the hook. Use bays 1 and 5 (80 mm, anything from 60 to 90 works).</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>The tongue root was weak in bending.</b><span class="muted">The front face now drafts from 1.2 mm at the tip to 2.2 mm at the root, about 3× less stress. Plate clearance went from 0.24 to 0.34 mm, to allow for paint.</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>The peg roots sat partly over the bays.</b><span class="muted">I raised the bay floor from 24 to 31 mm, so both roots are on solid plastic. The print now uses 4 walls and 20% infill.</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>The fit test wasn't printed like the hook.</b><span class="muted">It now uses the same 0.08 mm settings, so the tongue's bridged edge matches. The page also lists what it has to pass.</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>No brim on a 70 mm tall, 12 mm thin part.</b><span class="muted">It now has a 4 mm brim on the hidden underside.</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>The top corners didn't need the 45° flats.</b><span class="muted">They're full R10 arcs now. Only the bottom two, which touch the bed, keep the flats.</span></div></div>
+      <div class="row"><span class="pill fixed">Fixed</span><div><b>Errors in the drawings.</b><span class="muted">Peg outlines were idealised, the label size was the font size, and the section lacked heights and "est." marks. All corrected. The in-use render now shows 26 mm handles.</span></div></div>
+      <div class="row"><span class="pill open">Open</span><div><b>Gravity is the only thing holding it down.</b><span class="muted">A sharp upward pull, like yanking the last tote off, could lift the tongue out. I raised the peg end round to R3 so handles don't snag. If it ever happens, the adhesive-strip tip above fixes it.</span></div></div>
+      <div class="row"><span class="pill open">Open</span><div><b>The tongue's lower edge sags a little where it bridges.</b><span class="muted">It prints as a 17 mm unsupported span. The fit test shows whether it sags enough to matter.</span></div></div>
+      <div class="row"><span class="pill kept">Kept</span><div><b>No fillet at the peg root.</b><span class="muted">Stress there is low for empty totes, and the plain dowel look is deliberate.</span></div></div>
+    </div>
+  </section>
+
+
+  <section>
+    <div class="sec-head"><span class="tag">Print plan</span><h2>Two prints, fit test first</h2></div>
+    <div class="print">
+      <div class="plate">
+        <h3>1 · Fit test</h3>
+        <dl>
+          <dt>File</dt><dd><code>bag-hook/print/fittest_white.gcode.3mf</code></dd>
+          <dt>Filament</dt><dd><span class="swatch"></span>Bambu PLA Matte, white (synced)</dd>
+          <dt>Process</dt><dd>Same as the hook</dd>
+          <dt>Time</dt><dd>1 h 22 min · 13 g</dd>
+        </dl>
+      </div>
+      <div class="plate">
+        <h3>2 · Hook</h3>
+        <dl>
+          <dt>File</dt><dd><code>bag-hook/print/bag_hook_white.gcode.3mf</code></dd>
+          <dt>Filament</dt><dd><span class="swatch"></span>Bambu PLA Matte, white (synced)</dd>
+          <dt>Process</dt><dd>0.08 mm Extra Fine, outer wall 60 mm/s at 2000 mm/s², inner walls 120 mm/s, 4 walls, 20% infill, seam at back (wall side), 4 mm brim, no supports</dd>
+          <dt>Time</dt><dd>6 h 06 min · 78 g</dd>
+        </dl>
+      </div>
+    </div>
+    <p class="muted">Both are sliced with Bambu Studio's command line on your PC. Open them with File &gt; Open in the Studio you already have running. Nothing has been sent to the printer.</p>
+  </section>
+</div>
+
+<dialog class="lb" id="lb" aria-label="Image viewer">
+  <div class="lb-bar"><span id="lb-cap"></span><button id="lb-close" type="button">Close</button></div>
+  <div class="lb-body" id="lb-body"><img id="lb-img" alt=""></div>
+</dialog>
+
+<script>
+(() => {
+  const lb = document.getElementById("lb"), body = document.getElementById("lb-body"),
+        img = document.getElementById("lb-img"), cap = document.getElementById("lb-cap");
+  document.querySelectorAll("figure img").forEach(el => {
+    el.classList.add("zoomable");
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    const open = () => {
+      img.src = el.currentSrc || el.src;
+      img.alt = el.alt;
+      const fc = el.closest("figure").querySelector("figcaption");
+      cap.textContent = fc ? fc.textContent.replace(/\s+/g, " ").trim() : el.alt;
+      body.classList.remove("full");
+      body.classList.toggle("paper", !!el.closest("figure.paper"));
+      lb.showModal();
+    };
+    el.addEventListener("click", open);
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  });
+  img.addEventListener("click", () => body.classList.toggle("full"));
+  document.getElementById("lb-close").addEventListener("click", () => lb.close());
+  lb.addEventListener("click", e => { if (e.target === body) lb.close(); });
+})();
+</script>

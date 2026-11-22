@@ -102,8 +102,8 @@ def arcp(c, r, a0, a1, n=24):
 
 def outline(W, H, R):
     k = R * (1 - math.cos(math.radians(45)))
-    pts = [(2 * k, 0), (W - 2 * k, 0)] + arcp((W - R, R), R, -45, 0) + arcp((W - R, H - R), R, 0, 45)
-    pts += [(W - 2 * k, H), (2 * k, H)] + arcp((R, H - R), R, 135, 180) + arcp((R, R), R, 180, 225)
+    pts = [(2 * k, 0), (W - 2 * k, 0)] + arcp((W - R, R), R, -45, 0) + arcp((W - R, H - R), R, 0, 90)
+    pts += arcp((R, H - R), R, 90, 180) + arcp((R, R), R, 180, 225)
     return pts
 
 
@@ -124,18 +124,22 @@ def peg_side(T, d, ang, L, z0):
 def front():
     W, H, R = D["W"], D["H"], D["R"]
     pg = D["peg"]
-    k = 7.0
-    sh = Sheet(1080, 760, k, (150, 640))
+    k = 6.4
+    sh = Sheet(1080, 860, k, (110, 600))
     sh.poly(outline(W, H, R))
     a = math.radians(pg["angle"])
     r = pg["d"] / 2
     for px in pg["x"]:
         # peg seen from the front: root ellipse merged with the end disc, as a stadium
+        # root on the face: ellipse r x r/cos a; end face seen at 45 deg: ellipse r x r sin a
         z0, z1 = pg["z"], pg["z"] + pg["len"] * math.sin(a)
-        pts = arcp((px, z1), r, 0, 180) + arcp((px, z0), r, 180, 360)
-        sh.poly(pts, fill="#f6f6f4", sw=1.6)
-        sh.poly(arcp((px, z1), r, 0, 360, 48), fill="#fbfbfa", sw=1.6)
-        sh.line((px, z0 - 4), (px, z1 + r + 4), MUTE, 0.8, "6 4")
+        rz0, rz1 = r / math.cos(a), r * math.sin(a)
+        ell = lambda c, rz, a0, a1: [(px + r * math.cos(math.radians(t)),  # noqa: E731
+                                      c + rz * math.sin(math.radians(t)))
+                                     for t in [a0 + (a1 - a0) * i / 24 for i in range(25)]]
+        sh.poly(ell(z1, rz1, 0, 180) + ell(z0, rz0, 180, 360), fill="#f6f6f4", sw=1.6)
+        sh.poly(ell(z1, rz1, 0, 360), fill="#fbfbfa", sw=1.6)
+        sh.line((px, z0 - rz0 - 2), (px, z1 + rz1 + 3), MUTE, 0.8, "6 4")
     lb = D["label_box"]
     sh.poly([(lb[0], lb[1]), (lb[2], lb[1]), (lb[2], lb[3]), (lb[0], lb[3])], fill="none",
             stroke=ACC, sw=1.2, dash="4 3")
@@ -145,12 +149,13 @@ def front():
     sh.dim((pg["x"][0], H), (pg["x"][1], H), 9, f"{pg['x'][1] - pg['x'][0]:.0f} peg spacing")
     sh.dim((0, H), (pg["x"][0], H), 9, f"{pg['x'][0]:.0f}")
     sh.dim((0, 0), (0, pg["z"]), -10, f"{pg['z']:.0f}", horiz=False)
-    sh.note((W + 24, H - 6), f"corners R{R:.0f}, stopped at 45°", size=FS - 2)
-    sh.note((W + 24, H - 12), "with a short 45° flat (bed)", size=FS - 2)
-    sh.note((W + 24, H - 21), f"rims R{D['edge']}", size=FS - 2)
-    sh.note((W + 24, 16), f"pegs Ø{pg['d']:.0f}, {pg['angle']:.0f}° up", size=FS - 2)
-    sh.note((W + 24, 10), f"{pg['len']:.0f} mm long", size=FS - 2)
-    sh.note((W + 24, 2), "label 6 mm, 0.6 deep", ACC, size=FS - 2)
+    sh.note((0, -26), f"Corners R{R:.0f}. The bottom two end in a short 45° flat so they "
+            "print on the bed.  Rims R" + f"{D['edge']}.", size=FS - 1)
+    sh.note((0, -32.5), f"Pegs Ø{pg['d']:.0f}, {pg['len']:.0f} long on the axis, {pg['angle']:.0f}° up, "
+            f"flat ends with an R{pg['end_r']:.0f} edge.", size=FS - 1)
+    cap = lb[3] - lb[1]
+    sh.note((0, -39), f"Label BAGS · 01: bold mono, {lb[2] - lb[0]:.1f} × {cap:.1f} mm, "
+            "0.6 deep (dot 1.2).", ACC, size=FS - 1)
     return sh.svg("FRONT  ·  as it hangs  ·  mm")
 
 
@@ -158,7 +163,7 @@ def section():
     W, H, T = D["W"], D["H"], D["T"]
     pg, cl, tg = D["peg"], D["claw"], D["tongue"]
     k = 11.0
-    sh = Sheet(1080, 960, k, (760, 860))
+    sh = Sheet(1080, 1010, k, (760, 830))
     # mirror so the wall is on the right: u -> -u
     M = lambda pts: [(-u, z) for u, z in pts]  # noqa: E731
     pts, s, e = peg_side(T, pg["d"], pg["angle"], pg["len"], pg["z"])
@@ -168,7 +173,7 @@ def section():
     rec, fl, pu = D["recess"], D["floor"], D["pocket_u"]
     # cut face through a bay: recess behind the tongue, bay in front of and below it
     body = [(0, 0), (T, 0), (T, H), (0, H), (0, rec[1]), (bg, rec[1]), (bg, tg["bot"]),
-            (tu, tg["bot"]), (tu, tg["top"]), (pu, tg["top"]), (pu, fl), (bg, fl),
+            (tu, tg["bot"]), (bg + tg["root_t"], tg["top"]), (pu, tg["top"]), (pu, fl), (bg, fl),
             (bg, rec[0]), (0, rec[0])]
     sh.poly(M(body), fill="#dcdcda", sw=2.2)
     # hatch hint on the cut face
@@ -189,7 +194,7 @@ def section():
     sh.line((0.0, -4), (0.0, H + 6), INK, 2.6)
     for i in range(18):
         z = -4 + i * 4.3
-        sh.line((0.0, z), (-3.0, z + 3.0), MUTE, 1)
+        sh.line((0.0, z), (3.0, z + 3.0), MUTE, 1)
     sh.note((2.2, H + 3), "WALL", "middle", MUTE, FS - 2)
     # dimensions
     sh.dim((0, 0), (-T, 0), -6, f"{T:.0f}", horiz=True)
@@ -197,21 +202,30 @@ def section():
     sh.dim((0, -9), (-depth, -9), -4, f"{D['hook_dims'][1]:.1f} off the wall", horiz=True)
     sh.dim((-T, 0), (-T, pg["z"]), -4, f"{pg['z']:.0f}", horiz=False)
     sh.dim((0, 0), (0, H), 8, f"{H:.0f}", horiz=False)
-    sh.text(M([(T + 13, pg["z"] + 8)])[0], f"{pg['angle']:.0f}°", color=ACC)
+    sh.text(M([(T + 17, pg["z"] + 3)])[0], f"{pg['angle']:.0f}°", color=ACC)
     sh.line(M([(T, pg["z"])])[0], M([(T + 22, pg["z"])])[0], ACC, 1, "5 4")
-    sh.text(M([((s[0] + e[0]) / 2 - 6, (s[1] + e[1]) / 2 + 7)])[0], f"{pg['len']:.0f}", color=INK)
+    sh.line(M([s])[0], M([e])[0], MUTE, 0.9, "8 4")
+    sh.text(M([((s[0] + e[0]) / 2 - 5, (s[1] + e[1]) / 2 + 5)])[0], f"{pg['len']:.0f} on axis",
+            color=INK, rot=45)
+    pa = math.radians(pg["angle"])
+    sh.line(M([(T, pg["z"])])[0], M([(T + 16 * math.cos(pa), pg["z"] + 16 * math.sin(pa))])[0], ACC, 1)
+    sh.poly(M(arcp((T, pg["z"]), 14, 0, pg["angle"], 12)), fill="none", stroke=ACC, sw=1.2,
+            close=False)
     # tongue call-outs
-    sh.note((4, tg["bot"] - 1), f"tongue {tg['t']} thick, {tg['top'] - tg['bot']:.0f} tall", size=FS - 2)
-    sh.note((4, tg["bot"] - 5), f"{tg['back_gap']} off the wall (plate {cl['t']})", size=FS - 2)
-    sh.note((4, tg["bot"] - 9), "rests ~3.5 up the CLAW's V", size=FS - 2)
-    sh.line((4, tg["bot"] - 0.4), (-tg["back_gap"] - tg["t"] / 2, tg["bot"] + 1), ACC, 1)
+    sh.note((4, cl["plate_bottom_z"] - 5), f"tongue {tg['t']} at tip, {tg['root_t']} at root", size=FS - 2)
+    sh.note((4, cl["plate_bottom_z"] - 9), f"{tg['back_gap']} off the wall (plate {cl['t']})", size=FS - 2)
+    sh.note((4, cl["plate_bottom_z"] - 13), f"est.: seats ~{tg['bot'] - cl['hinge_z']:.1f} up the CLAW's V", size=FS - 2)
+    sh.line((4, cl["plate_bottom_z"] - 4.4), (-tg["back_gap"] - tg["t"] / 2, tg["bot"]), ACC, 1)
     sh.dim((0, cl["plate_top_z"]), (0, H), 22, f"{H - cl['plate_top_z']:.1f}", ACC, horiz=False)
     sh.dim((0, cl["plate_bottom_z"]), (0, cl["plate_top_z"]), 22, "CLAW 23", STEEL, horiz=False)
     sh.note((4, cl["plate_top_z"] + 5), "hook top sits", color=ACC, size=FS - 2)
-    sh.note((4, cl["plate_top_z"] + 1.5), f"{H - cl['plate_top_z']:.1f} above the CLAW", color=ACC,
+    sh.note((4, cl["plate_top_z"] + 1.5), f"~{H - cl['plate_top_z']:.1f} above CLAW (est.)", color=ACC,
             size=FS - 2)
-    sh.note((-T - 2, H - 4), f"bay {D['pocket_u']:.0f} deep", "end", size=FS - 2)
-    sh.note((-T - 2, H - 8), f"front wall {T - D['pocket_u']:.0f}", "end", size=FS - 2)
+    sh.note((4, 22), "heights from the bottom:", size=FS - 2)
+    sh.note((4, 18), f"recess {rec[0]:.0f}–{rec[1]:.0f}, 1.2 deep", size=FS - 2)
+    sh.note((4, 14), f"bays {fl:.0f}–{tg['top']:.0f}, {pu:.0f} deep", size=FS - 2)
+    sh.note((4, 10), f"tongue {tg['bot']:.0f}–{tg['top']:.0f}", size=FS - 2)
+    sh.note((4, 6), f"front wall {T - pu:.0f}", size=FS - 2)
     return sh.svg("SECTION through a CLAW  ·  wall on the right  ·  mm")
 
 
@@ -219,7 +233,7 @@ def back():
     W, H, R = D["W"], D["H"], D["R"]
     cl = D["claw"]
     k = 7.0
-    sh = Sheet(1080, 800, k, (120, 650))
+    sh = Sheet(1080, 880, k, (120, 650))
     # seen from the wall side: mirror x so it reads as you'd hold it facing you
     X = lambda x: W - x  # noqa: E731
     sh.poly([(X(x), z) for x, z in outline(W, H, R)])
@@ -232,7 +246,7 @@ def back():
                  (X(x0), D["tongue"]["bot"])], fill="#cfcfcd", sw=1.4)
         sh.note((X((x0 + x1) / 2), D["floor"] + 4), f"{i + 1}", "middle", INK, FS + 2)
     sh.line((X(rx[0]), D["tongue"]["bot"]), (X(rx[1]), D["tongue"]["bot"]), ACC, 2.2)
-    sh.note((X(rx[0]) + 2, D["tongue"]["bot"] + 2), "tongue edge", "start", ACC, FS - 2)
+    sh.note((X(rx[1]) + 1, D["tongue"]["bot"] + 1.5), "tongue tip", "start", ACC, FS - 2)
     # CLAW positions for the 80 mm spacing (bays 1 and 5)
     for xc in (20.0, 100.0):
         b, t = cl["plate_bottom_z"], cl["plate_top_z"]
@@ -244,10 +258,10 @@ def back():
         sh.dim((X(x0), D["floor"]), (X(x1), D["floor"]), -8, f"bay {x1 - x0:.0f}")
     rib = D["ribs"][0]
     sh.dim((X(rib - 1.5), D["floor"]), (X(rib + 1.5), D["floor"]), -16, "rib 3")
-    sh.dim((X(0), 0), (X(W), 0), -26, f"{W:.0f}")
-    sh.note((X(0) + 3, -6), "Each CLAW's tab goes in any numbered bay (17 mm wide: ±5 mm slack).",
+    sh.dim((X(W), 0), (X(0), 0), -10, f"{W:.0f}")
+    sh.note((X(W), -20), "Use bays 1 + 5: CLAWs 80 mm apart (60–90 still lands in the bays) and level.",
             size=FS - 1)
-    sh.note((X(0) + 3, -11.5), "80 mm apart (bays 1 + 5) is steadiest; 40 mm (2 + 4) or one in bay 3 also work.",
+    sh.note((X(W), -26), "Closer CLAWs put a peg outside the support span: one tote on it tips the hook.",
             size=FS - 1)
     return sh.svg("BACK  ·  wall side  ·  CLAW bays  ·  mm")
 
