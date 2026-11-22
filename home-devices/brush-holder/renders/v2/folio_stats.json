@@ -1,16 +1,16 @@
 {
- "empty_tip_back_N": 1.64,
- "empty_tip_fwd_N": 2.07,
+ "empty_tip_back_N": 1.69,
+ "empty_tip_fwd_N": 2.09,
  "parts": [
   [
    "Tray",
-   123.7,
-   87.5
+   135.0,
+   95.4
   ],
   [
    "Panel",
-   177.0,
-   125.1
+   176.0,
+   124.4
   ],
   [
    "Shelf",
@@ -83,15 +83,15 @@
    2.8
   ]
  ],
- "stand_g": 380,
- "loaded_g": 688,
+ "stand_g": 388,
+ "loaded_g": 696,
  "com": [
-  -1.2,
-  -12.9,
-  97.6
+  -1.1,
+  -13.2,
+  96.7
  ],
- "tip_push_back_N": 3.58,
- "tip_push_fwd_N": 3.13,
+ "tip_push_back_N": 3.63,
+ "tip_push_fwd_N": 3.15,
  "carts": {
   "B11": {
    "size": "16.8",

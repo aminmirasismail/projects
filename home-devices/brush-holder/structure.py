@@ -187,8 +187,8 @@ check("Shelf hinge: ear pulled up across layers, with offset (sustained)", ear(r
       ALLOW["sus_across"], "MPa", "ear base 7 x 11 mm, pin at its back end")
 check("Shelf hinge: ear pulled up across layers, with offset (design)", ear(res["des"]["Fpin_each"]),
       ALLOW["des_across"], "MPa")
-check("Cheek bearing on the rail top (design)", res["des"]["Fstop_each"] / (7.0 * 3.0), ALLOW["des_along"], "MPa",
-      "contact taken over the front 3 mm of the rail only")
+check("Cheek bearing on the rail top (design)", res["des"]["Fstop_each"] / (6.2 * 1.5), ALLOW["des_along"], "MPa",
+      "real flat contact after bevels: x 77.8-84, y 59-60.5")
 out["hinge"] = {k: {kk: round(vv, 2) for kk, vv in v.items()} for k, v in res.items()}
 
 # ------------------------------------------------------------------ 5 panel above the stay peg
@@ -286,6 +286,93 @@ cl_hook = 3.1 - 3.0
 tilt_shelf = cl_shelf / (AX[0] - PF)           # tail lifts by the clearance over the stop lever
 tilt_panel = cl_hook / (STAY_Q[1] - HINGE[1])
 out["rest_offset_mm"] = round(tilt_shelf * (AX[0] - SF_Y) + tilt_panel * (PF + PT / 2 - SF_Y), 2)
+
+# ------------------------------------------------------------------ 9 duty cycle: sag and grip over the years
+# Chelsea's use: unfold, hang wet brushes for 24 h, take them off, fold, store unloaded 2-3 weeks.
+# Creep law (Findley power law), per unit of the instant sag:  J(t)/J0 = 1 + (t / tau) ** n,  t in hours.
+# Two calibrations bracket printed PLA at room temperature:
+#   typical       J(24 h) = 1.3, J(3 months) = 2.0
+#   conservative  J(24 h) = 1.5, J(3 months) = 3.0   (matches the E_creep = 1 GPa used above)
+# Steam: one hot shower during each dry, 1 h at ~30 C running creep ~4x faster -> 27 h effective per dry.
+# Stresses are tiny (frame under 1.2 MPa, <3 % of strength), so creep is linear in load.
+# Two bounds:
+#   REALISTIC   linear viscoelastic (Boltzmann superposition): each dry's creep recovers while stored.
+#   WORST CASE  nothing ever recovers: creep runs on the total loaded time, as if one long load
+#               (a strict upper bound for creep that only grows with time under load).
+EFF = 27.0
+
+
+def calib(j24, j3m):
+    n = math.log((j3m - 1) / (j24 - 1)) / math.log(2160 / 24)
+    tau = 24 / (j24 - 1) ** (1 / n)
+    return n, tau
+
+
+def Jf(t, n, tau):
+    return 0.0 if t < 0 else 1 + (t / tau) ** n
+
+
+def duty(n, tau, period_h, years=10, load_h=24.0):
+    cycles = int(years * 8760 / period_h)
+    ons = [k * period_h for k in range(cycles)]
+    real_peak, real_rest, worst_peak = [], [], []
+    for N, t0 in enumerate(ons):
+        te = t0 + load_h
+        tail_e = sum(Jf(te - a, n, tau) - Jf(te - a - load_h, n, tau) for a in ons[:N])
+        tail_s = sum(Jf(t0 - a, n, tau) - Jf(t0 - a - load_h, n, tau) for a in ons[:N])
+        real_peak.append(Jf(EFF, n, tau) + tail_e)
+        real_rest.append(tail_s)
+        worst_peak.append(Jf(EFF * (N + 1), n, tau))
+    return ons, real_peak, real_rest, worst_peak
+
+
+d0 = sag["as hung (instant)"]["total"]
+duty_out = {"d0_mm": d0, "cases": {}}
+for cname, (j24, j3m) in {"typical": (1.3, 2.0), "conservative": (1.5, 3.0)}.items():
+    n, tau = calib(j24, j3m)
+    c = {"n": round(n, 3), "tau_h": round(tau, 1)}
+    for pname, days in (("every 2 weeks", 14), ("every 3 weeks", 21)):
+        ons, rp, rr, wp = duty(n, tau, days * 24)
+        yrs = [t / 8760 for t in ons]
+        c[pname] = dict(years=[round(y, 3) for y in yrs], real_peak=[round(d0 * v, 4) for v in rp],
+                        real_rest=[round(d0 * v, 4) for v in rr], worst_peak=[round(d0 * v, 4) for v in wp])
+        idx = {y: min(range(len(yrs)), key=lambda i: abs(yrs[i] - y)) for y in (1, 3, 5, 10)}
+        c[pname]["summary"] = {f"{y} y": dict(real_in_use=round(d0 * rp[i], 3), real_resting=round(d0 * rr[i], 3),
+                                              worst_in_use=round(d0 * wp[i], 3)) for y, i in idx.items()}
+    c["continuous"] = {f"{y} y": round(d0 * Jf(y * 8760, n, tau), 3) for y in (0.25, 1, 3, 5, 10)}
+    c["forgot_one_week_mm"] = round(d0 * Jf(168, n, tau), 3)
+    # clip fingers sit at a fixed 1.8 mm deflection: grip relaxes as 1/J. Realistic: it recovers between
+    # dries. Worst case: no recovery, grip left = 1/J(total loaded time). A brush loses ~30 % of its
+    # wet weight as it dries, so the end-of-dry requirement is 0.7x.
+    ons, *_ = duty(n, tau, 14 * 24)
+    cum = EFF * len(ons)
+    g = {}
+    for label, start, end in (("new", 1.0, 1 / Jf(EFF, n, tau)),
+                              ("after 1 y, worst", 1 / Jf(EFF * 26, n, tau), 1 / Jf(EFF * 27, n, tau)),
+                              ("after 10 y, worst", 1 / Jf(cum, n, tau), 1 / Jf(cum + EFF, n, tau))):
+        g[label] = dict(grip_start=round(start, 3), grip_end=round(end, 3),
+                        sf_start_wet=round(2.0 * start, 2), sf_end_dry=round(2.0 * end / 0.7, 2))
+    c["grip"] = g
+    duty_out["cases"][cname] = c
+out["duty"] = duty_out
+cons = duty_out["cases"]["conservative"]["every 2 weeks"]["summary"]["10 y"]
+check("Duty cycle 10 y, realistic (conservative creep), in use", cons["real_in_use"], 0.5, "mm",
+      "24 h loaded every 2 weeks, recovery while stored")
+check("Duty cycle 10 y, no-recovery estimate (conservative creep), in use", cons["worst_in_use"], 1.0, "mm",
+      "strain-hardening rule: as if all 260 dries were one 9-month load")
+# provable bound (linear viscoelastic): any history with load <= the brushes is bounded by holding them
+# continuously for the same span
+for cn, c in duty_out["cases"].items():
+    c["hard_bound_10y"] = c["continuous"]["10 y"]
+check("Duty cycle 10 y, hard bound = brushes left on 10 years (typical creep)",
+      duty_out["cases"]["typical"]["hard_bound_10y"], 1.0, "mm")
+check("Duty cycle 10 y, hard bound = brushes left on 10 years (conservative creep)",
+      duty_out["cases"]["conservative"]["hard_bound_10y"], 1.5, "mm", "0.54 deg over the shelf")
+# steam sensitivity: a hotter, longer shower (10x for 1.5 h) on every dry
+n_c, tau_c = duty_out["cases"]["conservative"]["n"], duty_out["cases"]["conservative"]["tau_h"]
+duty_out["steam_10x_peak_mm"] = round(d0 * Jf(24 + 9 * 1.5, n_c, tau_c), 3)
+duty_out["steam_4x_peak_mm"] = round(d0 * Jf(EFF, n_c, tau_c), 3)
+
 out["checks"] = rows
 
 if __name__ == "__main__":
@@ -297,6 +384,12 @@ if __name__ == "__main__":
               f"x{r_['margin']}  {r_['note']}")
     for k, v in sag.items():
         print("sag", k, v)
+    for cname, c in out["duty"]["cases"].items():
+        print("duty", cname, "n", c["n"], "tau_h", c["tau_h"])
+        for pname in ("every 2 weeks", "every 3 weeks"):
+            print("   ", pname, c[pname]["summary"])
+        print("    continuous", c["continuous"], "forgot a week", c["forgot_one_week_mm"])
+        print("    grip", c["grip"])
     print("fixed rest offset of the front edge from pin clearances:", out["rest_offset_mm"], "mm (set once, not load-dependent)")
     os.makedirs(os.path.join(HERE, "renders", "v2"), exist_ok=True)
     json.dump(out, open(os.path.join(HERE, "renders", "v2", "structure.json"), "w"), indent=1)

@@ -66,7 +66,7 @@ BACK = [("B8", -72.5), ("B2", -44.5), ("B5", -17.8), ("B3", 11.4), ("B7", 39.3),
 # ================================================================== main dimensions
 W = 176.0                 # tray and shelf width (A1 Mini bed is 180)
 YF, YB = -86.0, 72.0      # tray front and back edges
-BH = 14.0                 # tray rim height
+BH = 22.5                 # tray rim height: deep enough that the folded panel, rail and stays sit inside it
 PF, PT = 58.0, 8.0        # panel front face, panel thickness
 PX = 80.0                 # panel half width (stays run just outside it)
 HZ = 19.0                 # panel hinge axis height (folded front face lands at z 15, clear of the rim)
@@ -405,11 +405,13 @@ def build():
     for v in well.data.vertices:          # floor falls ~2 mm towards the front edge and spout
         if v.co.z < 3:
             v.co.z = 2.4 + 1.8 * (v.co.y - YF) / (YB - YF)
-    chan = prism("Chan", stadium_seg((SPX, YF + 14), (SPX, YF - 16), 4.5), BH - 4.5, BH + 2)
+    chan = prism("Chan", stadium_seg((SPX, YF + 14), (SPX, YF - 16), 5.5), 9.0, BH + 2)   # spout notch down to z 9
     drip = prism("Drip", rect(SPX - 7, YF - 8.6, SPX + 7, YF - 7.6), -1, 1.0)   # drip break under the lip
     feet = [S.cylinder(f"FootPk{i}", 10.4, 2.0, loc=(sx * 70, sy, 0)) for i, (sx, sy) in
             enumerate(FEET)]
-    S.cut(tray, [well, chan, drip] + feet)
+    # the back wall stays low behind the panel: the panel and the stowed shelf swing out of this slot
+    slot = prism("BackSlot", rrect_pts(2 * (PX + 0.8), 12.0, 1.0, c=(0, YB + 1.0)), 14.0, BH + 2)
+    S.cut(tray, [well, chan, drip, slot] + feet)
     # hinge towers, back stop, stay pivots
     adds = []
     for sx in (-1, 1):
@@ -424,6 +426,8 @@ def build():
     # ballast sill along the front wall, hollow from below for ~95 g of steel
     adds.append(prism("Sill", rrect_pts(SILL[1] - SILL[0] + 6, 14.0, 2.0, c=((SILL[0] + SILL[1]) / 2, YF + 2.4 + 7.0)),
                       2.0, 12.6, bevel=0.6))
+    for sx in (-1, 1):    # rest pads under the folded panel's free end
+        adds.append(prism(f"Pad{sx}", circle_pts(4.0, 32, c=(sx * 60, -45)), 2.0, 14.9, bevel=0.4))
     S.union(tray, adds)
     bores = []
     for sx in (-1, 1):
@@ -453,7 +457,7 @@ def build():
     z_bot = HZ - 6.0
     pan = xz_prism("Panel", rrect_pts(2 * PX, RAIL[0] + 2 - z_bot, 4, c=(0, (RAIL[0] + 2 + z_bot) / 2)), PF, PF + PT,
                    bevel=1.0)
-    rail = prism("Rail", rrect_pts(W, YB - 0.6 - PF, 2.0, c=(0, (PF + YB - 0.6) / 2)), RAIL[0], RAIL[1], bevel=1.0)
+    rail = prism("Rail", rrect_pts(2 * 85.0, YB - 0.6 - PF, 2.0, c=(0, (PF + YB - 0.6) / 2)), RAIL[0], RAIL[1], bevel=1.0)
     knk = [xcyl(f"PanK{sx}", 6, *sorted((sx * 52, sx * 66)), HY, HZ) for sx in (-1, 1)]
     S.union(pan, [rail] + knk)
     win = xz_prism("Win", C.stadium_pts(WIN_W, 26), PF - 1, PF + PT + 1)
@@ -480,7 +484,7 @@ def build():
     P["panel"] = pan
     P["pegs"] = []
     for sx in (-1, 1):   # 3 x 12 steel dowels pressed 8 mm into the panel sides; the stays hook over them
-        pg = xcyl(f"PegD{sx}", 1.5, *sorted((sx * (PX - 8.0), sx * (STAY_X[1] + 0.6))), *STAY_Q, seg=24)
+        pg = xcyl(f"PegD{sx}", 1.5, *sorted((sx * (PX - 8.0), sx * (STAY_X[1] + 0.3))), *STAY_Q, seg=24)
         S.assign(pg, steel())
         P["pegs"].append(pg)
 
