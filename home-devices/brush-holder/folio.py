@@ -67,24 +67,29 @@ BACK = [("B8", -72.5), ("B2", -44.5), ("B5", -17.8), ("B3", 11.4), ("B7", 39.3),
 W = 176.0                 # tray and shelf width (A1 Mini bed is 180)
 YF, YB = -86.0, 72.0      # tray front and back edges
 BH = 14.0                 # tray rim height
-PF, PT = 60.0, 6.0        # panel front face, panel thickness
+PF, PT = 58.0, 8.0        # panel front face, panel thickness
 PX = 80.0                 # panel half width (stays run just outside it)
-HZ = 18.0                 # panel hinge axis height
+HZ = 19.0                 # panel hinge axis height (folded front face lands at z 15, clear of the rim)
 HY = PF + PT / 2          # panel hinge axis y
-H = 150.0                 # shelf top
+H = 152.0                 # shelf top (stowed shelf then clears the tray rim)
 T = 10.0                  # shelf thickness
-RAIL = (128.0, 140.0)     # panel top rail, the shelf's hard stop
+RAIL = (H - 22.0, H - 10.0)  # panel top rail, the shelf's hard stop
 GAP = 52.0                # loading gap, shelf back edge to panel
 SD = 72.0                 # shelf depth
 SB = PF - GAP             # shelf back edge  (8)
 SF = SB - SD              # shelf front edge (-60)
 WALL = 1.6                # shelf wall in front of each cartridge
 AX = (YB, H)              # shelf hinge axis (y, z): top-back corner of the shelf cheeks
-STAY_P = (10.0, 9.0)      # stay pivot on the tray (y, z)
-STAY_Q = (63.0, 62.0)     # peg on the panel side the stay hooks onto
+STAY_P = (14.0, 9.0)      # stay pivot on the tray (y, z)
+STAY_Q = (PF + PT / 2, 85.0)  # steel peg in the panel side: high, so the panel above it is a short cantilever
 STAY_X = (PX + 0.6, PX + 4.6)
 SPOUT_X = 50.0
-SILL = (-78.0, 32.0)      # ballast pocket x range in the front sill (stops short of the spout)
+WIN_W = 80.0              # carry window width in the panel
+DOWN = 16.0               # depth of the shelf's under-ribs below the plate
+RIB_Y = ((SF + SB) / 2 - 3.0, (SF + SB) / 2 + 3.0)   # cross rib in the web between the two rows of pockets
+RAIL_W = 3.5              # side rails under the shelf ends (outside the pocket openings)
+PRIB_X = (44.5, 59.5, 74.5)  # panel back ribs (x centres, both signs), 5 wide x 5 deep
+SILL = (-76.0, 32.0)      # ballast pocket x range (clear of the stowed left stay) in the front sill (stops short of the spout)
 FEET = [(-1, -78), (1, -78), (-1, 62), (1, 62)]   # silicone bumpers (x sign, y)
 
 
@@ -154,11 +159,18 @@ def silicone():
 
 
 # ================================================================== clip cartridge
-WET_G = {"B9": 40, "B10": 38, "B11": 42}          # double-ended brushes, wet (g); others by kind
+# Wet weights (g). GRIP_G sizes the clip fingers (hold 2x at friction 0.25); double-ended brushes are
+# also held positively by their waist, so their grip weight is capped. LOAD_G are upper-bound design
+# weights for the structure (published brushes: eye 8-15 g, face/kabuki 30-50 g dry, plus water).
+GRIP_G = {"B1": 10, "B2": 12, "B3": 15, "B4": 15, "B5": 30, "B6": 35, "B7": 30, "B8": 35,
+          "B9": 42, "B10": 42, "B11": 42}
+LOAD_G = {"B1": 12, "B2": 15, "B3": 20, "B4": 20, "B5": 40, "B6": 45, "B7": 40, "B8": 45,
+          "B9": 65, "B10": 60, "B11": 75}
+WET_G = GRIP_G
 
 
 def wet_g(name):
-    return WET_G.get(name, {"liner": 10, "single": 18, "double": 40}[BRUSHES[name][3]])
+    return GRIP_G[name]
 
 
 def cart_geom(d, w=18.0):
@@ -404,8 +416,11 @@ def build():
         adds.append(prism(f"Tw{sx}", rrect_pts(10, 12, 2, c=(sx * 73, HY)), 2, HZ, bevel=0.4))
         adds.append(xcyl(f"TwK{sx}", 6, *sorted((sx * 68, sx * 78)), HY, HZ))
         adds.append(xcyl(f"PivB{sx}", 4, *sorted((sx * (STAY_X[1] + 0.3), sx * 85.8)), *STAY_P))
+        # inboard clevis tab: the stay pivot dowel works in double shear, not as a cantilever
+        tab = hull(circle_pts(4.0, 32, c=STAY_P) + [(STAY_P[0] - 6, 2.0), (STAY_P[0] + 6, 2.0)])
+        adds.append(yz_prism(f"Clevis{sx}", tab, *sorted((sx * 77.0, sx * (STAY_X[0] - 0.3))), bevel=0.4))
     # back stop: a low rib in front of the panel foot; the panel's below-axis edge rests on it
-    adds.append(prism("Rib", rrect_pts(96, PF - 0.1 - 55.0, 1.0, c=(0, (55.0 + PF - 0.1) / 2)), 2.0, 16.0, bevel=0.4))
+    adds.append(prism("Rib", rrect_pts(96, 4.9, 1.0, c=(0, PF - 2.55)), 2.0, 14.5, bevel=0.4))
     # ballast sill along the front wall, hollow from below for ~95 g of steel
     adds.append(prism("Sill", rrect_pts(SILL[1] - SILL[0] + 6, 14.0, 2.0, c=((SILL[0] + SILL[1]) / 2, YF + 2.4 + 7.0)),
                       2.0, 12.6, bevel=0.6))
@@ -413,7 +428,7 @@ def build():
     bores = []
     for sx in (-1, 1):
         bores.append(xcyl(f"TwB{sx}", 2.95 / 2, *sorted((sx * 67.5, sx * 79)), HY, HZ, seg=24))
-        bores.append(xcyl(f"PvB{sx}", 2.95 / 2, *sorted((sx * 84.0, sx * 87.0)), *STAY_P, seg=24))  # blind press
+        bores.append(xcyl(f"PvB{sx}", 2.95 / 2, *sorted((sx * 76.0, sx * 87.0)), *STAY_P, seg=24))  # tab + boss, blind
     bores.append(prism("BallastPk", rect(SILL[0], YF + 3.4, SILL[1], YF + 13.8), -1, 10.4))  # 100x10x10 bar, glued
     S.cut(tray, bores)
     clean(tray)
@@ -435,41 +450,57 @@ def build():
     P["feet"] = feet_o
 
     # ---------------------------------------------------------------- panel (white)
-    z_bot = 12.0
+    z_bot = HZ - 6.0
     pan = xz_prism("Panel", rrect_pts(2 * PX, RAIL[0] + 2 - z_bot, 4, c=(0, (RAIL[0] + 2 + z_bot) / 2)), PF, PF + PT,
                    bevel=1.0)
     rail = prism("Rail", rrect_pts(W, YB - 0.6 - PF, 2.0, c=(0, (PF + YB - 0.6) / 2)), RAIL[0], RAIL[1], bevel=1.0)
     knk = [xcyl(f"PanK{sx}", 6, *sorted((sx * 52, sx * 66)), HY, HZ) for sx in (-1, 1)]
-    # pegs: teardrop, point down, so they print upright without support
-    tear = hull(circle_pts(1.8, 32, c=STAY_Q) + [(STAY_Q[0], STAY_Q[1] - 1.8 * math.sqrt(2))])
-    pegs = [yz_prism(f"Peg{sx}", tear, *sorted((sx * (PX - 1.37), sx * (STAY_X[1] + 0.6)))) for sx in (-1, 1)]
-    S.union(pan, [rail] + knk + pegs)
-    win = xz_prism("Win", C.stadium_pts(96, 26), PF - 1, PF + PT + 1)
+    S.union(pan, [rail] + knk)
+    win = xz_prism("Win", C.stadium_pts(WIN_W, 26), PF - 1, PF + PT + 1)
     win.location.z = 108
     S.bake(win)
     ears = []
     for sx in (-1, 1):   # rail ears carry the shelf hinge pin, inboard of the cheek knuckles
-        ears.append(xcyl(f"Ear{sx}", 5.0, *sorted((sx * 73.53, sx * 80.6)), *AX, seg=40))
-        ears.append(yz_prism(f"EarB{sx}", rect(YB - 5, RAIL[1] - 1.37, YB, H), *sorted((sx * 73.53, sx * 80.6)),
+        ears.append(xcyl(f"Ear{sx}", 5.0, *sorted((sx * 73.37, sx * 80.6)), *AX, seg=40))
+        ears.append(yz_prism(f"EarB{sx}", rect(PF + 3.0, RAIL[1] - 1.37, YB, H - 0.3), *sorted((sx * 73.21, sx * 80.6)),
                              bevel=0.0))
-    S.union(pan, ears)
+    pribs = [prism(f"PRib{sx}{k}", rrect_pts(5, 5.2, 1.0, c=(sx * xr, PF + PT + 2.4)), 30, RAIL[0] + 0.5, bevel=0.5)
+             for sx in (-1, 1) for k, xr in enumerate(PRIB_X)]
+    S.union(pan, ears + pribs)
     notch = [prism(f"Notch{sx}", rect(min(sx * 67.4, sx * 81), PF - 1, max(sx * 67.4, sx * 81), PF + PT + 1),
-                   0, 24.6) for sx in (-1, 1)]       # clears the tray's hinge towers
+                   0, HZ + 6.6) for sx in (-1, 1)]       # clears the tray's hinge towers
     S.cut(pan, notch)
     flat = prism("KnFlat", rect(-90, PF - 8, 90, PF + PT + 8), z_bot - 10, z_bot)   # knuckles flat at the foot
     bores = [xcyl(f"PanB{sx}", 1.6, *sorted((sx * 50, sx * 68)), HY, HZ, seg=24) for sx in (-1, 1)]
-    bores += [xcyl(f"EarB{sx}", 2.95 / 2, *sorted((sx * 73, sx * 81)), *AX, seg=24) for sx in (-1, 1)]
+    bores += [xcyl(f"PegB{sx}", 2.95 / 2, *sorted((sx * (PX - 8.0), sx * (PX + 1))), *STAY_Q, seg=24) for sx in (-1, 1)]
+    bores += [xcyl(f"EarB{sx}", 2.95 / 2, *sorted((sx * 72.2, sx * 81.3)), *AX, seg=24) for sx in (-1, 1)]
     S.cut(pan, [win, flat, C.label("BRUSH / 02", 3.4, (0, (PF + YB) / 2 - 2, RAIL[1]))] + bores)
     clean(pan)
     S.assign(pan, S.pla("white"))
     P["panel"] = pan
+    P["pegs"] = []
+    for sx in (-1, 1):   # 3 x 12 steel dowels pressed 8 mm into the panel sides; the stays hook over them
+        pg = xcyl(f"PegD{sx}", 1.5, *sorted((sx * (PX - 8.0), sx * (STAY_X[1] + 0.6))), *STAY_Q, seg=24)
+        S.assign(pg, steel())
+        P["pegs"].append(pg)
 
     # ---------------------------------------------------------------- shelf (white) + cartridges
     shelf = prism("Shelf", rrect_pts(W, SD, 6, c=(0, (SF + SB) / 2)), H - T, H, bevel=1.0)
     cheeks = [prism(f"Cheek{sx}", rrect_pts(7, YB - SB + 4, 2, c=(sx * 84.5, (SB - 4 + YB) / 2)), H - T, H,
                     bevel=0.8) for sx in (-1, 1)]
     ck = [xcyl(f"CheekK{sx}", 5.0, *sorted((sx * 81, sx * 88)), *AX) for sx in (-1, 1)]
-    S.union(shelf, cheeks + ck)
+    # stiffening: a T-rib under the web between the rows, and the cheeks run forward as deep side rails,
+    # so the shelf is a stiff frame hung from the hinge instead of a perforated plate on two tabs
+    dz0 = H - T - DOWN
+    rib = prism("Rib", rrect_pts(W - 4, RIB_Y[1] - RIB_Y[0], 1.5, c=(0, sum(RIB_Y) / 2)), dz0, H - T + 0.5, bevel=0.6)
+    # side rails, tapering up into the cheek over the last 10 mm (no abrupt end at the stop)
+    rprof = [(SF + 1.5, dz0), (PF - 12, dz0), (PF - 2, H - T - 1.0), (PF - 2, H - T + 0.5), (SF + 1.5, H - T + 0.5)]
+    rails = [yz_prism(f"Rail{sx}", rprof, *sorted((sx * (W / 2 - RAIL_W), sx * (W / 2 - 0.4))), bevel=0.5)
+             for sx in (-1, 1)]
+    # cheeks widen inboard to 11 mm behind the loading corridor, where the stop moment peaks
+    cheeks += [prism(f"CheekW{sx}", rrect_pts(5, PF + 2.5 - (SB + 12), 1.5, c=(sx * 79.5, (PF + 2.5 + SB + 12) / 2)),
+                     H - T, H, bevel=0.8) for sx in (-1, 1)]
+    S.union(shelf, cheeks + ck + [rib] + rails)
     carts, brushes, seats = [], [], []
     cutters = []
     for row, front in ((FRONT, True), (BACK, False)):
@@ -481,7 +512,7 @@ def build():
             c_["size"] = g["size"]
             carts.append(c_)
             seats.append((name, g["size"], front, seat_xy(g, d, x0, front)))
-    S.cut(shelf, cutters + [xcyl(f"ChB{sx}", 1.6, *sorted((sx * 80, sx * 90)), *AX, seg=24) for sx in (-1, 1)])
+    S.cut(shelf, cutters + [xcyl(f"ChB{sx}", 3.05 / 2, *sorted((sx * 80, sx * 90)), *AX, seg=24) for sx in (-1, 1)])
     P["shelf_clean"] = clean(shelf)
     S.assign(shelf, S.pla("white"))
     P["shelf"], P["carts"] = shelf, carts
@@ -499,7 +530,7 @@ def build():
         # hook at the top: a slot open downwards along the stay so the peg drops in
         ang = math.atan2(q[1] - p[1], q[0] - p[0])
         tail = (q[0] - 6 * math.cos(ang) + 0 * math.sin(ang), q[1] - 6 * math.sin(ang))
-        hook = yz_prism(f"StHk{sx}", stadium_seg(q, (q[0] + 7 * math.sin(ang), q[1] - 7 * math.cos(ang)), 2.15),
+        hook = yz_prism(f"StHk{sx}", stadium_seg(q, (q[0] + 7 * math.sin(ang), q[1] - 7 * math.cos(ang)), 1.55),
                         *sorted((sx * 79, sx * 87)))
         S.cut(st, holes + [hook])
         _ = tail
@@ -507,11 +538,9 @@ def build():
         dv = (math.sin(ang), -math.cos(ang))
         pv = (math.cos(ang), math.sin(ang))
         m = (q[0] + 3.4 * dv[0], q[1] + 3.4 * dv[1])
-        S.union(st, [yz_prism(f"StD{sx}{k}", circle_pts(0.55, 16, c=(m[0] + k * 2.29 * pv[0], m[1] + k * 2.29 * pv[1])),
+        S.union(st, [yz_prism(f"StD{sx}{k}", circle_pts(0.55, 16, c=(m[0] + k * 1.98 * pv[0], m[1] + k * 1.98 * pv[1])),
                               *sorted((sx * STAY_X[0], sx * STAY_X[1]))) for k in (1, -1)])
-        stay_dw = xcyl(f"DowelP{sx}", 1.5, *sorted((sx * (STAY_X[0] - 0.6), sx * 87.0)), *p, seg=24)
-        cap = xcyl(f"Cap{sx}", 2.6, *sorted((sx * (STAY_X[0] - 0.9), sx * (STAY_X[0] - 0.2))), *p, seg=32)
-        S.union(stay_dw, [cap])           # push-on retaining cap keeps the stay on its dowel
+        stay_dw = xcyl(f"DowelP{sx}", 1.5, *sorted((sx * 77.0, sx * 87.0)), *p, seg=24)   # 3 x 10, clevis to boss
         S.assign(stay_dw, steel())
         P.setdefault("stay_dowels", []).append(stay_dw)
         S.assign(st, S.pla("black"))
@@ -533,17 +562,19 @@ def build():
     C.parent_keep(shelf, pan)
     for o in carts + scaps:
         C.parent_keep(o, shelf)
+    for o in P["pegs"]:
+        C.parent_keep(o, pan)
     return P
 
 
 def parts_of(P):
     return ([P["tray"], P["panel"], P["shelf"]] + P["tray_caps"] + P["feet"] + P["carts"] +
-            P["shelf_caps"] + P["stays"] + P["stay_dowels"])
+            P["shelf_caps"] + P["stays"] + P["stay_dowels"] + P["pegs"])
 
 
 FOLD_PAN = (math.pi / 2, 0, 0)
 FOLD_SHELF = (-3 * math.pi / 2, 0, 0)
-FOLD_STAY = (3 * math.pi / 4, 0, 0)
+FOLD_STAY = (math.pi - math.atan2(STAY_Q[1] - STAY_P[1], STAY_Q[0] - STAY_P[0]), 0, 0)  # lies flat
 
 
 def folded(P):
@@ -766,9 +797,112 @@ def cart_set():
     S.render(os.path.join(OUT, "carts_top.png"))
 
 
+# ================================================================== clip test strip
+TEST = [("B11", -52.0), ("B10", 3.0), ("B8", 50.0)]   # heaviest, mid, thinnest-handle-with-big-head
+
+
+def write_3mf(objs, path):
+    """Several objects in one 3MF, each sitting on z = 0 (Blender's loop triangles, never a hand fan).
+    Bambu Studio's --arrange places them on the plate."""
+    res, items = [], []
+    x_off = 0.0
+    for i, ob in enumerate(objs, start=1):
+        me = ob.data
+        Mw = ob.matrix_world
+        vs = [Mw @ v.co for v in me.vertices]
+        lo = [min(v[k] for v in vs) for k in range(3)]
+        hi = [max(v[k] for v in vs) for k in range(3)]
+        off = (x_off - lo[0], -(lo[1] + hi[1]) / 2, -lo[2])
+        x_off += hi[0] - lo[0] + 6
+        me.calc_loop_triangles()
+        vx = "".join(f'<vertex x="{v[0] + off[0]:.5f}" y="{v[1] + off[1]:.5f}" z="{v[2] + off[2]:.5f}"/>' for v in vs)
+        tx = "".join(f'<triangle v1="{t.vertices[0]}" v2="{t.vertices[1]}" v3="{t.vertices[2]}"/>'
+                     for t in me.loop_triangles)
+        res.append(f'<object id="{i}" name="{ob.name}" type="model"><mesh><vertices>{vx}</vertices>'
+                   f'<triangles>{tx}</triangles></mesh></object>')
+        items.append(f'<item objectid="{i}"/>')
+    model = ('<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" '
+             'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">'
+             f'<resources>{"".join(res)}</resources><build>{"".join(items)}</build></model>')
+    ct = ('<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/'
+          'package/2006/content-types"><Default Extension="rels" ContentType="application/'
+          'vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" '
+          'ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>')
+    rels = ('<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.'
+            'openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.'
+            'model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/'
+            '3dmodel"/></Relationships>')
+    import zipfile
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", ct)
+        z.writestr("_rels/.rels", rels)
+        z.writestr("3D/3dmodel.model", model)
+
+
+def test_strip():
+    """A 156 x 100 mm slice of the front row with the three hardest brushes' cartridges.
+    Lay it on the counter with the clips past the edge and a book on the back half."""
+    S.reset()
+    depth = 100.0
+    strip = prism("ClipTest", rrect_pts(156, depth, 10, c=(0, SF + depth / 2)), H - T, H, bevel=1.0)
+    cutters, carts = [], []
+    for name, x0 in TEST:
+        g = cart_geom(BRUSHES[name][0], wet_g(name))
+        cutters += pocket_cutters(f"T{name}", g, x0, True)
+        c_ = place(cartridge(f"Cart_{g['size']}", g), x0, True)
+        carts.append(c_)
+    lab = C.label("CLIP TEST", 3.4, (0, SF + depth - 14, H))
+    S.cut(strip, cutters + [lab])
+    clean(strip)
+    S.assign(strip, S.pla("white"))
+    # dowel fit coupon: printed upright like the panel, three horizontal bores for the 3 mm steel dowels
+    fit = prism("DowelFit", rrect_pts(42, 12, 2.0, c=(0, 200)), 0, 20, bevel=0.6)
+    holes = []
+    for x, d in ((-13, 2.95), (0, 3.0), (13, 3.05)):
+        h = S.cylinder(f"FB{d}", d, 16, loc=(x, 200, 10), rot=(math.pi / 2, 0, 0), seg=48)
+        S.bake(h)
+        holes.append(h)
+        t = S.text(f"FT{d}", f"{d:g}", 2.2, 0.8, loc=(x, 200 - 0.9, 20), align="CENTER")
+        S.bake(t)
+        holes.append(t)
+    S.cut(fit, holes)
+    clean(fit)
+    S.assign(fit, S.pla("white"))
+    carts = carts + [fit]
+    os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
+    for o in [strip] + carts:
+        S.export_stl(o, os.path.join(HERE, "stl", f"test_{o.name.lower()}.stl"))
+    write_3mf([strip] + carts, os.path.join(HERE, "clip_test_white.3mf"))
+    print("wrote clip_test_white.3mf")
+    if "--render" in ARGS:
+        hm = S.material("Handle", (0.20, 0.10, 0.10, 1), rough=0.35, coat=0.3)
+        obs = [strip] + carts
+        for name, x0 in TEST:
+            d = BRUSHES[name][0]
+            g = cart_geom(d, wet_g(name))
+            hx, hy = seat_xy(g, d, x0, True)
+            h = lathe(f"H{name}", [(0, H + 30), (d / 2 - 0.8, H + 30), (d / 2, H + 29), (d / 2, H - 40), (0, H - 40)], 48)
+            S.assign(h, hm)
+            h.location = (hx, hy, 0)
+            S.bake(h)
+            obs.append(h)
+        for o in carts:
+            S.assign(o, S.pla("white"))
+        S.to_studio(obs)
+        for o in obs:
+            S.smooth(o, 32)
+        S.studio(samples=24 if PREVIEW else 160, res=(700, 525) if PREVIEW else (1400, 1050))
+        gpu()
+        S.camera((0.16, -0.30, 0.30), (0.0, -0.025, 0.14), 55, name="Strip")
+        S.render(os.path.join(OUT, "clip_test.png"))
+    return strip, carts
+
+
 if __name__ == "__main__":
     if "--carts" in ARGS:
         cart_set()
+    if "--teststrip" in ARGS:
+        test_strip()
     if any(a in ARGS for a in ("--stills", "--closeups", "--anim", "--stats", "--blend", "--stl")):
         S.reset()
         P = build()

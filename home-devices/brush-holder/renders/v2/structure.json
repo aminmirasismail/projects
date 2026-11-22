@@ -1,0 +1,406 @@
+{
+ "brush_total_g": 437,
+ "brush_total_N": 4.29,
+ "y_bar": -31.7,
+ "front_strip": {
+  "sus": {
+   "P": 2.2759199999999997,
+   "M": 55.30485599999999,
+   "sigma": 0.08400737620253163,
+   "defl": 0.003307034371588859
+  },
+  "des": {
+   "P": 19.55184,
+   "M": 475.1097119999999,
+   "sigma": 0.7216856384810124,
+   "defl": 0.009469958948147846
+  }
+ },
+ "rib": {
+  "I": 5493,
+  "sus": {
+   "R_each": 2.3642,
+   "M": 102.8407,
+   "sigma": 0.1985,
+   "defl": 0.0565
+  },
+  "des": {
+   "R_each": 12.0077,
+   "M": 833.5188,
+   "sigma": 1.6085,
+   "defl": 0.1321
+  }
+ },
+ "cheek": {
+  "I": 7036,
+  "sus": {
+   "P_each": 2.36421,
+   "M": 208.05048,
+   "sigma": 0.45013,
+   "defl": 0.07633,
+   "theta": 0.0013,
+   "sigma_stop": 1.13482
+  },
+  "des": {
+   "P_each": 12.0077,
+   "M": 1056.67716,
+   "sigma": 2.28617,
+   "defl": 0.12923,
+   "theta": 0.0022,
+   "sigma_stop": 5.76369
+  }
+ },
+ "hinge": {
+  "sus": {
+   "Mstop": 421.57,
+   "Fpin_each": 15.06,
+   "Fstop_each": 17.42
+  },
+  "des": {
+   "Mstop": 2666.05,
+   "Fpin_each": 95.22,
+   "Fstop_each": 107.22
+  }
+ },
+ "panel": {
+  "I_full": 12812,
+  "I_win": 8860,
+  "sus": {
+   "Mtop": 440.47979,
+   "sigma_win": 0.38608,
+   "sigma_peg": 0.28598,
+   "theta": 0.00195
+  },
+  "des": {
+   "Mtop": 2762.11198,
+   "sigma_win": 2.58578,
+   "sigma_peg": 1.94134,
+   "theta": 0.00407
+  }
+ },
+ "stays": {
+  "length": 89.9,
+  "arm": 35.2,
+  "Euler_N": 156,
+  "sus": {
+   "M_hinge": 440.48,
+   "F_stay": 6.25
+  },
+  "des": {
+   "M_hinge": 3274.11,
+   "F_stay": 46.45
+  }
+ },
+ "sag": {
+  "as hung (instant)": {
+   "cheeks": 0.041,
+   "panel": 0.115,
+   "rib": 0.019,
+   "front": 0.001,
+   "total": 0.176
+  },
+  "after months, 22 C (creep)": {
+   "cheeks": 0.123,
+   "panel": 0.346,
+   "rib": 0.057,
+   "front": 0.003,
+   "total": 0.529
+  },
+  "after months, warm bathroom 30 C": {
+   "cheeks": 0.176,
+   "panel": 0.495,
+   "rib": 0.081,
+   "front": 0.005,
+   "total": 0.756
+  },
+  "design overload (short-term)": {
+   "cheeks": 0.208,
+   "panel": 0.723,
+   "rib": 0.132,
+   "front": 0.009,
+   "total": 1.073
+  }
+ },
+ "rest_offset_mm": 0.69,
+ "checks": [
+  {
+   "item": "Shelf plate, front row to rib: stress (sustained)",
+   "value": 0.084,
+   "limit": 7.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 83.3,
+   "note": ""
+  },
+  {
+   "item": "Shelf plate, front row to rib: stress (design)",
+   "value": 0.722,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 24.9,
+   "note": ""
+  },
+  {
+   "item": "Cross rib bending (sustained)",
+   "value": 0.198,
+   "limit": 7.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 35.3,
+   "note": ""
+  },
+  {
+   "item": "Cross rib bending (design)",
+   "value": 1.609,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 11.2,
+   "note": ""
+  },
+  {
+   "item": "Side rail + cheek bending, at the rib end (sustained)",
+   "value": 0.45,
+   "limit": 7.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 15.6,
+   "note": ""
+  },
+  {
+   "item": "Side rail + cheek bending, at the rib end (design)",
+   "value": 2.286,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 7.9,
+   "note": ""
+  },
+  {
+   "item": "Cheek at the stop edge, cheek only 11 x 10 (sustained)",
+   "value": 1.135,
+   "limit": 7.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 6.2,
+   "note": ""
+  },
+  {
+   "item": "Cheek at the stop edge, cheek only 11 x 10 (design)",
+   "value": 5.764,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 3.1,
+   "note": "downstand tapers into the cheek over 10 mm"
+  },
+  {
+   "item": "Shelf hinge dowel shear (design)",
+   "value": 13.47,
+   "limit": 150.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 11.1,
+   "note": ""
+  },
+  {
+   "item": "Shelf hinge: dowel bearing on cheek knuckle (design)",
+   "value": 4.534,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 4.0,
+   "note": ""
+  },
+  {
+   "item": "Shelf hinge: ear pulled up across layers, with offset (sustained)",
+   "value": 0.782,
+   "limit": 4.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 5.1,
+   "note": "ear base 7 x 11 mm, pin at its back end"
+  },
+  {
+   "item": "Shelf hinge: ear pulled up across layers, with offset (design)",
+   "value": 4.946,
+   "limit": 10.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 2.0,
+   "note": ""
+  },
+  {
+   "item": "Cheek bearing on the rail top (design)",
+   "value": 5.106,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 3.5,
+   "note": "contact taken over the front 3 mm of the rail only"
+  },
+  {
+   "item": "Panel at the window, across layers (sustained)",
+   "value": 0.386,
+   "limit": 4.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 10.4,
+   "note": ""
+  },
+  {
+   "item": "Panel at the window, across layers (design)",
+   "value": 2.586,
+   "limit": 10.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 3.9,
+   "note": ""
+  },
+  {
+   "item": "Panel at the stay peg, across layers (design)",
+   "value": 1.941,
+   "limit": 10.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 5.2,
+   "note": ""
+  },
+  {
+   "item": "Stay buckling (design force vs Euler load)",
+   "value": 46.45,
+   "limit": 156.35016873012844,
+   "unit": "N",
+   "ok": true,
+   "margin": 3.4,
+   "note": "want 3x or more"
+  },
+  {
+   "item": "Panel peg (3 mm steel dowel) bending (design)",
+   "value": 56.075,
+   "limit": 300.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 5.3,
+   "note": ""
+  },
+  {
+   "item": "Peg bore in the panel side, 8 mm deep (design)",
+   "value": 3.484,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 5.2,
+   "note": "bearing incl. the prying couple; bore lies along the layers"
+  },
+  {
+   "item": "Stay pivot dowel, double shear clevis (design)",
+   "value": 3.286,
+   "limit": 150.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 45.7,
+   "note": "dowel spans clevis tab - stay - wall boss"
+  },
+  {
+   "item": "Stay pivot: bearing in clevis tab 3.3 mm (design)",
+   "value": 2.346,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 7.7,
+   "note": ""
+  },
+  {
+   "item": "Stay pivot: bearing in wall boss 2.1 mm (design)",
+   "value": 3.686,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 4.9,
+   "note": ""
+  },
+  {
+   "item": "Stay bore bearing, 4 mm stay (sustained)",
+   "value": 0.521,
+   "limit": 7.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 13.4,
+   "note": "running fit; creep here would let the stand lean"
+  },
+  {
+   "item": "Panel hinge dowel shear (design)",
+   "value": 3.899,
+   "limit": 150.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 38.5,
+   "note": ""
+  },
+  {
+   "item": "Panel knuckle bearing, 14 mm long (design)",
+   "value": 0.656,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 27.4,
+   "note": ""
+  },
+  {
+   "item": "Tray tower bearing, 10 mm long (design)",
+   "value": 0.919,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 19.6,
+   "note": ""
+  },
+  {
+   "item": "Cartridge on its 1 mm ledge: shear (design)",
+   "value": 0.016,
+   "limit": 18.0,
+   "unit": "MPa",
+   "ok": true,
+   "margin": 1100.9,
+   "note": "ledge runs ~90 mm round each pocket"
+  },
+  {
+   "item": "Front edge sag as she hangs the brushes",
+   "value": 0.176,
+   "limit": 0.3,
+   "unit": "mm",
+   "ok": true,
+   "margin": 1.7,
+   "note": ""
+  },
+  {
+   "item": "Front edge sag after months of use (creep)",
+   "value": 0.529,
+   "limit": 1.0,
+   "unit": "mm",
+   "ok": true,
+   "margin": 1.9,
+   "note": "1 mm over the 136 mm shelf is 0.4 deg: not visible"
+  },
+  {
+   "item": "Front edge sag after months, warm bathroom",
+   "value": 0.756,
+   "limit": 1.0,
+   "unit": "mm",
+   "ok": true,
+   "margin": 1.3,
+   "note": ""
+  },
+  {
+   "item": "Front edge sag, design overload",
+   "value": 1.073,
+   "limit": 1.5,
+   "unit": "mm",
+   "ok": true,
+   "margin": 1.4,
+   "note": ""
+  }
+ ]
+}
