@@ -81,7 +81,7 @@ RELEASE_LIFT = TAB_TOP - TIP_IN_V                                 # ~4.8 mm to l
 LIFT = 7.0                      # lift the hook this much to drop it on (needs ~4)
 
 # ---------------------------------------------------------------- label
-LABEL = ("BAGS", "01")          # engraved BAGS · 01 (house dot separator)
+LABEL = ("HOOK", "01")          # engraved HOOK · 01 (house dot separator)
 LABEL_SIZE, ENGRAVE = 6.0, 0.6
 LABEL_Z = 54.0                  # centre height on the front face, between the pegs
 CLEAR = 1.0                     # text stays this far from any fillet tangent line
@@ -202,7 +202,7 @@ def fins():
 
 
 def front_label():
-    """BAGS · 01 engraved on the front face, centred between the pegs."""
+    """HOOK · 01 engraved on the front face, centred between the pegs."""
     ob = S.product_label("label", LABEL, LABEL_SIZE, 2 * ENGRAVE, sep="dot", slant=1.0)
     for v in ob.data.vertices:          # XY text, +z out of the face -> front face (-Y), +y up
         x, y, z = v.co

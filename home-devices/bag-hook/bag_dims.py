@@ -141,7 +141,7 @@ def front():
     lb = D["label_box"]
     sh.poly([(lb[0], lb[1]), (lb[2], lb[1]), (lb[2], lb[3]), (lb[0], lb[3])], fill="none",
             stroke=ACC, sw=1.2, dash="4 3")
-    sh.note(((lb[0] + lb[2]) / 2, (lb[1] + lb[3]) / 2 - 1.6), "BAGS · 01", "middle", ACC, FS - 2)
+    sh.note(((lb[0] + lb[2]) / 2, (lb[1] + lb[3]) / 2 - 1.6), "HOOK · 01", "middle", ACC, FS - 2)
     sh.dim((0, 0), (W, 0), -12, f"{W:.0f}")
     sh.dim((W, 0), (W, H), 12, f"{H:.0f}")
     sh.dim((pg["x"][0], H), (pg["x"][1], H), 9, f"{pg['x'][1] - pg['x'][0]:.0f} peg spacing")
@@ -151,7 +151,7 @@ def front():
     sh.note((0, -32.5), f"Pegs Ø{pg['d']:.0f}, {pg['len']:.0f} long on the axis, {pg['angle']:.0f}° up, "
             f"flat ends with an R{pg['end_r']:.0f} edge.", size=FS - 1)
     cap = lb[3] - lb[1]
-    sh.note((0, -39), f"Label BAGS · 01: bold mono, {lb[2] - lb[0]:.1f} × {cap:.1f} mm, "
+    sh.note((0, -39), f"Label HOOK · 01: bold mono, {lb[2] - lb[0]:.1f} × {cap:.1f} mm, "
             "0.6 deep (dot 1.2).", ACC, size=FS - 1)
     return sh.svg("FRONT  ·  as it hangs  ·  mm")
 
