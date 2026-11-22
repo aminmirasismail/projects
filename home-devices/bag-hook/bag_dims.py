@@ -101,9 +101,7 @@ def arcp(c, r, a0, a1, n=24):
 
 
 def outline(W, H, R):
-    k = R * (1 - math.cos(math.radians(45)))
-    pts = [(2 * k, 0), (W - 2 * k, 0)] + arcp((W - R, R), R, -45, 0) + arcp((W - R, H - R), R, 0, 90)
-    pts += arcp((R, H - R), R, 90, 180) + arcp((R, R), R, 180, 225)
+    pts = [(0, 0), (W, 0)] + arcp((W - R, H - R), R, 0, 90) + arcp((R, H - R), R, 90, 180)
     return pts
 
 
@@ -149,8 +147,7 @@ def front():
     sh.dim((pg["x"][0], H), (pg["x"][1], H), 9, f"{pg['x'][1] - pg['x'][0]:.0f} peg spacing")
     sh.dim((0, H), (pg["x"][0], H), 9, f"{pg['x'][0]:.0f}")
     sh.dim((0, 0), (0, pg["z"]), -10, f"{pg['z']:.0f}", horiz=False)
-    sh.note((0, -26), f"Corners R{R:.0f}. The bottom two end in a short 45° flat so they "
-            "print on the bed.  Rims R" + f"{D['edge']}.", size=FS - 1)
+    sh.note((0, -26), f"Top corners R{R:.0f}, bottom corners square.  Rims R" + f"{D['edge']}.", size=FS - 1)
     sh.note((0, -32.5), f"Pegs Ø{pg['d']:.0f}, {pg['len']:.0f} long on the axis, {pg['angle']:.0f}° up, "
             f"flat ends with an R{pg['end_r']:.0f} edge.", size=FS - 1)
     cap = lb[3] - lb[1]

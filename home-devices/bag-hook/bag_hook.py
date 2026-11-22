@@ -20,8 +20,7 @@ Printing: upright, as it hangs (bottom face on the plate), no supports.
   - Pegs rise at 45 degrees, so their undersides are 45-degree overhangs.
   - The tongue hangs down inside a back pocket. Its bottom edge is bridged in 17 mm spans
     between ribs; a CLAW tab sits in any of the five bays between the ribs.
-  - Bottom plan corners are teardrops (arc plus 45-degree flat), so the first layers don't
-    overhang; the top corners are full 10 mm arcs.
+  - Bottom plan corners are square and sit flat on the bed; the top corners are R10 arcs.
   - Print with a 4 mm brim: it stands 70 mm tall on a 12 mm wide footprint on a bed-slinger.
 """
 import json
@@ -48,7 +47,7 @@ EDGE = S.EDGE_R                 # 1.2 mm round on every front and back rim
 # ---------------------------------------------------------------- pegs
 PEG_D = 14.0
 PEG_ANGLE = 45.0                # above horizontal; also the overhang limit when printed upright
-PEG_L = 48.0                    # along the axis, from the front face to the end face
+PEG_L = 60.0                    # along the axis, from the front face to the end face (rev A: 48)
 PEG_Z = 20.0                    # axis height where it leaves the front face
 PEG_X = (W / 2 - 30, W / 2 + 30)
 PEG_EMBED = 8.0                 # >= r tan 45 = 7, so the start cap is fully inside the body
@@ -105,15 +104,11 @@ def arc(c, r, a0, a1, n=None):
 
 def front_outline():
     """Front-view outline in (x, z), counter-clockwise seen from the front.
-    Bottom corners are teardrops: a 10 mm arc that stops at 45 degrees, then a short
-    45-degree flat to the bed (a full arc would overhang ~1.3 mm on the first 0.08 mm layer).
-    Top corners are full R10 arcs: they print without overhang and are the ones you see."""
-    k = R * (1 - math.cos(math.radians(45)))          # 2.93: where the arc stops
-    pts = [(2 * k, 0.0), (W - 2 * k, 0.0)]
-    pts += arc((W - R, R), R, -45, 0)                  # bottom-right: flat, then arc
+    Top corners are R10 arcs. Bottom corners are square (the owner's call): they sit flat on
+    the bed, so nothing overhangs on the first layers."""
+    pts = [(0.0, 0.0), (W, 0.0)]
     pts += arc((W - R, H - R), R, 0, 90)               # top corners: full R10 arcs
     pts += arc((R, H - R), R, 90, 180)
-    pts += arc((R, R), R, 180, 225)                    # bottom-left arc, then the flat
     out = []
     for p in pts:                                      # drop duplicates
         if not out or (abs(out[-1][0] - p[0]) > 1e-6 or abs(out[-1][1] - p[1]) > 1e-6):
@@ -207,7 +202,7 @@ def front_label():
     box = (min(v.x for v in face), min(v.z for v in face),
            max(v.x for v in face), max(v.z for v in face))
     # flat front face: inside the plan-corner tangents and the rim round; clear of the pegs
-    flat = (R, R, W - R, H - EDGE)
+    flat = (R, EDGE, W - R, H - EDGE)
     assert (box[0] >= flat[0] + CLEAR and box[2] <= flat[2] - CLEAR
             and box[1] >= flat[1] + CLEAR and box[3] <= flat[3] - CLEAR), \
         f"label {box} not {CLEAR} mm inside flat face {flat}"
@@ -435,11 +430,11 @@ def main():
         # label
         S.camera(P(W / 2 - 25, -130, LABEL_Z + 40), target=P(W / 2, -T, LABEL_Z), lens=100)
         S.render(os.path.join(out, "d_label.png"))
-        # bottom-left teardrop corner and rim
+        # bottom-left corner (square) and rim
         S.camera(P(-40, -90, -25), target=P(6, -T / 2, 6), lens=100)
         S.render(os.path.join(out, "d_corner.png"))
         # peg end and root
-        S.camera(P(PEG_X[0] - 70, -110, 90), target=P(PEG_X[0], -30, 34), lens=90)
+        S.camera(P(PEG_X[0] - 80, -125, 100), target=P(PEG_X[0], -34, 38), lens=85)
         S.render(os.path.join(out, "d_peg.png"))
         # section through the right CLAW (x = 100), keeping x < 100, seen from +X
         sec = S.box("sec", 200, 300, 300, loc=(100 + 100, -50, 60))
