@@ -1,4 +1,4 @@
-"""Tote-bag hook that hangs on 3M CLAW 15 lb drywall picture hangers. Rev B.
+"""Tote-bag hook that hangs on 3M CLAW 15 lb drywall picture hangers. Rev C.
 
 Run inside Blender:
   blender --background --factory-startup --python bag_hook.py -- [--renders] [--details]
@@ -37,7 +37,7 @@ from mathutils import Matrix, Vector  # noqa: E402
 
 import studio as S  # noqa: E402
 
-REV = "B"
+REV = "C"
 
 # ---------------------------------------------------------------- body
 W, H, T = 120.0, 70.0, 14.0     # width along the wall, height, thickness off the wall
@@ -60,6 +60,10 @@ TAB_HINGE = 11.0                           # tab hinge height above the plate's 
 BACK_GAP = 1.2                  # tongue's back face: plate (0.86 by 3M) + 0.34 for paint, dishing
 TONGUE_T = 1.2                  # at the tip: 2 wall lines + gap fill (>= 0.5 mm rule)
 TONGUE_ROOT_T = 2.2             # front face drafts out to this at the root: ~3x less root stress
+TIP_T, TIP_TAPER = 0.5, 2.5     # front face tapers to a 0.5 mm edge over the bottom 2.5 mm, so the
+                                # tip seats deeper in the V: owner wants ~5 mm lift to release
+FIN_W, FIN_GAP, FIN_END = 0.6, 0.16, 0.6   # breakaway fin under the tip: 0.6 wide, top 2 layers
+                                # (0.16) below the tip, 0.6 clear of the ribs; snap out after print
 TONGUE_BOT, TONGUE_TOP = 53.0, 60.0   # tongue tip and root heights
 RECESS = (29.0, 66.0)           # back recess (u < BACK_GAP) where the plates sit
 RECESS_X = (3.0, W - 3.0)
@@ -71,7 +75,9 @@ BAY_ENDS = (11.5, W - 11.5)
 # Above the hinge the plate has a hole where the tab was punched out, so the V runs from the
 # plate's edges (u = 0.9) to the tab's back face (u = h tan TAB_ANG). The tongue's front face
 # (u = 2.4 at the tip) seats where the tab has leaned out that far: h = 2.4 / tan 28 = 4.5 mm.
-TIP_IN_V = 4.5
+TAB_TOP = TAB_H * math.cos(math.radians(TAB_ANG))          # tab top above its hinge: 7.95
+TIP_IN_V = (BACK_GAP + TIP_T) / math.tan(math.radians(TAB_ANG))   # 3.2: tip seat above the hinge
+RELEASE_LIFT = TAB_TOP - TIP_IN_V                                 # ~4.8 mm to lift it off (est.)
 LIFT = 7.0                      # lift the hook this much to drop it on (needs ~4)
 
 # ---------------------------------------------------------------- label
@@ -176,11 +182,23 @@ def pocket_cutters():
     cut.append(_prism("recess", rec, to3d, *RECESS_X))
     # bay profile (u, z): starts 0.2 mm inside the recess so faces never coincide
     bay = [(BACK_GAP - 0.2, POCKET_FLOOR), (POCKET_U, POCKET_FLOOR), (POCKET_U, TONGUE_TOP),
-           (BACK_GAP + TONGUE_ROOT_T, TONGUE_TOP), (BACK_GAP + TONGUE_T, TONGUE_BOT),
+           (BACK_GAP + TONGUE_ROOT_T, TONGUE_TOP), (BACK_GAP + TONGUE_T, TONGUE_BOT + TIP_TAPER),
+           (BACK_GAP + TIP_T, TONGUE_BOT),
            (BACK_GAP - 0.2, TONGUE_BOT)]
     for i, (x0, x1) in enumerate(bays()):
         cut.append(_prism(f"bay{i}", bay, to3d, x0, x1))
     return cut
+
+
+def fins():
+    """Breakaway fins: one per bay, standing on the bay floor under the tongue tip, stopping
+    FIN_GAP short of it. The tip prints onto them instead of sagging across the 17 mm span."""
+    out = []
+    for i, (x0, x1) in enumerate(bays()):
+        h = TONGUE_BOT - FIN_GAP - POCKET_FLOOR + 0.05      # 0.05 into the floor so it welds
+        out.append(S.box(f"fin{i}", x1 - x0 - 2 * FIN_END, FIN_W, h,
+                         loc=((x0 + x1) / 2, -(BACK_GAP + FIN_W / 2), POCKET_FLOOR - 0.05 + h / 2)))
+    return out
 
 
 def front_label():
@@ -225,6 +243,7 @@ def build():
     check(hook, (W, T, H))
     S.union(hook, [peg(x) for x in PEG_X])
     S.cut(hook, pocket_cutters())
+    S.union(hook, fins())
     hook.name = "Hook"
     fit = hook.copy()
     fit.data = hook.data.copy()
@@ -287,7 +306,7 @@ def write_dims_json(out, box, hook, fit):
             "claw": {"w": CLAW_W, "h": CLAW_H, "t": CLAW_T, "tab_w": TAB_W, "tab_h": TAB_H,
                      "tab_ang": TAB_ANG, "tab_hinge": TAB_HINGE, "plate_bottom_z": bottom,
                      "plate_top_z": top, "hinge_z": hinge},
-            "tongue": {"t": TONGUE_T, "root_t": TONGUE_ROOT_T, "back_gap": BACK_GAP, "bot": TONGUE_BOT, "top": TONGUE_TOP},
+            "tongue": {"tip_t": TIP_T, "taper": TIP_TAPER, "release_lift": RELEASE_LIFT, "fin_w": FIN_W, "fin_gap": FIN_GAP, "t": TONGUE_T, "root_t": TONGUE_ROOT_T, "back_gap": BACK_GAP, "bot": TONGUE_BOT, "top": TONGUE_TOP},
             "recess": RECESS, "recess_x": RECESS_X, "floor": POCKET_FLOOR, "pocket_u": POCKET_U,
             "ribs": RIBS, "rib_w": RIB_W, "bays": bays(), "lift": LIFT,
             "label": " · ".join(LABEL), "label_box": box, "label_z": LABEL_Z,

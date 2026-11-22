@@ -170,7 +170,8 @@ def section():
     rec, fl, pu = D["recess"], D["floor"], D["pocket_u"]
     # cut face through a bay: recess behind the tongue, bay in front of and below it
     body = [(0, 0), (T, 0), (T, H), (0, H), (0, rec[1]), (bg, rec[1]), (bg, tg["bot"]),
-            (tu, tg["bot"]), (bg + tg["root_t"], tg["top"]), (pu, tg["top"]), (pu, fl), (bg, fl),
+            (bg + tg["tip_t"], tg["bot"]), (tu, tg["bot"] + tg["taper"]), (bg + tg["root_t"], tg["top"]),
+            (pu, tg["top"]), (pu, fl), (bg, fl),
             (bg, rec[0]), (0, rec[0])]
     sh.poly(M(body), fill="#dcdcda", sw=2.2)
     # hatch hint on the cut face
@@ -185,6 +186,11 @@ def section():
     tab = [(0, h0), (cl["t"], h0),
            (cl["t"] + cl["tab_h"] * math.sin(a), h0 + cl["tab_h"] * math.cos(a)),
            (cl["tab_h"] * math.sin(a), h0 + cl["tab_h"] * math.cos(a))]
+    fin = [(bg, fl), (bg + tg["fin_w"], fl), (bg + tg["fin_w"], tg["bot"] - tg["fin_gap"]),
+           (bg, tg["bot"] - tg["fin_gap"])]
+    sh.poly(M(fin), fill="#f4d9a8", stroke=ACC, sw=1.0, dash="3 2")
+    sh.note((-pu - 1, fl + 6), "breakaway fin", "end", ACC, FS - 3)
+    sh.note((-pu - 1, fl + 3), "(snap out)", "end", ACC, FS - 3)
     for q in (plate, plate2, tab):
         sh.poly(M(q), fill=STEEL, stroke="#3a3f47", sw=1.2)
     # wall
@@ -209,9 +215,9 @@ def section():
     sh.poly(M(arcp((T, pg["z"]), 14, 0, pg["angle"], 12)), fill="none", stroke=ACC, sw=1.2,
             close=False)
     # tongue call-outs
-    sh.note((4, cl["plate_bottom_z"] - 5), f"tongue {tg['t']} at tip, {tg['root_t']} at root", size=FS - 2)
+    sh.note((4, cl["plate_bottom_z"] - 5), f"tongue {tg['tip_t']} at tip, {tg['root_t']} at root", size=FS - 2)
     sh.note((4, cl["plate_bottom_z"] - 9), f"{tg['back_gap']} off the wall (plate {cl['t']})", size=FS - 2)
-    sh.note((4, cl["plate_bottom_z"] - 13), f"est.: seats ~{tg['bot'] - cl['hinge_z']:.1f} up the CLAW's V", size=FS - 2)
+    sh.note((4, cl["plate_bottom_z"] - 13), f"est.: seats {tg['bot'] - cl['hinge_z']:.1f} up V, lift {tg['release_lift']:.1f}", size=FS - 2)
     sh.line((4, cl["plate_bottom_z"] - 4.4), (-tg["back_gap"] - tg["t"] / 2, tg["bot"]), ACC, 1)
     sh.dim((0, cl["plate_top_z"]), (0, H), 22, f"{H - cl['plate_top_z']:.1f}", ACC, horiz=False)
     sh.dim((0, cl["plate_bottom_z"]), (0, cl["plate_top_z"]), 22, "CLAW 23", STEEL, horiz=False)
