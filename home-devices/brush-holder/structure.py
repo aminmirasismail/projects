@@ -48,7 +48,7 @@ PANEL_W = 160.0
 E_ST, E_CR = 3000.0, 1000.0
 ALLOW = {"sus_along": 7.0, "sus_across": 4.0, "des_along": 18.0, "des_across": 10.0, "steel": 300.0}
 F_BRUSH = 2.0
-PUSH = 4.0                                    # N horizontal, clipping a heavy brush
+PUSH = 7.0                                    # N horizontal, clipping (or pulling out) the heaviest brush
 HAND = 10.0 * 1.5                             # N down on the front edge centre
 
 rows = []
@@ -111,7 +111,7 @@ check("Shelf plate, front row to rib: stress (design)", res["des"]["sigma"], ALL
 out["front_strip"] = res
 
 # ------------------------------------------------------------------ 2 cross rib (T: plate web + downstand)
-web = (2.4, T, H - T / 2)                   # only the 2.4 mm web between pockets is solid in the plate
+web = (1.6, T, H - T / 2)                   # only the 1.6 mm web between the rows of pockets is solid in the plate
 dst = (RIB_Y[1] - RIB_Y[0], DOWN, H - T - DOWN / 2)
 A, zb, I_rib, ct, cb = composite([web, dst])
 span = W - RAIL_W

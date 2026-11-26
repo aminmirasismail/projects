@@ -127,22 +127,23 @@ td.num { font-family: var(--f-mono); font-size: 13px; }
       <div class="fb"><span class="ask">Clear the tray when clipped halfway down a 180 mm brush</span><span class="did">The shelf top is at 152 mm. Clipped halfway, the 180 mm brush's head tip sits about 62 mm up, at least 45 mm clear of the tray.</span></div>
       <div class="fb"><span class="ask">Keep it thin, tuck everything into the base</span><span class="did">The tray walls are now <b>22.5 mm</b> deep, up from 14, and no other dimension grew. Folded, the panel, stays and pins sit down inside the black tray, and only the white shelf frame shows above it. The back wall stays low behind the panel, which leaves a slot for the panel to fold out of. Two small black pads in the tray support the folded panel.</span></div>
       <div class="fb"><span class="ask">Strong enough for all the brushes, no sagging</span><span class="did">Checked by calculation against published brush weights with a factor of 2 (see <a href="#strength" style="color:var(--rose)">Strength</a>). That led to a stiffer frame: a rib and side rails under the shelf, an 8 mm ribbed panel, stays hooked higher, and steel pins at every joint.</span></div>
-      <div class="fb"><span class="ask">Keep the snap clip, but sturdier and covering a range</span><span class="did">The clips are now <b>drop-in black cartridges</b> with long straight spring fingers and ramped pads, each sitting on a ledge with two snap bumps. I didn't stick to two sizes: see the next section for why.</span></div>
+      <div class="fb"><span class="ask">Keep the snap clip, but sturdier and covering a range</span><span class="did">The clips are now <b>drop-in black cartridges</b>, each made for one brush, with long, gentle spring jaws.</span></div>
+      <div class="fb"><span class="ask">Clips loose in the plate; brushes slippery (first test print)</span><span class="did">The cartridges now <b>hook under a lip</b> at the back and <b>click in</b> at the front, with crush ribs to stop rattling and paperclip holes to release them. The jaws grip through <b>glued neoprene pads</b> in walled pockets, with a cutting jig for the pads. Nothing goes on the brushes. Details are in <a href="#clip" style="color:var(--rose)">The clip</a>, and a second test round is ready in <a href="#test" style="color:var(--rose)">Test round 2</a>.</span></div>
     </div>
   </section>
 
-  <section>
-    <div class="head"><span class="tag">The clip</span><h2>One cartridge per brush</h2>
-      <p class="muted">Each cartridge is a black frame with two 30 mm spring fingers, pads with a 30° lead-in, and a flat back stop. It drops into its pocket and clicks in. The handle diameter is engraved on top, so you can tell them apart.</p></div>
+  <section id="clip">
+    <div class="head"><span class="tag">The clip · v3</span><h2>Rubber pads, one cartridge per brush</h2>
+      <p class="muted">The first test showed two problems. The cartridges didn't stay in their pockets, and wet handles slipped because wet lacquer on PLA is far more slippery than I'd allowed for. Both are fixed. Each cartridge still has two long spring jaws, but now the only thing touching the handle is a <b>glued neoprene pad</b> on each jaw. The pad sits in a walled pocket on the jaw. A small PLA ramp and crest ahead of the pad give a light click, so the handle can't walk out of the front.</p></div>
     <div class="trio">
-      <figure><img src="renders/v2/carts.jpg" alt="Three cartridges, for 6.95, 12.3 and 16.8 mm handles, each with a handle seated" width="1400" height="1050"><figcaption>6.95 · 12.3 · 16.8 mm, with handles</figcaption></figure>
-      <figure><img src="renders/v2/carts_top.jpg" alt="The same three cartridges from above, showing fingers, relief slots and pads" width="1400" height="1050"><figcaption>From above</figcaption></figure>
-      <figure><img src="renders/v2/cu_clip_empty.jpg" alt="Close-up of cartridges seated in the shelf pockets with engraved diameters" width="1400" height="1050"><figcaption>Seated in the shelf</figcaption></figure>
+      <figure><img src="renders/v2/carts.jpg" alt="Three cartridges, for 6.95, 12.3 and 16.8 mm handles, with handles seated between their rubber pads" width="1400" height="1050"><figcaption>6.95 · 12.3 · 16.8 mm, with handles</figcaption></figure>
+      <figure><img src="renders/v2/cart_detail.jpg" alt="Close-up of a jaw: the PLA lead-in ramp, the crest and the neoprene pad in its pocket, plus the snap bump on the frame arm" width="1400" height="1050"><figcaption>Ramp, crest, pad pocket, snap bump</figcaption></figure>
+      <figure><img src="renders/v2/carts_top.jpg" alt="The cartridges from above" width="1400" height="1050"><figcaption>From above</figcaption></figure>
     </div>
     <div class="cards">
-      <div class="card"><h3>Why not two sizes</h3><p>Your handles run from 6.95 to 19 mm. A friction clip that grips a 3 mm range is weak at the bottom of it: the design review found the heavy double-ended brushes and the thinnest one would hold only about their own weight. A PLA spring also relaxes overnight, which halves a light grip. So each cartridge is tuned to one handle (±0.6 mm), with 1.8 mm of finger deflection.</p></div>
-      <div class="card"><h3>Still flexible</h3><p>A cartridge is about 3 g and takes about 20 minutes to print. If Chelsea gets a new brush, print a new cartridge for its handle and swap it in. Finger thickness is set from the brush's wet weight (1.0 mm for light brushes, 1.5 mm for the heavy ones), so every clip holds about twice its brush at a cautious friction value. Strain stays at 0.5% or less.</p></div>
-      <div class="card warn"><h3>Steady it while clipping</h3><p>Pushing a handle in takes about 1.3–1.4 N for the light brushes, 2.8–3.2 N for the face brushes and 3.9 N for the three double-ended ones. The empty stand tips at about 1.5 N even with the steel ballast, because the shelf is 150 mm up. So rest a finger on the shelf for <b>every</b> brush you clip, as you would with any tall rack. Loading the back row first helps too. If you'd rather clip one-handed, TPU pads (about 3× the friction) would let the springs be much softer.</p></div>
+      <div class="card"><h3>Grip: rubber, 2× every brush</h3><p>Each jaw's spring is sized so the clip holds <b>twice</b> the brush's heaviest likely wet weight, assuming wet, soapy neoprene on lacquer at a cautious friction of 0.3. That's 12–75 g per brush. Old clips relied on PLA, which grips only about 0.12 when wet, and that's why some brushes barely held. All the pads are the same 4 × 7 mm piece.</p></div>
+      <div class="card"><h3>Staying in the pocket</h3><p>Three things now hold each cartridge. A <b>hook at the back</b> tucks under a lip in the pocket. <b>Snap bumps</b> on the flexible front ends of the frame arms click into grooves, catching about 0.5 mm, against 0.15 mm before. Small <b>crush ribs</b> on the back take out any rattle. To fit one: slide its back under the lip, then press the front down until it clicks. To remove one: poke a paperclip into the two small holes beside the pocket to push the bumps in, then slide it forward and lift it out.</p></div>
+      <div class="card warn"><h3>The trade-off: a firm push for the heavy brushes</h3><p>With nothing added to the brushes, a firm grip needs a firm push. Clipping in, or pulling out, takes about <b>1.2–1.7 N</b> for the light brushes, <b>3.5–3.9 N</b> for the face brushes, and <b>5–6.5 N</b> for the three double-ended ones. That's about like pushing a cap onto a marker. Hold the shelf's edge with your other hand while you do it. If B9–B11 turn out lighter than my 60–75 g estimates, their clips can be reprinted softer.</p></div>
     </div>
   </section>
 
@@ -151,20 +152,20 @@ td.num { font-family: var(--f-mono); font-size: 13px; }
     <div class="tablewrap"><table>
       <thead><tr><th scope="col">Row</th><th scope="col">Brush</th><th scope="col">Handle</th><th scope="col">Head</th><th scope="col">Cartridge</th><th scope="col">Finger</th><th scope="col">Push to clip</th></tr></thead>
       <tbody>
-        <tr><td>Front, far left</td><td>B11 double</td><td class="num">16.8</td><td class="num">55 / 55</td><td class="num">16.8</td><td class="num">1.49 mm</td><td class="num">3.9 N</td></tr>
-        <tr><td>Front</td><td>B4</td><td class="num">9.5</td><td class="num">23.75</td><td class="num">9.5</td><td class="num">1.06 mm</td><td class="num">1.4 N</td></tr>
-        <tr><td>Front, middle</td><td>B10 double</td><td class="num">12.3</td><td class="num">37 / 37</td><td class="num">12.3</td><td class="num">1.49 mm</td><td class="num">3.9 N</td></tr>
-        <tr><td>Front</td><td>B1</td><td class="num">8.1</td><td class="num">8.1</td><td class="num">8.1</td><td class="num">1.03 mm</td><td class="num">1.3 N</td></tr>
-        <tr><td>Front, far right</td><td>B9 double</td><td class="num">19 (check)</td><td class="num">46.8 / 39.3</td><td class="num">19</td><td class="num">1.49 mm</td><td class="num">3.9 N</td></tr>
-        <tr><td>Back, far left</td><td>B8</td><td class="num">6.95</td><td class="num">38</td><td class="num">6.95</td><td class="num">1.40 mm</td><td class="num">3.2 N</td></tr>
-        <tr><td>Back</td><td>B2</td><td class="num">11.9</td><td class="num">11.9</td><td class="num">11.9</td><td class="num">1.03 mm</td><td class="num">1.3 N</td></tr>
-        <tr><td>Back</td><td>B5</td><td class="num">8.3</td><td class="num">30.5</td><td class="num">8.3</td><td class="num">1.33 mm</td><td class="num">2.8 N</td></tr>
-        <tr><td>Back</td><td>B3</td><td class="num">10</td><td class="num">21.9</td><td class="num">10</td><td class="num">1.06 mm</td><td class="num">1.4 N</td></tr>
-        <tr><td>Back</td><td>B7</td><td class="num">10</td><td class="num">28</td><td class="num">10</td><td class="num">1.33 mm</td><td class="num">2.8 N</td></tr>
-        <tr><td>Back, far right</td><td>B6</td><td class="num">8.9</td><td class="num">34.2</td><td class="num">8.9</td><td class="num">1.40 mm</td><td class="num">3.2 N</td></tr>
+        <tr><td>Front, far left</td><td>B11 double</td><td class="num">16.8</td><td class="num">55 / 55</td><td class="num">16.8</td><td class="num">1.74 mm</td><td class="num">6.5 N</td></tr>
+        <tr><td>Front</td><td>B4</td><td class="num">9.5</td><td class="num">23.75</td><td class="num">9.5</td><td class="num">1.12 mm</td><td class="num">1.7 N</td></tr>
+        <tr><td>Front, middle</td><td>B10 double</td><td class="num">12.3</td><td class="num">37 / 37</td><td class="num">12.3</td><td class="num">1.61 mm</td><td class="num">5.2 N</td></tr>
+        <tr><td>Front</td><td>B1</td><td class="num">8.1</td><td class="num">8.1</td><td class="num">8.1</td><td class="num">1.00 mm</td><td class="num">1.2 N</td></tr>
+        <tr><td>Front, far right</td><td>B9 double</td><td class="num">19 (check)</td><td class="num">46.8 / 39.3</td><td class="num">19</td><td class="num">1.66 mm</td><td class="num">5.7 N</td></tr>
+        <tr><td>Back, far left</td><td>B8</td><td class="num">6.95</td><td class="num">38</td><td class="num">6.95</td><td class="num">1.47 mm</td><td class="num">3.9 N</td></tr>
+        <tr><td>Back</td><td>B2</td><td class="num">11.9</td><td class="num">11.9</td><td class="num">11.9</td><td class="num">1.02 mm</td><td class="num">1.3 N</td></tr>
+        <tr><td>Back</td><td>B5</td><td class="num">8.3</td><td class="num">30.5</td><td class="num">8.3</td><td class="num">1.41 mm</td><td class="num">3.5 N</td></tr>
+        <tr><td>Back</td><td>B3</td><td class="num">10</td><td class="num">21.9</td><td class="num">10</td><td class="num">1.12 mm</td><td class="num">1.7 N</td></tr>
+        <tr><td>Back</td><td>B7</td><td class="num">10</td><td class="num">28</td><td class="num">10</td><td class="num">1.41 mm</td><td class="num">3.5 N</td></tr>
+        <tr><td>Back, far right</td><td>B6</td><td class="num">8.9</td><td class="num">34.2</td><td class="num">8.9</td><td class="num">1.47 mm</td><td class="num">3.9 N</td></tr>
       </tbody>
     </table></div>
-    <p class="muted" style="font-size:14px">All sizes are in mm. Brushes are numbered as in your list. Clip fingers are sized for wet weights from published brushes: 10–15 g for eye and liner brushes, 30–35 g for face brushes, and 42 g for the double-ended ones, which are also held by their waist (please check). The two end brushes of the back row (B8, B6) need a small dogleg: lower the head through the gap about 15–20 mm in from the end, clear of the shelf's side arms, then slide the handle sideways to its clip. Their heads pass under the shelf's side arms.</p>
+    <p class="muted" style="font-size:14px">All sizes are in mm. Brushes are numbered as in your list. Clip springs are sized for the heaviest likely wet weights: 12–20 g for eye and liner brushes, 40–45 g for face brushes, and 60–75 g for the double-ended ones. The two end brushes of the back row (B8, B6) need a small dogleg: lower the head through the gap about 15–20 mm in from the end, clear of the shelf's side arms, then slide the handle sideways to its clip. Their heads pass under the shelf's side arms.</p>
   </section>
 
   <section>
@@ -181,8 +182,8 @@ td.num { font-family: var(--f-mono); font-size: 13px; }
     </div>
     <div class="cards">
       <div class="card"><h3>To fold it</h3><ol><li>Take the brushes out and tip out the water.</li><li>Lift each stay off its peg and lay it in the tray.</li><li>Swing the shelf up and over the top so it hangs behind the panel.</li><li>Hold the shelf against the panel and lay both forward onto the tray, like closing a book.</li></ol></div>
-      <div class="card"><h3>Hardware to buy (about £5)</h3><ul><li>Steel dowel pins, Ø3 mm: 2 × 25 mm (panel hinge), 2 × 14 mm (shelf hinge), 2 × 10 mm (stay pivots), 2 × 12 mm (stay pegs). A pack of assorted 3 mm dowels covers it.</li><li>A 100 × 10 × 10 mm steel bar offcut (about 80 g) for the front sill pocket, glued in.</li><li>4 clear silicone bumper feet, Ø10 mm.</li></ul></div>
-      <div class="card"><h3>Print plan</h3><ul><li>Tray (black): floor-down, 176 × 169 × 22.5 mm deep, so no room for a brim. About 5 h and 113 g at 0.08 mm.</li><li>Panel (white): upright on its foot, long edge along the bed.</li><li>Shelf (white): flat.</li><li>Stays and 11 cartridges (black): flat. Print a spare set of cartridges, since they're the part that wears.</li></ul></div>
+      <div class="card"><h3>Hardware and supplies</h3><ul><li><b>Neoprene rubber sheet, 1/16 in (1.6 mm), 40A–60A, plain back, no adhesive</b>, about 12 × 12 in, about $10. Search Amazon for "neoprene rubber sheet 1/16 no adhesive"; Zoro and eBay sell the same. One sheet makes hundreds of pads.</li><li><b>E6000 glue</b>, which stays flexible and waterproof, sold at Amazon, Target and craft stores. Let it cure 24 h before first use.</li><li>A snap-off or X-Acto knife and a cutting mat.</li><li>Steel dowel pins, Ø3 mm: 2 × 25 mm (panel hinge), 2 × 14 mm (shelf hinge), 2 × 10 mm (stay pivots), 2 × 12 mm (stay pegs). A pack of assorted 3 mm dowels covers it.</li><li>A 100 × 10 × 10 mm steel bar offcut (about 80 g) for the front sill pocket, glued in.</li><li>4 clear silicone bumper feet, Ø10 mm.</li></ul></div>
+      <div class="card"><h3>Print plan</h3><ul><li>Tray (black): floor-down, 176 × 169 × 22.5 mm deep, so no room for a brim. About 5 h and 113 g at 0.08 mm.</li><li>Panel (white): upright on its foot, long edge along the bed.</li><li>Shelf (white): flat.</li><li>Stays and 11 cartridges (black): flat. Print a spare set, since the cartridges are the part that wears. Then glue 2 pads into each.</li></ul></div>
     </div>
   </section>
 
@@ -271,20 +272,31 @@ td.num { font-family: var(--f-mono); font-size: 13px; }
 <!-- /DURABILITY -->
 
   <section id="test">
-    <div class="head"><span class="tag">Sliced · not printed</span><h2>Test plate: clips and pin fits</h2>
-      <p class="muted">A one-plate test in white PLA Matte, the filament synced to the printer. Colour doesn't matter for a grip test. It has a 156 × 100 mm slice of the front row with the three hardest cartridges: 16.8 mm (heaviest brush), 12.3 mm, and 6.95 mm (thinnest handle, big head). There's also a small block printed upright like the panel, with Ø2.95, 3.0 and 3.05 mm holes to check the steel-pin fits.</p></div>
-    <div class="duo">
-      <figure><img src="renders/v2/clip_test.jpg" alt="The clip test strip: a white shelf slice with three cartridges, handles in" width="1400" height="1050"><figcaption>Test strip with handles in</figcaption></figure>
-      <div class="cards" style="grid-template-columns:1fr">
-        <div class="card"><h3>Plate</h3><ul><li><b>3 h 56 min</b> · <b>82 g</b> white PLA Matte</li><li>0.08 mm Extra Fine, Low-lift A1 Mini profile, Textured PEI</li><li>4 walls, so the spring fingers are solid wall lines. I checked the toolpaths on every layer of the fingers.</li><li>File: <code>home-devices/brush-holder/print/clip_test_white.gcode.3mf</code></li></ul></div>
-        <div class="card"><h3>How to test</h3><ol><li>Lay the strip on the counter with the clips past the edge and a heavy book on the back half.</li><li>Clip in B11, B10 and B8 straight after washing. Note how hard the push is.</li><li>Leave them overnight, ideally 72 h. They should hang without slipping.</li><li>Take the brushes out and leave the strip empty for a week, like the folded stand between uses, then clip them in again. The grip should feel the same as new. This tells us how much the clips recover.</li><li>Push a 3 mm dowel into each hole: 2.95 should be a firm press, 3.05 should turn freely.</li></ol></div>
-      </div>
+    <div class="head"><span class="tag">Sliced · not printed</span><h2>Test round 2: fit, pads, grip</h2>
+      <p class="muted">There are three small plates, all in your synced white PLA Matte. Print the first two, cut and glue the pads, then print the third.</p></div>
+    <div class="trio">
+      <figure><img src="renders/v2/chopbox.jpg" alt="The chop box with a rubber strip against its end stop, the blade slot through two guide towers, and the strip gauge behind" width="1400" height="1050"><figcaption>Jigs: strip gauge and chop box</figcaption></figure>
+      <figure><img src="renders/v2/fitblock.jpg" alt="Fit block with three identical cartridges in pockets labelled 05, 10 and 15" width="1400" height="1050"><figcaption>Fit block: 0.05 / 0.10 / 0.15 mm pockets</figcaption></figure>
+      <figure><img src="renders/v2/clip_test.jpg" alt="The clip test strip with three cartridges and handles" width="1400" height="1050"><figcaption>Clip test strip</figcaption></figure>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th scope="col">Plate</th><th scope="col">What</th><th scope="col">Time · filament</th><th scope="col">File in print/</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Jigs</td><td>Strip gauge and chop box, 0.20 mm Standard</td><td class="num">26 min · 15 g</td><td><code>jigs_white.gcode.3mf</code></td></tr>
+        <tr><td>2 · Fit block</td><td>Three pockets at 0.05 / 0.10 / 0.15 mm clearance, with three identical 8.1 mm cartridges. 0.08 mm Extra Fine, 4 walls.</td><td class="num">2 h 27 min · 31 g</td><td><code>fit_block_white.gcode.3mf</code></td></tr>
+        <tr><td>3 · Clip test</td><td>Front-row slice with the 16.8, 12.3 and 6.95 mm cartridges. Same profile.</td><td class="num">3 h 39 min · 76 g</td><td><code>clip_test_white.gcode.3mf</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cards">
+      <div class="card"><h3>Cutting the pads</h3><ol><li>On a cutting mat, flip the strip gauge so its hook is down and hook it over a straight edge of the sheet. Run the knife along the gauge's far edge to get a 7 mm strip. Two or three light passes are better than one hard one.</li><li>Lay the strip in the chop box's channel, push it against the end stop, and cut down through the slot. That gives a 4 × 7 mm pad. Slide the strip up to the stop and repeat.</li><li>Pads anywhere from 4.0–4.5 × 7.0–7.5 mm fit the pockets.</li></ol></div>
+      <div class="card"><h3>Gluing</h3><ol><li>Put a thin dab of E6000 on the pocket floor.</li><li>Press the pad in with a toothpick. The walls line it up, and it should stand slightly proud of the PLA around it.</li><li>Wipe off any squeeze-out and leave it 24 h.</li></ol></div>
+      <div class="card"><h3>What to check</h3><ul><li><b>Fit block:</b> which pocket (05, 10 or 15) lets the cartridge click in firmly and sit without rattling, and still come out with the paperclip? I'll use that clearance everywhere.</li><li><b>Clip test:</b> lay the strip with the clips past the counter edge and a book on the back. Clip in B11, B10 and B8 straight after washing, and note how hard each push is. Then leave them 24–72 h and check for slipping.</li></ul></div>
     </div>
   </section>
 
   <section>
     <div class="head"><span class="tag">Checked</span><h2>Design review</h2>
-      <p class="muted">An independent mechanical review swept every fold motion for collisions, sliced each part, and re-derived the clip loads. Four passes so far. The fourth checked the deeper tray (fold sweeps in 2–3° steps, the tray re-sliced) and the creep model. The first found real problems. The second caught a few more: the stay pivot couldn't turn, and a thin skin blocked the hinge dowel. The third checked the strength calculations independently and caught fold clashes from the stiffening, the stay pivot needing a clevis, and two members I had under-checked. All of them are fixed in this version.</p></div>
+      <p class="muted">An independent mechanical review swept every fold motion for collisions, sliced each part, and re-derived the clip loads. Six passes so far. The fifth and sixth reviewed the clip redesign. They caught that my O-ring version couldn't be assembled, and that a seated cartridge couldn't come back out. That's why there are now release holes. They also found the jig-cut pads would come out slightly oversize for their pockets, which led to bigger pockets and jigs set by the blade. The fourth checked the deeper tray (fold sweeps in 2–3° steps, the tray re-sliced) and the creep model. The first found real problems. The second caught a few more: the stay pivot couldn't turn, and a thin skin blocked the hinge dowel. The third checked the strength calculations independently and caught fold clashes from the stiffening, the stay pivot needing a clevis, and two members I had under-checked. All of them are fixed in this version.</p></div>
     <div class="cards">
       <div class="card ok"><h3>Fixed after review</h3><ul>
         <li>The shelf mesh had leftover inverted shells from the clip slots and wouldn't slice. Cleaned; all parts are now manifold.</li>
@@ -297,7 +309,7 @@ td.num { font-family: var(--f-mono); font-size: 13px; }
         <li>Also fixed: the stay pivot pin was weak, so it's now a dowel in double shear through a clevis tab; the stay hook has a light detent; the back-stop has only about 1° of play; the snap bumps have a lead-in ramp; the ballast pocket has a proper wall; and the rail now has stowing clearance.</li>
       </ul></div>
       <div class="card warn"><h3>Still open</h3><ul>
-        <li><b>Real grip.</b> Friction on lacquered handles has to be tested. The test plate is sliced and ready.</li><li><b>Double-ended handles.</b> I assumed they're thinnest at the middle (a waist), which locks them in the clip. If B9, B10 or B11 is thickest in the middle instead, its clip needs a stiffer spring. Please measure each with calipers at the middle and 15 mm either side.</li>
+        <li><b>Real grip.</b> I can't calculate wet neoprene on lacquer reliably. Round 2 of the test measures it.</li><li><b>Push force on the heavy brushes</b> is 5–6.5 N. If that's too stiff, there's an upgrade: angle the pads 30° towards a third pad on the back stop. That gives the same grip for about 40% less push, at the cost of one extra pad per clip.</li>
         <li><b>B9's stem</b> was noted as "9 or 19 mm". Please re-measure it. The cartridge is a 20-minute reprint either way.</li>
         <li><b>Head spacing</b> is about 3 mm between some neighbours, using dry, fluffed sizes. Wet heads are slimmer.</li>
         <li><b>The tray is 178 × 169 mm</b>, so I need to check its fit against the A1 Mini purge line in Bambu Studio when slicing.</li>
@@ -308,9 +320,9 @@ td.num { font-family: var(--f-mono); font-size: 13px; }
   <section>
     <div class="head"><span class="tag">Next</span><h2>What I need from you</h2></div>
     <div class="cards">
-      <div class="card"><h3>1 · Print the test plate?</h3><p>It's sliced but not sent. Say yes and open <code>print/clip_test_white.gcode.3mf</code> in your Bambu Studio. I won't start Bambu Studio myself or print without your go-ahead.</p></div>
-      <div class="card"><h3>2 · Measure the double-ended handles</h3><p>Measure B9 (noted as "9 or 19"), B10 and B11 at the middle and 15 mm either side. If you can, also weigh a couple of wet brushes on a kitchen scale.</p></div>
-      <div class="card"><h3>3 · Then</h3><p>Once the clips grip well and the pins fit, I'll adjust the cartridges and bores to match, slice the full set, and show you the plates, times and filament before anything prints.</p></div>
+      <div class="card"><h3>1 · Get the rubber and glue</h3><p>1/16 in neoprene sheet, 40A–60A, with a plain back, and E6000.</p></div>
+      <div class="card"><h3>2 · Print plates 1–3</h3><p>They're sliced but not sent. Open them in your Bambu Studio. I won't start Bambu Studio myself or send anything to the printer.</p></div>
+      <div class="card"><h3>3 · Tell me</h3><p>Which fit-block pocket feels right, how hard the three test brushes are to push in, and whether any slip after a day. If you can, also weigh B9, B10 and B11 wet. Then I'll finalise the cartridges and slice the full set.</p></div>
     </div>
   </section>
 </div>

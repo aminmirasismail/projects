@@ -173,102 +173,161 @@ def wet_g(name):
     return GRIP_G[name]
 
 
+MU_R = 0.3                            # neoprene pad on a wet, soapy lacquered handle (design value)
+HOLD_SF = 2.0                         # grip holds 2x the brush's upper-bound wet weight
+PAD = (4.0, 7.0, 1.59)                # rubber pad: length along y, height, thickness (1/16 in neoprene sheet)
+PAD_FIT = 0.25                        # pad pocket clearance per side (takes jig-cut pads 4.0-4.5 x 7.0-7.5)
+PAD_PROUD = 0.3                       # rubber stands this far proud of the PLA rim
+CREST = 0.15                          # PLA crest ahead of the pad, inboard of the rubber: a light click
+GLUE = 0.15                           # extra pocket depth for the E6000 film
+EXIT_DEG = 30.0                       # crest back face, so pulling a brush out is easy
+RAMP_DEG = 32.0                       # lead-in ramp angle
+FRONT_GAP = 1.03                      # pocket extends this far ahead of the cartridge: room to slide under the lip
+LIP = (1.0, 1.2)                      # pocket back lip: overhang, thickness (the cartridge's back hook tucks under)
+
+
 def cart_geom(d, w=18.0):
     """Numbers for the cartridge made for one handle diameter d (it accepts d +/- 0.6 mm) and a brush of
-    wet weight w grams. Finger thickness is chosen so the grip holds 2x the brush at friction 0.25.
-    Local frame: entry face at y=0, body towards +y."""
+    wet weight w grams. Two spring fingers end in pad blocks; each pad block holds a glued 4 x 7 mm
+    neoprene pad in a walled pocket, with a PLA ramp and crest ahead of it. The handle is gripped
+    between the two rubber pads. Local frame: entry face at y=0, body towards +y."""
     lo, hi = d - 0.6, d + 0.6
     r_n, rhi = d / 2, hi / 2
-    rp, yp = 1.5, 6.0                 # pad radius, pad centre line (room for a 30 deg lead-in)
-    y_wall = yp + rhi + 0.8           # flat back stop: the biggest handle centres 0.8 behind the pads
-    yc = lambda r: y_wall - r          # noqa: E731  handle centre for radius r
-    x_of = lambda r: math.sqrt((r + rp) ** 2 - (yc(r) - yp) ** 2)  # noqa: E731 pad x touching r
-    pre = 1.8                         # finger deflection with the nominal handle seated
-    xp0 = x_of(r_n) - pre
-    d_lo = x_of(lo / 2) - xp0
-    d_hi = max(x_of(rhi), rhi + rp) - xp0  # worst deflection (seated or passing the pads)
-    x_fi = rhi + 0.4                  # finger inner face
-    yr = yp + 24.5                    # finger root
-    x_so = x_fi + 1.5 + d_hi + 0.7    # outer edge of the relief slot (room for the thickest finger)
-    Wc = 2 * (x_so + 1.6)
-    Dc = yr + 2.5
+    pre = 1.6                                   # finger deflection with the nominal handle seated
+    x_c = r_n - pre                             # free rubber face
+    x_fi = x_c + PAD[2] + GLUE + 0.8            # finger inner face (behind the pocket floor)
+    dx_ramp = (x_fi + 0.3) - (x_c - CREST)
+    y_cr = 0.4 + dx_ramp / math.tan(math.radians(RAMP_DEG))     # crest line
+    run = (PAD_PROUD + CREST) / math.tan(math.radians(EXIT_DEG))
+    y_p = y_cr + 0.3 + run + PAD[0] / 2 + PAD_FIT   # pad centre line
+    y_wall = y_p + rhi + 0.3                    # flat back stop
+    d_hi = pre + 0.3 + CREST                    # worst deflection: biggest handle passing the crest
+    d_lo = pre - 0.3
+    yr = 30.0                                   # finger root
+    E, h = 3500.0, T - 1.0
     L = yr
-    E, h = 3500.0, T - 1.0            # PLA modulus (MPa), finger height (cartridge sits on a 1 mm ledge)
-    F = max(0.55, 4.0 * w * 9.81e-3)  # finger force wanted with the nominal handle (N)
+    W_N = w * 9.81e-3
+    F = max(0.4, HOLD_SF * W_N / (2 * MU_R))
     k = F / pre
-    t = round(max(1.0, (k * 12 * L ** 3 / (3 * E * h)) ** (1 / 3)), 2)
+    t = round(min(2.0, max(1.0, (k * 12 * L ** 3 / (3 * E * h)) ** (1 / 3))), 2)
     I = h * t ** 3 / 12
     k = 3 * E * I / L ** 3
-    return dict(size=f"{d:.2f}".rstrip("0").rstrip("."), d=d, lo=lo, hi=hi, t=t, rp=rp, yp=yp, y_wall=y_wall,
-                xp0=xp0, x_fi=x_fi, yr=yr, x_so=x_so, W=Wc, D=Dc, pre=pre, k=k, L=L, h=h,
+    x_so = x_fi + t + d_hi + 0.7
+    Wc = 2 * (x_so + 1.6)
+    Dc = yr + 2.5
+    return dict(size=f"{d:.2f}".rstrip("0").rstrip("."), d=d, lo=lo, hi=hi, t=t, pre=pre, x_c=x_c, x_fi=x_fi,
+                y_cr=y_cr, y_p=y_p, yp=y_p, y_wall=y_wall, yr=yr, x_so=x_so, W=Wc, D=Dc, k=k, L=L, h=h,
                 defl_lo=d_lo, defl_hi=d_hi, strain_nom=3 * t * pre / (2 * L * L), strain_max=3 * t * d_hi / (2 * L * L),
-                f_nom=k * pre, f_lo=k * d_lo, f_hi=k * d_hi, entry=2 * (xp0 - rp), w=w,
-                hold_sf=(2 * 0.25 * k * pre) / (w * 9.81e-3),
-                push=2 * k * (pre + 0.4) * math.tan(math.radians(30 + 14)))
+                f_nom=k * pre, f_lo=k * d_lo, f_hi=k * d_hi, entry=2 * (x_c - CREST), w=w,
+                hold_sf=(2 * MU_R * k * pre) / W_N, hold_sf_lo=(2 * MU_R * k * d_lo) / W_N,
+                push=2 * k * d_hi * math.tan(math.radians(RAMP_DEG + 14)),
+                pullout=2 * k * d_hi * math.tan(math.radians(EXIT_DEG + 14)))
 
 
 Z0C = H - T + 1.0                     # cartridges sit on a 1 mm ledge at the pocket bottom
+FIT = 0.10                            # pocket clearance per side (the fit block tests 0.05 / 0.10 / 0.15)
 
 
 def cartridge(name, g, z0=Z0C, z1=H):
-    """Black drop-in clip: frame with two snap bumps, flat back stop, two long spring fingers with
-    ramped pads."""
-    body = prism(name, rrect_pts(g["W"], g["D"], 2.0, c=(0, g["D"] / 2)), z0, z1, bevel=0.4)
-    xf, t, xs, yr, yw = g["x_fi"], g["t"], g["x_so"], g["yr"], g["y_wall"]
-    xs = xf + t + g["defl_hi"] + 0.7
-    bumps = []
-    for s in (1, -1):   # 0.5 mm snap bumps: 30 deg ramp below (lead-in going down), square top (retains)
-        xw = s * g["W"] / 2
-        prof = [(xw - s * 0.2, z0 + 2.0), (xw, z0 + 2.0), (xw + s * 0.5, z0 + 2.87), (xw + s * 0.5, z0 + 3.6),
-                (xw - s * 0.2, z0 + 3.6)]
-        bumps.append(xz_prism(name + f"_bp{s}", prof, g["D"] / 2 - 2, g["D"] / 2 + 2))
-    S.union(body, bumps)
+    """Black drop-in clip. Back hook (a step on the top of the back bar) tucks under a lip at the back
+    of the pocket; 0.6 mm snap bumps on the free front ends of the frame arms click into grooves.
+    Crush ribs on the back face take out the play. Spring fingers end in pad blocks with walled
+    pockets for glued neoprene pads."""
+    Wd, Dd = g["W"], g["D"]
+    body = prism(name, rrect_pts(Wd, Dd, 2.0, c=(0, Dd / 2)), z0, z1, bevel=0.4)
+    xf, t, yr, yw, xc = g["x_fi"], g["t"], g["yr"], g["y_wall"], g["x_c"]
+    xs = g["x_so"]
+    adds = []
+    for s in (1, -1):   # snap bumps near the arms' free ends: 30 deg lead-in below, 45 deg retaining face
+        xw = s * Wd / 2
+        prof = [(xw - s * 0.3, z0 + 2.0), (xw, z0 + 2.0), (xw + s * 0.6, z0 + 3.04), (xw + s * 0.6, z0 + 3.4),
+                (xw, z0 + 4.0), (xw - s * 0.3, z0 + 4.0)]
+        adds.append(xz_prism(name + f"_bp{s}", prof, 2.0, 8.0))
+    for x in (-Wd / 4, 0.0, Wd / 4):   # crush ribs on the back face, below the hook step
+        adds.append(prism(name + f"_cb{x:.0f}", circle_pts(0.35, 16, c=(x, Dd - 0.1)), z0 + 0.6, z1 - LIP[1] - 0.6))
+    S.union(body, adds)
     cut = [prism(name + "_seat", rect(-xf, -3, xf, yw), z0 - 1, z1 + 1)]
     for s in (1, -1):
         cut.append(prism(name + f"_in{s}",
                          rect(min(s * (xf - 0.5), s * xf), yw - 0.1, max(s * (xf - 0.5), s * xf), yr), z0 - 1, z1 + 1))
         cut.append(prism(name + f"_out{s}", rect(min(s * (xf + t), s * xs), -3, max(s * (xf + t), s * xs), yr),
                          z0 - 1, z1 + 1))
+    # back hook: the top of the back bar steps down so the pocket's lip sits over it
+    cut.append(prism(name + "_hook", rect(-Wd, Dd - LIP[0] - 0.15, Wd, Dd + 1), z1 - LIP[1] - 0.15, z1 + 1))
     S.cut(body, cut)
     pads = []
-    tip_x = g["xp0"] - g["rp"]
-    ramp = (xf + 0.3 - tip_x) / math.tan(math.radians(30))
+    yc, yp = g["y_cr"], g["y_p"]
+    rim = xc + PAD_PROUD
+    yb = yp + PAD[0] / 2 + PAD_FIT + 1.2          # back wall of the pad pocket
+    run = (rim - (xc - CREST)) / math.tan(math.radians(EXIT_DEG))
     for s in (1, -1):
-        c = (s * g["xp0"], g["yp"])
-        pts = circle_pts(g["rp"], 32, c=c)
-        pts += [(s * (xf + 0.3), g["yp"] + g["rp"]), (s * (xf + 0.3), max(0.4, g["yp"] - ramp))]
-        pads.append(prism(name + f"_pad{s}", hull(pts), z0, z1))
+        pts = [(s * (xf + 0.3), 0.4), (s * (xc - CREST), yc), (s * (xc - CREST), yc + 0.3),
+               (s * rim, yc + 0.3 + run), (s * rim, yb), (s * (xf + 0.3), yb)]
+        if s < 0:
+            pts = list(reversed(pts))
+        pads.append(prism(name + f"_pad{s}", pts, z0, z1))
     S.union(body, pads)
+    zc = (z0 + z1) / 2
+    pk = []
+    for s in (1, -1):   # walled pocket for the rubber: 4.2 x 7.2, floor PAD thickness behind the rubber face
+        x0_, x1_ = rim - 0.6, xc + PAD[2] + GLUE
+        pk.append(prism(name + f"_pk{s}", rect(min(s * x0_, s * x1_), yp - PAD[0] / 2 - PAD_FIT,
+                                               max(s * x0_, s * x1_), yp + PAD[0] / 2 + PAD_FIT),
+                        zc - PAD[1] / 2 - PAD_FIT, zc + PAD[1] / 2 + PAD_FIT))
     let = S.text(name + "_t", g["size"], 2.6, 0.8, loc=(0, (yw + yr) / 2 - 1.0, z1), align="CENTER")
     S.bake(let)
-    S.cut(body, [let])
+    S.cut(body, pk + [let])
+    clean(body, min_vol=5.0)
     S.assign(body, S.pla("black"))
     return body
+
+
+def pads_for(name, g, z0=Z0C, z1=H):
+    """The two neoprene pads (render props), in cartridge-local coordinates."""
+    m = S.material("Neoprene", (0.06, 0.06, 0.065, 1), rough=0.8)
+    zc = (z0 + z1) / 2
+    out = []
+    for s in (1, -1):
+        x0_, x1_ = g["x_c"], g["x_c"] + PAD[2]
+        o = prism(f"{name}_rub{s}", rrect_pts(PAD[2], PAD[0], 0.3, c=(s * (x0_ + x1_) / 2, g["y_p"])),
+                  zc - PAD[1] / 2, zc + PAD[1] / 2, bevel=0.2)
+        S.assign(o, m)
+        out.append(o)
+    return out
 
 
 def place(ob, x0, front):
     """Cartridge local -> world. Front row opens to -y, back row to +y."""
     if front:
-        M = Matrix.Translation((x0, SF + WALL, 0))
+        M = Matrix.Translation((x0, SF + WALL + FRONT_GAP, 0))
     else:
-        M = Matrix.Translation((x0, SB - WALL, 0)) @ Matrix.Rotation(math.pi, 4, "Z")
+        M = Matrix.Translation((x0, SB - WALL - FRONT_GAP, 0)) @ Matrix.Rotation(math.pi, 4, "Z")
     ob.data.transform(M)
     return ob
 
 
-def pocket_cutters(tag, g, x0, front):
+def pocket_cutters(tag, g, x0, front, fit=None):
+    fit = FIT if fit is None else fit
     hi, Wc, Dc = g["hi"], g["W"], g["D"]
-    a = prism(tag + "_pk", rrect_pts(Wc + 0.4, Dc + 0.4, 2.2, c=(0, Dc / 2)), Z0C, H + 1)
-    o = prism(tag + "_op", rect(-(Wc / 2 - 1.0), -0.5, Wc / 2 - 1.0, Dc - 1.0), H - T - 1, Z0C + 0.5)
-    gr = prism(tag + "_gr", rect(-(Wc / 2 + 0.7), Dc / 2 - 2.6, Wc / 2 + 0.7, Dc / 2 + 2.6), Z0C + 1.8, Z0C + 4.0)
-    sl = prism(tag + "_sl", [(-(hi / 2 + 1.7), -WALL - 0.3), (hi / 2 + 1.7, -WALL - 0.3),
-                             (hi / 2 + 0.4, -WALL + 1.0), (hi / 2 + 0.4, 0.5), (-(hi / 2 + 0.4), 0.5),
-                             (-(hi / 2 + 0.4), -WALL + 1.0)], H - T - 1, H + 1)
-    return [place(q, x0, front) for q in (a, o, gr, sl)]
+    y0 = -FRONT_GAP - fit
+    # main pocket up to the lip, then the top layer stops short of the back by the lip overhang
+    a = prism(tag + "_pk", rrect_pts(Wc + 2 * fit, Dc + FRONT_GAP + 2 * fit, 2.1, c=(0, (y0 + Dc + fit) / 2)),
+              Z0C, H - LIP[1])
+    b = prism(tag + "_pt", rrect_pts(Wc + 2 * fit, Dc + FRONT_GAP + 2 * fit - LIP[0], 2.1,
+                                     c=(0, (y0 + Dc + fit - LIP[0]) / 2)), H - LIP[1] - 0.3, H + 1)
+    o = prism(tag + "_op", rect(-(Wc / 2 - 1.0), y0 - 0.37, Wc / 2 - 1.0, Dc - 1.0), H - T - 1, Z0C + 0.5)
+    gr = prism(tag + "_gr", rect(-(Wc / 2 + fit + 0.7), 1.4, Wc / 2 + fit + 0.7, 8.6), Z0C + 1.8, Z0C + 4.2)
+    sl = prism(tag + "_sl", [(-(hi / 2 + 1.7), -WALL - FRONT_GAP - 0.37), (hi / 2 + 1.7, -WALL - FRONT_GAP - 0.37),
+                             (hi / 2 + 0.4, -WALL - FRONT_GAP + 1.0), (hi / 2 + 0.4, 0.5), (-(hi / 2 + 0.4), 0.5),
+                             (-(hi / 2 + 0.4), -WALL - FRONT_GAP + 1.0)], H - T - 1, H + 1)
+    # paperclip release: a hole down to each bump from the shelf top, pressing the bump's 45 deg face in
+    rel = [prism(tag + f"_rh{s_}", circle_pts(0.6, 20, c=(s_ * (Wc / 2 + fit + 0.45), 5.0)), Z0C + 3.0, H + 1)
+           for s_ in (1, -1)]
+    return [place(q, x0, front) for q in (a, b, o, gr, sl) + tuple(rel)]
 
 
 def seat_xy(g, d, x0, front):
-    yl = g["y_wall"] - d / 2
+    yl = g["y_wall"] - d / 2 + FRONT_GAP
     return (x0, SF + WALL + yl) if front else (x0, SB - WALL - yl)
 
 
@@ -385,6 +444,28 @@ def brush(name, i, x, y, zc):
         S.bake(ob)
         out.append(ob)
     return out
+
+
+def safe_cut(target, cutters):
+    """EXACT boolean, one cutter at a time; if a cut wipes out most of the part (a known EXACT failure on
+    near-coincident faces), undo it and retry with the cutter nudged by 0.013 mm."""
+    for c in cutters:
+        cname = c.name
+        before = target.data.copy()
+        v0 = vol_com(target)[0]
+        spare = c.copy()
+        spare.data = c.data.copy()
+        bpy.context.collection.objects.link(spare)
+        S.cut(target, [c])
+        if vol_com(target)[0] < 0.7 * v0:
+            target.data = before
+            spare.data.transform(Matrix.Translation((0.013, 0.011, 0.0)))
+            S.cut(target, [spare])
+            if vol_com(target)[0] < 0.7 * v0:
+                raise RuntimeError(f"boolean failed on {cname}")
+        else:
+            bpy.data.objects.remove(spare, do_unlink=True)
+    return target
 
 
 # ================================================================== the stand
@@ -505,21 +586,24 @@ def build():
     cheeks += [prism(f"CheekW{sx}", rrect_pts(5, PF + 2.5 - (SB + 12), 1.5, c=(sx * 79.5, (PF + 2.5 + SB + 12) / 2)),
                      H - T, H, bevel=0.8) for sx in (-1, 1)]
     S.union(shelf, cheeks + ck + [rib] + rails)
-    carts, brushes, seats = [], [], []
+    carts, brushes, seats, rings = [], [], [], []
     cutters = []
     for row, front in ((FRONT, True), (BACK, False)):
         for name, x0 in row:
             d = BRUSHES[name][0]
-            g = cart_geom(d, wet_g(name))
+            g = cart_geom(d, LOAD_G[name])
             cutters += pocket_cutters(f"P{name}", g, x0, front)
             c_ = place(cartridge(f"Cart{name}", g), x0, front)
             c_["size"] = g["size"]
             carts.append(c_)
+            for o_ in pads_for(f"Cart{name}", g):
+                place(o_, x0, front)
+                rings.append(o_)
             seats.append((name, g["size"], front, seat_xy(g, d, x0, front)))
-    S.cut(shelf, cutters + [xcyl(f"ChB{sx}", 3.05 / 2, *sorted((sx * 80, sx * 90)), *AX, seg=24) for sx in (-1, 1)])
+    safe_cut(shelf, cutters + [xcyl(f"ChB{sx}", 3.05 / 2, *sorted((sx * 80, sx * 90)), *AX, seg=24) for sx in (-1, 1)])
     P["shelf_clean"] = clean(shelf)
     S.assign(shelf, S.pla("white"))
-    P["shelf"], P["carts"] = shelf, carts
+    P["shelf"], P["carts"], P["orings"] = shelf, carts, rings
     scaps = [xcyl(f"DowelS{sx}", 1.5, *sorted((sx * 74, sx * 88)), *AX, seg=24) for sx in (-1, 1)]
     for c_ in scaps:
         S.assign(c_, steel())
@@ -564,7 +648,7 @@ def build():
     C.set_origin(pan, (0, HY, HZ))
     C.set_origin(shelf, (0, *AX))
     C.parent_keep(shelf, pan)
-    for o in carts + scaps:
+    for o in carts + scaps + rings:
         C.parent_keep(o, shelf)
     for o in P["pegs"]:
         C.parent_keep(o, pan)
@@ -573,7 +657,7 @@ def build():
 
 def parts_of(P):
     return ([P["tray"], P["panel"], P["shelf"]] + P["tray_caps"] + P["feet"] + P["carts"] +
-            P["shelf_caps"] + P["stays"] + P["stay_dowels"] + P["pegs"])
+            P["shelf_caps"] + P["stays"] + P["stay_dowels"] + P["pegs"] + P["orings"])
 
 
 FOLD_PAN = (math.pi / 2, 0, 0)
@@ -648,7 +732,7 @@ def stats(P):
     h = H - T / 2
     tip_back = mass * g * (foot_back - com[1]) / h      # N, pushing a front-row brush in (backwards)
     tip_fwd = mass * g * (com[1] - foot_front) / h      # N, pushing a back-row brush in (forwards)
-    carts = {n: cart_geom(BRUSHES[n][0], wet_g(n)) for n, _x in FRONT + BACK}
+    carts = {n: cart_geom(BRUSHES[n][0], LOAD_G[n]) for n, _x in FRONT + BACK}
     e_back = stand * g * (foot_back - ecom_y) / h
     e_fwd = stand * g * (ecom_y - foot_front) / h
     out = dict(empty_tip_back_N=round(e_back, 2), empty_tip_fwd_N=round(e_fwd, 2), parts=rows, stand_g=round(stand), loaded_g=round(mass), com=[round(c, 1) for c in com],
@@ -777,11 +861,14 @@ def cart_set():
     S.reset()
     obs = []
     hm = S.material("Handle", (0.20, 0.10, 0.10, 1), rough=0.35, coat=0.3)
-    for d, w, x in ((6.95, 18, -36), (12.3, 38, 0), (16.8, 42, 40)):
+    for d, w, x in ((6.95, 45, -36), (12.3, 60, 0), (16.8, 75, 40)):
         g = cart_geom(d, w)
         c_ = cartridge(f"C{d}", g, 0, T - 1)
         c_.data.transform(Matrix.Translation((x, -g["D"] / 2, 0)))
         obs.append(c_)
+        for o_ in pads_for(f"C{d}", g, 0, T - 1):
+            o_.data.transform(Matrix.Translation((x, -g["D"] / 2, 0)))
+            obs.append(o_)
         h = lathe(f"H{d}", [(0, T + 18), (d / 2 - 0.8, T + 18), (d / 2, T + 17), (d / 2, -12), (0, -12)], 48)
         S.assign(h, hm)
         h.location = (x, -g["D"] / 2 + g["y_wall"] - d / 2, 0)
@@ -799,6 +886,9 @@ def cart_set():
             o.hide_render = True
     S.camera((0.002, -0.004, 0.24), (0.002, -0.004, 0.0), 50, name="CartsTop")
     S.render(os.path.join(OUT, "carts_top.png"))
+    # close-up of the 12.3 mm cartridge: post, O-ring, ramp, snap bump
+    S.camera((0.030, -0.058, 0.036), (0.004, -0.017, 0.0045), 50, name="CartDetail")
+    S.render(os.path.join(OUT, "cart_detail.png"))
 
 
 # ================================================================== clip test strip
@@ -849,14 +939,16 @@ def test_strip():
     S.reset()
     depth = 100.0
     strip = prism("ClipTest", rrect_pts(156, depth, 10, c=(0, SF + depth / 2)), H - T, H, bevel=1.0)
-    cutters, carts = [], []
+    cutters, carts, test_rings = [], [], []
     for name, x0 in TEST:
-        g = cart_geom(BRUSHES[name][0], wet_g(name))
+        g = cart_geom(BRUSHES[name][0], LOAD_G[name])
         cutters += pocket_cutters(f"T{name}", g, x0, True)
         c_ = place(cartridge(f"Cart_{g['size']}", g), x0, True)
         carts.append(c_)
+        for o_ in pads_for(f"Cart_{g['size']}", g):
+            test_rings.append(place(o_, x0, True))
     lab = C.label("CLIP TEST", 3.4, (0, SF + depth - 14, H))
-    S.cut(strip, cutters + [lab])
+    safe_cut(strip, cutters + [lab])
     clean(strip)
     S.assign(strip, S.pla("white"))
     # dowel fit coupon: printed upright like the panel, three horizontal bores for the 3 mm steel dowels
@@ -872,7 +964,10 @@ def test_strip():
     S.cut(fit, holes)
     clean(fit)
     S.assign(fit, S.pla("white"))
-    carts = carts + [fit]
+    if "--fit" in ARGS:            # the dowel-fit block was on the first test plate; add it back with --fit
+        carts = carts + [fit]
+    else:
+        bpy.data.objects.remove(fit, do_unlink=True)
     os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
     for o in [strip] + carts:
         S.export_stl(o, os.path.join(HERE, "stl", f"test_{o.name.lower()}.stl"))
@@ -880,10 +975,10 @@ def test_strip():
     print("wrote clip_test_white.3mf")
     if "--render" in ARGS:
         hm = S.material("Handle", (0.20, 0.10, 0.10, 1), rough=0.35, coat=0.3)
-        obs = [strip] + carts
+        obs = [strip] + carts + test_rings
         for name, x0 in TEST:
             d = BRUSHES[name][0]
-            g = cart_geom(d, wet_g(name))
+            g = cart_geom(d, LOAD_G[name])
             hx, hy = seat_xy(g, d, x0, True)
             h = lathe(f"H{name}", [(0, H + 30), (d / 2 - 0.8, H + 30), (d / 2, H + 29), (d / 2, H - 40), (0, H - 40)], 48)
             S.assign(h, hm)
@@ -902,11 +997,97 @@ def test_strip():
     return strip, carts
 
 
+# ================================================================== fit block and rubber-cutting jigs
+FIT_TEST = (0.05, 0.10, 0.15)
+
+
+def fit_and_jigs():
+    """Plate A (white): a 96 x 50 mm slab with three pockets for the same small cartridge at pocket
+    clearances 0.05 / 0.10 / 0.15 mm, three of those cartridges, and two jigs for cutting the 4 x 7 mm
+    neoprene pads from 1/16 in sheet: a 7 mm strip gauge and a 4 mm chop box."""
+    S.reset()
+    g = cart_geom(BRUSHES["B1"][0], LOAD_G["B1"])
+    slab = prism("FitBlock", rrect_pts(96, 50, 4, c=(0, SF + 25)), H - T, H, bevel=0.8)
+    cut, carts = [], []
+    for (x0, fit) in zip((-30.0, 0.0, 30.0), FIT_TEST):
+        cut += pocket_cutters(f"F{fit}", g, x0, True, fit=fit)
+        lab = S.text(f"FL{fit}", f"{int(round(fit * 100)):02d}", 3.0, 0.8, loc=(x0, SF + 44.5 - 1.1, H), align="CENTER")
+        S.bake(lab)
+        cut.append(lab)
+        c_ = place(cartridge(f"FitCart{fit}", g), x0, True)
+        S.assign(c_, S.pla("white"))
+        carts.append(c_)
+    safe_cut(slab, cut)
+    clean(slab)
+    S.assign(slab, S.pla("white"))
+    # strip gauge, modelled in print orientation (hook up); flip it over to use: the hook catches the
+    # sheet edge and the knife runs along the far edge, 7.0 mm away
+    gw, glen = PAD[1] - 0.2, 140.0              # knife runs on the bar edge: the strip comes out ~7.0
+    gauge = prism("StripGauge", rect(-glen / 2, -2.5, glen / 2, gw), 0, 6.0, bevel=0.4)
+    hook = prism("GaugeHook", rect(-glen / 2, -2.5, glen / 2, 0.0), 5.9, 6.0 + 1.2, bevel=0.3)
+    S.union(gauge, [hook])
+    gl = S.text("GaugeL", "7.0 STRIP", 3.0, 0.8, loc=(0, gw / 2 - 1.1, 6.0), align="CENTER")
+    S.bake(gl)
+    S.cut(gauge, [gl])
+    gauge.data.transform(Matrix.Translation((0, 60, 0)))
+    # chop box: channel holds the 7 mm strip, an end stop, and a blade slot 4.0 mm from the stop through
+    # two guide towers
+    cw_, cd_ = PAD[1] + 0.25, PAD[2] + 0.15
+    stop_x = 12.0
+    x_cut = stop_x - (PAD[0] - 0.1)            # slot's stop-side face 3.9 mm from the stop: pads ~4.1-4.3
+    box = prism("ChopBox", rrect_pts(48, 26, 3, c=(-4, 0)), 0, 8.0, bevel=0.5)
+    towers = [prism(f"Tower{s_}", rrect_pts(12, 6.5, 1.5, c=(x_cut - 0.4, s_ * (cw_ / 2 + 4.2))), 7.5, 20.0, bevel=0.5)
+              for s_ in (1, -1)]
+    S.union(box, towers)
+    chan = prism("Chan", rect(-30, -cw_ / 2, stop_x, cw_ / 2), 8.0 - cd_, 9.0)
+    slot_ = prism("Slot", rect(x_cut - 0.6, -14, x_cut, 14), 8.0 - cd_ - 0.6, 21)
+    bl = S.text("BoxL", "4.0", 3.0, 0.8, loc=(-16, -cw_ / 2 - 4.0, 8.0), align="CENTER")
+    S.bake(bl)
+    S.cut(box, [chan, slot_, bl])
+    box.data.transform(Matrix.Translation((60, 0, 0)))
+    for o in (gauge, box):
+        clean(o)
+        S.assign(o, S.pla("white"))
+    os.makedirs(os.path.join(HERE, "stl"), exist_ok=True)
+    objs = [slab] + carts + [gauge, box]
+    for o in objs:
+        S.export_stl(o, os.path.join(HERE, "stl", f"plateA_{o.name.lower()}.stl"))
+    write_3mf([slab] + carts, os.path.join(HERE, "fit_block_white.3mf"))   # production settings
+    write_3mf([gauge, box], os.path.join(HERE, "jigs_white.3mf"))           # any quick profile
+    print("wrote fit_block_white.3mf, jigs_white.3mf")
+    if "--render" in ARGS:
+        rub = []
+        for (x0, fit), c_ in zip(zip((-30.0, 0.0, 30.0), FIT_TEST), carts):
+            for o_ in pads_for(f"FitCart{fit}", g):
+                rub.append(place(o_, x0, True))
+        # a strip of rubber in the chop box, for the picture
+        m = S.material("Neoprene", (0.06, 0.06, 0.065, 1), rough=0.8)
+        st = prism("RubberStrip", rect(-40, -PAD[1] / 2, stop_x, PAD[1] / 2), 8.0 - cd_, 8.0 - cd_ + PAD[2], bevel=0.2)
+        st.data.transform(Matrix.Translation((60, 0, 0)))
+        S.assign(st, m)
+        for o in [slab] + carts + rub:             # bring the slab down from shelf height to the table
+            o.data.transform(Matrix.Translation((0, 0, -(H - T))))
+        obs = objs + rub + [st]
+        S.to_studio(obs)
+        for o in obs:
+            S.smooth(o, 32)
+        S.studio(samples=24 if PREVIEW else 160, res=(700, 525) if PREVIEW else (1400, 1050))
+        gpu()
+        S.camera((0.08, -0.36, 0.34), (0.01, 0.0, 0.0), 38, name="PlateA")
+        S.render(os.path.join(OUT, "plateA.png"))
+        S.camera((0.11, -0.075, 0.075), (0.058, 0.0, 0.008), 50, name="ChopCU")
+        S.render(os.path.join(OUT, "chopbox.png"))
+        S.camera((0.05, -0.16, 0.12), (0.0, -0.042, 0.004), 45, name="FitCU")
+        S.render(os.path.join(OUT, "fitblock.png"))
+
+
 if __name__ == "__main__":
     if "--carts" in ARGS:
         cart_set()
     if "--teststrip" in ARGS:
         test_strip()
+    if "--fitjigs" in ARGS:
+        fit_and_jigs()
     if any(a in ARGS for a in ("--stills", "--closeups", "--anim", "--stats", "--blend", "--stl")):
         S.reset()
         P = build()
